@@ -1,5 +1,8 @@
 (executables
- ((names        (a b))
-  (public_names (06a 06b))
-  (libraries    (core))
-  (preprocess (pps (ppx_jane)))))
+ ((names     (a b))
+  (libraries (core))))
+
+(alias
+ ((name runtest)
+  (deps (input))
+  (action (progn (run ${exe:a.exe} input) (run ${exe:b.exe} input)))))

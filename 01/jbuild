@@ -1,4 +1,8 @@
 (executables
- ((names        (a   b))
-  (public_names (01a 01b))
-  (libraries    (core))))
+ ((names     (a b))
+  (libraries (core))))
+
+(alias
+ ((name runtest)
+  (deps (input))
+  (action (progn (run ${exe:a.exe} input) (run ${exe:b.exe} input)))))
