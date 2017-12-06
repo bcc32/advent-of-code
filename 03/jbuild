@@ -1,6 +1,7 @@
 (executables
  ((names     (a b))
-  (libraries (core))))
+  (libraries (core))
+  (preprocess (pps (ppx_jane)))))
 
 (alias
  ((name runtest)
