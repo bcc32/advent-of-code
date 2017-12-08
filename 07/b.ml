@@ -37,28 +37,22 @@ let () =
         | _ -> []
         )))
   in
-  with_return (fun { return } ->
-    List.iter lines ~f:(fun (_, _, words) ->
-      let weights = List.map words ~f:(fun w -> weight w lines) in
-      match List.dedup weights with
-      | [] -> ()
-      | [ _ ] -> ()
-      | [ a; b ] as ddw ->
-        List.iter ddw ~f:(fun w ->
-          if List.count weights ~f:((=) w) = 1
-          then (
-            let other_weight = w lxor a lxor b in
-            let current_weight =
-              List.find_map_exn words ~f:(fun c ->
-                if weight c lines = w
-                then (Some (self_weight c lines))
-                else None)
-            in
-            Debug.eprintf "%d" (current_weight + (other_weight - w));
-            let _ = return in
-            ()
-            (* return (current_weight + (other_weight - w)) *)))
-      | _ -> assert false);
-    assert false)
-  |> printf "%d\n"
+  List.iter lines ~f:(fun (_, _, words) ->
+    let weights = List.map words ~f:(fun w -> weight w lines) in
+    match List.dedup weights with
+    | [] -> ()
+    | [ _ ] -> ()
+    | [ a; b ] as ddw ->
+      List.iter ddw ~f:(fun w ->
+        if List.count weights ~f:((=) w) = 1
+        then (
+          let other_weight = w lxor a lxor b in
+          let current_weight =
+            List.find_map_exn words ~f:(fun c ->
+              if weight c lines = w
+              then (Some (self_weight c lines))
+              else None)
+          in
+          Debug.eprintf "%d" (current_weight + (other_weight - w))))
+    | _ -> assert false);
 ;;
