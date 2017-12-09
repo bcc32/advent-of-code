@@ -1,7 +1,7 @@
 (executables
  ((names     (a b))
   (libraries (core))
-  (preprocess (pps (ppx_jane)))))
+  (preprocess (pps (ppx_jane -annotated-ignores ppx_driver.runner)))))
 
 (alias
  ((name runtest)
