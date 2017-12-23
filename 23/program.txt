@@ -1,0 +1,22 @@
+b = 84
+c = 84
+
+if a <> 0
+  b *= 100
+  b += 100000
+  c = b + 17000
+
+// b = 108400
+// c = 125400
+
+while b <> c
+  f = 1
+  for d = 2 to b
+    for e = 2 to b
+      if d * e = b
+        f = 0
+  if f = 0
+    sub h -1
+  b += 17
+
+// how many composites between 108400, 108417, 108434, ..., 125400, inclusive?
