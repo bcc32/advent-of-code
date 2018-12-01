@@ -1,0 +1,4 @@
+(executables
+ (names a b)
+ (libraries core async)
+ (preprocess (pps ppx_jane)))
