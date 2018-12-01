@@ -1,5 +1,6 @@
 open! Core
 open! Async
+open! Import
 
 let main () =
   Reader.with_file "input" ~f:(fun r ->
@@ -8,12 +9,7 @@ let main () =
   >>| printf "%d\n"
 ;;
 
-let command =
-  Command.async
-    ~summary:"01-a"
-    (let open Command.Let_syntax in
-     let%map_open () = return () in
-     fun () -> main ())
+let%expect_test "a" =
+  let%bind () = main () in
+  [%expect {| 590 |}]
 ;;
-
-let () = Command.run command

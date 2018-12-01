@@ -1,4 +1,6 @@
-(executables
- (names a b)
- (libraries core async)
- (preprocess (pps ppx_jane)))
+(library
+ (name p01)
+ (libraries core async expect_test_helpers)
+ (preprocess (pps ppx_jane))
+ (inline_tests (deps input))
+ (modules a b import))

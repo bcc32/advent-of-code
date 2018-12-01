@@ -1,5 +1,6 @@
 open! Core
 open! Async
+open! Import
 
 let main () =
   let%bind deltas =
@@ -17,12 +18,7 @@ let main () =
   return ()
 ;;
 
-let command =
-  Command.async
-    ~summary:"01-b"
-    (let open Command.Let_syntax in
-     let%map_open () = return () in
-     fun () -> main ())
+let%expect_test "b" =
+  let%bind () = main () in
+  [%expect {| 83445 |}]
 ;;
-
-let () = Command.run command
