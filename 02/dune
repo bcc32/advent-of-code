@@ -1,0 +1,6 @@
+(library
+ (name p02)
+ (libraries core async expect_test_helpers)
+ (preprocess (pps ppx_jane))
+ (inline_tests (deps input))
+ (modules a b import))
