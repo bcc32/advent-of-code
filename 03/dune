@@ -2,5 +2,4 @@
  (name p03)
  (libraries core async expect_test_helpers re)
  (preprocess (pps ppx_jane))
- (inline_tests (deps input))
- (modules a b import))
+ (inline_tests (deps input)))
