@@ -31,3 +31,17 @@ let rec sum_metadata t =
   List.sum (module Int) t.metadata ~f:Fn.id
   + List.sum (module Int) t.children ~f:sum_metadata
 ;;
+
+let rec value t =
+  match t.children with
+  | [] -> List.sum (module Int) t.metadata ~f:Fn.id
+  | children ->
+    let len = List.length children in
+    let indices =
+      List.filter_map t.metadata ~f:(fun i ->
+        if i >= 1 && i <= len then Some (i - 1) else None)
+    in
+    List.foldi children ~init:0 ~f:(fun i acc c ->
+      let count = List.count indices ~f:(( = ) i) in
+      acc + if count = 0 then 0 else count * value c)
+;;

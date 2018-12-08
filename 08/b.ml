@@ -3,14 +3,17 @@ open! Async
 open! Import
 
 let main () =
-  let%bind _lines =
-    Reader.with_file "input" ~f:(fun r -> r |> Reader.lines |> Pipe.to_list)
+  let%bind nums =
+    Reader.file_contents "input"
+    >>| String.strip
+    >>| String.split ~on:' '
+    >>| List.map ~f:Int.of_string
   in
-  printf "output\n";
+  Tree.parse nums |> Tree.value |> printf "%d\n";
   return ()
 ;;
 
 let%expect_test "b" =
   let%bind () = main () in
-  [%expect {| output |}]
+  [%expect {| 21502 |}]
 ;;
