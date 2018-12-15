@@ -2,51 +2,24 @@ open! Core
 open! Async
 open! Import
 
-type bool_array = bool array
+type t = Int.Set.t [@@deriving sexp_of]
 
-let sexp_of_bool_array t =
-  Array.to_list t
-  |> List.map ~f:(fun b -> if b then "#" else ".")
-  |> String.concat
-  |> Sexp.Atom
+let of_init array =
+  Array.filter_mapi array ~f:(fun i p -> if p then Some i else None) |> Int.Set.of_array
 ;;
-
-type t =
-  { plants : bool_array
-  ; offset : int
-  (* number of pots to the left of 0 *)
-  }
-[@@deriving sexp_of]
-
-let of_init array = { plants = Array.copy array; offset = 0 }
 
 let step t steps =
-  let offset' = t.offset + 2 in
-  let plants' =
-    let get_current i =
-      i + t.offset >= 0
-      && i + t.offset < Array.length t.plants
-      && t.plants.(i + t.offset)
-    in
-    Array.init
-      (Array.length t.plants + 4)
-      ~f:(fun i' ->
-        let a = get_current (i' - offset' - 2) in
-        let b = get_current (i' - offset' - 1) in
-        let c = get_current (i' - offset') in
-        let d = get_current (i' - offset' + 1) in
-        let e = get_current (i' - offset' + 2) in
-        Hashtbl.find_exn steps (a, b, c, d, e))
-  in
-  { plants = plants'; offset = offset' }
+  t
+  |> Set.to_list
+  |> List.concat_map ~f:(fun x -> [ x - 2; x - 1; x; x + 1; x + 2 ])
+  |> Int.Set.of_list
+  |> Set.filter ~f:(fun x ->
+    let a = Set.mem t (x - 2) in
+    let b = Set.mem t (x - 1) in
+    let c = Set.mem t x in
+    let d = Set.mem t (x + 1) in
+    let e = Set.mem t (x + 2) in
+    Hashtbl.find_exn steps (a, b, c, d, e))
 ;;
 
-let iteri t ~f =
-  let rec loop i =
-    if i < Array.length t.plants
-    then (
-      f (i - t.offset) t.plants.(i);
-      loop (i + 1))
-  in
-  loop 0
-;;
+let iter_plants = Set.iter
