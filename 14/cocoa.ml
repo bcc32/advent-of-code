@@ -26,3 +26,14 @@ let make_more t =
 
 let length t = Queue.length t.scores
 let sub t ~pos ~len = Array.init len ~f:(fun i -> Queue.get t.scores (pos + i))
+
+(* can leak memory *)
+let make_sequence () =
+  Sequence.unfold
+    ~init:(create (), 0)
+    ~f:(fun (t, i) ->
+      while i >= length t do
+        make_more t
+      done;
+      Some (Queue.get t.scores i, (t, i + 1)))
+;;
