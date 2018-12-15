@@ -12,9 +12,7 @@ let main () =
     loop (State.of_init game.init) 20
   in
   if false then Debug.eprint_s [%message "" (game : Game.t) (state : State.t)];
-  let sum = ref 0 in
-  State.iter_plants state ~f:(fun i -> sum := !sum + i);
-  printf "%d\n" !sum;
+  State.sum_plants state |> printf "%d\n";
   return ()
 ;;
 

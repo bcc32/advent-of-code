@@ -22,4 +22,5 @@ let step t steps =
     Hashtbl.find_exn steps (a, b, c, d, e))
 ;;
 
-let iter_plants = Set.iter
+let sum_plants t = Set.sum (module Int) t ~f:Fn.id
+let count_plants = Set.length
