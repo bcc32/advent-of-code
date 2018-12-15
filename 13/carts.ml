@@ -76,8 +76,10 @@ module Cart = struct
   ;;
 end
 
+module Cart_heap = Hash_heap.Make (Tuple.Hashable_t (Int) (Int))
+
 type t =
-  { carts : Cart.t Heap.t
+  { carts : Cart.t Cart_heap.t
   ; occupied : bool array array
   ; tracks : Tracks.t
   }
@@ -104,16 +106,28 @@ let maybe_turn tracks (cart : Cart.t) =
 ;;
 
 let step t ~on_collision =
-  let cart = Heap.pop_exn t.carts in
+  let cart = Cart_heap.pop_exn t.carts in
   let row, col = Dir.apply cart.dir (cart.row, cart.col) in
-  if t.occupied.(row).(col) then on_collision ~row ~col;
-  t.occupied.(cart.row).(cart.col) <- false;
-  t.occupied.(row).(col) <- true;
-  cart.row <- row;
-  cart.col <- col;
-  maybe_turn t.tracks cart;
-  cart.moves <- cart.moves + 1;
-  Heap.add t.carts cart
+  if t.occupied.(row).(col)
+  then (
+    on_collision ~row ~col;
+    Cart_heap.remove t.carts (row, col))
+  else (
+    t.occupied.(cart.row).(cart.col) <- false;
+    t.occupied.(row).(col) <- true;
+    cart.row <- row;
+    cart.col <- col;
+    maybe_turn t.tracks cart;
+    cart.moves <- cart.moves + 1;
+    Cart_heap.push_exn t.carts ~key:(row, col) ~data:cart)
+;;
+
+let lone_ranger t =
+  if Cart_heap.length t.carts = 1
+  then (
+    let cart = Cart_heap.top_exn t.carts in
+    Some (cart.row, cart.col))
+  else None
 ;;
 
 let read () =
@@ -121,14 +135,14 @@ let read () =
   let%bind grid =
     Reader.file_lines "input" >>| Array.of_list_map ~f:(fun row -> String.to_array row)
   in
-  let carts = Heap.create ~cmp:Cart.compare () in
+  let carts = Cart_heap.create Cart.compare in
   let occupied =
     Array.make_matrix false ~dimx:(Array.length grid) ~dimy:(Array.length grid.(0))
   in
   Array.iteri grid ~f:(fun i row ->
     Array.iteri row ~f:(fun j -> function
       | ('^' | 'v' | '<' | '>') as c ->
-        Heap.add carts (Cart.create i j c);
+        Cart_heap.push_exn carts ~key:(i, j) ~data:(Cart.create i j c);
         occupied.(i).(j) <- true
       | _ -> ()));
   return { carts; occupied; tracks }
