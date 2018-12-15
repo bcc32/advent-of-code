@@ -80,7 +80,6 @@ module Cart_heap = Hash_heap.Make (Tuple.Hashable_t (Int) (Int))
 
 type t =
   { carts : Cart.t Cart_heap.t
-  ; occupied : bool array array
   ; tracks : Tracks.t
   }
 
@@ -105,21 +104,26 @@ let maybe_turn tracks (cart : Cart.t) =
   | _ -> assert false
 ;;
 
-let step t ~on_collision =
-  let cart = Cart_heap.pop_exn t.carts in
-  let row, col = Dir.apply cart.dir (cart.row, cart.col) in
-  if t.occupied.(row).(col)
-  then (
-    on_collision ~row ~col;
-    Cart_heap.remove t.carts (row, col))
-  else (
-    t.occupied.(cart.row).(cart.col) <- false;
-    t.occupied.(row).(col) <- true;
-    cart.row <- row;
-    cart.col <- col;
-    maybe_turn t.tracks cart;
-    cart.moves <- cart.moves + 1;
-    Cart_heap.push_exn t.carts ~key:(row, col) ~data:cart)
+let tick t ~on_collision =
+  let move_no = (Cart_heap.top_exn t.carts).moves in
+  let rec loop () =
+    if Cart_heap.length t.carts > 0 && (Cart_heap.top_exn t.carts).moves = move_no
+    then (
+      let cart = Cart_heap.pop_exn t.carts in
+      let row, col = Dir.apply cart.dir (cart.row, cart.col) in
+      if Cart_heap.mem t.carts (row, col)
+      then (
+        on_collision ~row ~col;
+        ignore (Cart_heap.find_pop_exn t.carts (row, col)))
+      else (
+        cart.row <- row;
+        cart.col <- col;
+        maybe_turn t.tracks cart;
+        cart.moves <- cart.moves + 1;
+        Cart_heap.push_exn t.carts ~key:(row, col) ~data:cart);
+      loop ())
+  in
+  loop ()
 ;;
 
 let lone_ranger t =
@@ -127,6 +131,8 @@ let lone_ranger t =
   then (
     let cart = Cart_heap.top_exn t.carts in
     Some (cart.row, cart.col))
+  else if Cart_heap.length t.carts = 0
+  then raise_s [%message "no carts"]
   else None
 ;;
 
@@ -145,5 +151,5 @@ let read () =
         Cart_heap.push_exn carts ~key:(i, j) ~data:(Cart.create i j c);
         occupied.(i).(j) <- true
       | _ -> ()));
-  return { carts; occupied; tracks }
+  return { carts; tracks }
 ;;

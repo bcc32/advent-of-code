@@ -6,7 +6,7 @@ let main () =
   let%bind carts = Carts.read () in
   with_return (fun { return } ->
     while true do
-      Carts.step carts ~on_collision:(fun ~row:_ ~col:_ -> ());
+      Carts.tick carts ~on_collision:(fun ~row:_ ~col:_ -> ());
       match Carts.lone_ranger carts with
       | None -> ()
       | Some (row, col) ->
@@ -18,5 +18,5 @@ let main () =
 
 let%expect_test "b" =
   let%bind () = main () in
-  [%expect {| output |}]
+  [%expect {| 50,21 |}]
 ;;
