@@ -103,10 +103,10 @@ let maybe_turn tracks (cart : Cart.t) =
   | _ -> assert false
 ;;
 
-let step t =
+let step t ~on_collision =
   let cart = Heap.pop_exn t.carts in
   let row, col = Dir.apply cart.dir (cart.row, cart.col) in
-  if t.occupied.(row).(col) then raise (Collision (row, col));
+  if t.occupied.(row).(col) then on_collision ~row ~col;
   t.occupied.(cart.row).(cart.col) <- false;
   t.occupied.(row).(col) <- true;
   cart.row <- row;
