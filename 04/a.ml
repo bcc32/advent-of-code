@@ -12,7 +12,8 @@ let main () =
   let sleeps = events |> Event.analyze |> Int.Table.of_alist_multi in
   let sleepiest_guard =
     sleeps
-    |> Hashtbl.map ~f:(fun sleeps -> List.sum (module Int) sleeps ~f:(fun (x, y) -> y - x))
+    |> Hashtbl.map ~f:(fun sleeps ->
+      List.sum (module Int) sleeps ~f:(fun (x, y) -> y - x))
     |> Hashtbl.to_alist
     |> List.max_elt ~compare:(Comparable.lift [%compare: int] ~f:snd)
     |> Option.value_exn ~here:[%here]

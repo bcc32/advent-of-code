@@ -146,7 +146,8 @@ let read () =
     Array.make_matrix false ~dimx:(Array.length grid) ~dimy:(Array.length grid.(0))
   in
   Array.iteri grid ~f:(fun i row ->
-    Array.iteri row ~f:(fun j -> function
+    Array.iteri row ~f:(fun j ->
+      function
       | ('^' | 'v' | '<' | '>') as c ->
         Cart_heap.push_exn carts ~key:(i, j) ~data:(Cart.create i j c);
         occupied.(i).(j) <- true

@@ -20,11 +20,8 @@ let main () =
   in
   let min_x, max_x, min_y, max_y =
     let x0, y0 = List.hd_exn points in
-    List.fold
-      points
-      ~init:(x0, x0, y0, y0)
-      ~f:(fun (min_x, max_x, min_y, max_y) (x, y) ->
-        Int.min min_x x, Int.max max_x x, Int.min min_y y, Int.max max_y y)
+    List.fold points ~init:(x0, x0, y0, y0) ~f:(fun (min_x, max_x, min_y, max_y) (x, y) ->
+      Int.min min_x x, Int.max max_x x, Int.min min_y y, Int.max max_y y)
   in
   let count = ref 0 in
   let dist_sum p = List.sum (module Int) points ~f:(dist p) in

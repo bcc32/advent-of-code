@@ -19,20 +19,15 @@ let main () =
   in
   let min_x, max_x, min_y, max_y =
     let x0, y0 = List.hd_exn points in
-    List.fold
-      points
-      ~init:(x0, x0, y0, y0)
-      ~f:(fun (min_x, max_x, min_y, max_y) (x, y) ->
-        Int.min min_x x, Int.max max_x x, Int.min min_y y, Int.max max_y y)
+    List.fold points ~init:(x0, x0, y0, y0) ~f:(fun (min_x, max_x, min_y, max_y) (x, y) ->
+      Int.min min_x x, Int.max max_x x, Int.min min_y y, Int.max max_y y)
   in
   (* index to area *)
   let territory = Int.Table.create () in
   let infinite = Int.Hash_set.create () in
   let find_closest p =
     let min_dist =
-      List.map points ~f:(dist p)
-      |> List.min_elt ~compare:Int.compare
-      |> Option.value_exn
+      List.map points ~f:(dist p) |> List.min_elt ~compare:Int.compare |> Option.value_exn
     in
     List.filter_mapi points ~f:(fun i p' -> Option.some_if (dist p p' = min_dist) i)
   in

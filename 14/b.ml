@@ -10,8 +10,7 @@ let main () =
   let i, _ =
     Sequence.folding_map ds ~init:(prefix |> Fqueue.of_list) ~f:(fun digits d ->
       ( digits |> Fqueue.discard_exn |> Fn.flip Fqueue.enqueue d
-      , digits |> Fqueue.to_list |> List.fold ~init:0 ~f:(fun acc d -> (10 * acc) + d)
-      ))
+      , digits |> Fqueue.to_list |> List.fold ~init:0 ~f:(fun acc d -> (10 * acc) + d) ))
     |> Sequence.findi ~f:(fun _ n -> n = input)
     |> Option.value_exn
   in
