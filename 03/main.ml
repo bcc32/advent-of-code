@@ -4,6 +4,8 @@ open! Import
 
 module Point = struct
   type t = int * int [@@deriving compare, hash, sexp_of]
+
+  let abs (x, y) = Int.abs x + Int.abs y
 end
 
 module Step = struct
@@ -23,13 +25,15 @@ module Step = struct
 end
 
 let follow path =
-  let points = Hash_set.create (module Point) in
+  let points = Hashtbl.create (module Point) in
   let p = ref (0, 0) in
+  let c = ref 0 in
   path
   |> List.iter ~f:(fun (n, step) ->
     for _ = 1 to n do
+      incr c;
       p := Step.add !p step;
-      Hash_set.add points !p
+      ignore (Hashtbl.add points ~key:!p ~data:!c : [ `Duplicate | `Ok ])
     done);
   points
 ;;
@@ -48,34 +52,21 @@ let a () =
   let second = List.nth_exn lines 1 |> parse_path in
   let first_points = follow first in
   let second_points = follow second in
-  let x, y =
-    Hash_set.inter first_points second_points
-    |> Hash_set.min_elt
-         ~compare:
-           (Comparable.lift [%compare: int] ~f:(fun (x, y) -> Int.abs x + Int.abs y))
-    |> Option.value_exn
-  in
-  printf "%d\n" (Int.abs x + Int.abs y);
+  Hashtbl.merge first_points second_points ~f:(fun ~key:point ->
+    function
+    | `Both _ -> Some point
+    | `Left _ | `Right _ -> None)
+  |> Hashtbl.keys
+  |> List.map ~f:Point.abs
+  |> List.min_elt ~compare:[%compare: int]
+  |> Option.value_exn
+  |> printf "%d\n";
   return ()
 ;;
 
 let%expect_test "a" =
   let%bind () = a () in
   [%expect {| 2050 |}]
-;;
-
-let follow path =
-  let points = Hashtbl.create (module Point) in
-  let p = ref (0, 0) in
-  let c = ref 0 in
-  path
-  |> List.iter ~f:(fun (n, step) ->
-    for _ = 1 to n do
-      incr c;
-      p := Step.add !p step;
-      ignore (Hashtbl.add points ~key:!p ~data:!c : [ `Duplicate | `Ok ])
-    done);
-  points
 ;;
 
 let b () =
