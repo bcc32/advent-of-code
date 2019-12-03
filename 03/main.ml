@@ -40,14 +40,12 @@ let parse_path_part part =
   n, step
 ;;
 
+let parse_path path = path |> String.split ~on:',' |> List.map ~f:parse_path_part
+
 let a () =
   let%bind lines = Reader.file_lines "input" in
-  let first =
-    List.nth_exn lines 0 |> String.split ~on:',' |> List.map ~f:parse_path_part
-  in
-  let second =
-    List.nth_exn lines 1 |> String.split ~on:',' |> List.map ~f:parse_path_part
-  in
+  let first = List.nth_exn lines 0 |> parse_path in
+  let second = List.nth_exn lines 1 |> parse_path in
   let first_points = follow first in
   let second_points = follow second in
   let x, y =
@@ -82,12 +80,8 @@ let follow path =
 
 let b () =
   let%bind lines = Reader.file_lines "input" in
-  let first =
-    List.nth_exn lines 0 |> String.split ~on:',' |> List.map ~f:parse_path_part
-  in
-  let second =
-    List.nth_exn lines 1 |> String.split ~on:',' |> List.map ~f:parse_path_part
-  in
+  let first = List.nth_exn lines 0 |> parse_path in
+  let second = List.nth_exn lines 1 |> parse_path in
   let first_points = follow first in
   let second_points = follow second in
   let n =
