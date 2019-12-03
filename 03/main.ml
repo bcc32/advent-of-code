@@ -23,7 +23,7 @@ module Step = struct
 end
 
 let follow path =
-  let points = Hash_set.create (module Point) () in
+  let points = Hash_set.create (module Point) in
   let p = ref (0, 0) in
   path
   |> List.iter ~f:(fun (n, step) ->
