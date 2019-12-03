@@ -27,10 +27,10 @@ let follow path =
   let p = ref (0, 0) in
   path
   |> List.iter ~f:(fun (n, step) ->
-         for _ = 1 to n do
-           p := Step.add !p step;
-           Hash_set.add points !p
-         done);
+    for _ = 1 to n do
+      p := Step.add !p step;
+      Hash_set.add points !p
+    done);
   points
 ;;
 
@@ -72,11 +72,11 @@ let follow path =
   let c = ref 0 in
   path
   |> List.iter ~f:(fun (n, step) ->
-         for _ = 1 to n do
-           incr c;
-           p := Step.add !p step;
-           ignore (Hashtbl.add points ~key:!p ~data:!c : [ `Duplicate | `Ok ])
-         done);
+    for _ = 1 to n do
+      incr c;
+      p := Step.add !p step;
+      ignore (Hashtbl.add points ~key:!p ~data:!c : [ `Duplicate | `Ok ])
+    done);
   points
 ;;
 

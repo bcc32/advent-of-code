@@ -16,16 +16,16 @@ let main () =
   try
     while true do
       (match program.(!pc) with
-      | 1 ->
-        let x = program.(program.(!pc + 1)) in
-        let y = program.(program.(!pc + 2)) in
-        program.(program.(!pc + 3)) <- x + y
-      | 2 ->
-        let x = program.(program.(!pc + 1)) in
-        let y = program.(program.(!pc + 2)) in
-        program.(program.(!pc + 3)) <- x * y
-      | 99 -> raise Exit
-      | _ -> ());
+       | 1 ->
+         let x = program.(program.(!pc + 1)) in
+         let y = program.(program.(!pc + 2)) in
+         program.(program.(!pc + 3)) <- x + y
+       | 2 ->
+         let x = program.(program.(!pc + 1)) in
+         let y = program.(program.(!pc + 2)) in
+         program.(program.(!pc + 3)) <- x * y
+       | 99 -> raise Exit
+       | _ -> ());
       pc := !pc + 4
     done;
     assert false
@@ -47,16 +47,16 @@ let try_ program ~noun ~verb =
   try
     while true do
       (match program.(!pc) with
-      | 1 ->
-        let x = program.(program.(!pc + 1)) in
-        let y = program.(program.(!pc + 2)) in
-        program.(program.(!pc + 3)) <- x + y
-      | 2 ->
-        let x = program.(program.(!pc + 1)) in
-        let y = program.(program.(!pc + 2)) in
-        program.(program.(!pc + 3)) <- x * y
-      | 99 -> raise Exit
-      | _ -> ());
+       | 1 ->
+         let x = program.(program.(!pc + 1)) in
+         let y = program.(program.(!pc + 2)) in
+         program.(program.(!pc + 3)) <- x + y
+       | 2 ->
+         let x = program.(program.(!pc + 1)) in
+         let y = program.(program.(!pc + 2)) in
+         program.(program.(!pc + 3)) <- x * y
+       | 99 -> raise Exit
+       | _ -> ());
       pc := !pc + 4
     done;
     assert false
