@@ -2,14 +2,16 @@ open! Core
 open! Async
 open! Import
 
+let program () =
+  Reader.file_contents "input"
+  >>| String.strip
+  >>| String.split ~on:','
+  >>| List.map ~f:Int.of_string
+  >>| Array.of_list
+;;
+
 let main () =
-  let%bind program =
-    Reader.file_contents "input"
-    >>| String.strip
-    >>| String.split ~on:','
-    >>| List.map ~f:Int.of_string
-    >>| Array.of_list
-  in
+  let%bind program = program () in
   let pc = ref 0 in
   program.(1) <- 12;
   program.(2) <- 2;
@@ -65,13 +67,7 @@ let try_ program ~noun ~verb =
 ;;
 
 let main () =
-  let%bind program =
-    Reader.file_contents "input"
-    >>| String.strip
-    >>| String.split ~on:','
-    >>| List.map ~f:Int.of_string
-    >>| Array.of_list
-  in
+  let%bind program = program () in
   for noun = 0 to 99 do
     for verb = 0 to 99 do
       if try_ (Array.copy program) ~noun ~verb = 19690720
