@@ -46,13 +46,17 @@ let parse_path_part part =
 
 let parse_path path = path |> String.split ~on:',' |> List.map ~f:parse_path_part
 
+let points =
+  Lazy_deferred.create (fun () ->
+    let%bind lines = Reader.file_lines "input" in
+    let first = List.nth_exn lines 0 |> parse_path in
+    let second = List.nth_exn lines 1 |> parse_path in
+    return (follow first, follow second))
+;;
+
 let a () =
-  let%bind lines = Reader.file_lines "input" in
-  let first = List.nth_exn lines 0 |> parse_path in
-  let second = List.nth_exn lines 1 |> parse_path in
-  let first_points = follow first in
-  let second_points = follow second in
-  Hashtbl.merge first_points second_points ~f:(fun ~key:point ->
+  let%bind first, second = Lazy_deferred.force_exn points in
+  Hashtbl.merge first second ~f:(fun ~key:point ->
     function
     | `Both _ -> Some point
     | `Left _ | `Right _ -> None)
@@ -70,13 +74,9 @@ let%expect_test "a" =
 ;;
 
 let b () =
-  let%bind lines = Reader.file_lines "input" in
-  let first = List.nth_exn lines 0 |> parse_path in
-  let second = List.nth_exn lines 1 |> parse_path in
-  let first_points = follow first in
-  let second_points = follow second in
+  let%bind first, second = Lazy_deferred.force_exn points in
   let n =
-    Hashtbl.merge first_points second_points ~f:(fun ~key:_ ->
+    Hashtbl.merge first second ~f:(fun ~key:_ ->
       function
       | `Both (c1, c2) -> Some (c1 + c2)
       | `Left _ | `Right _ -> None)
