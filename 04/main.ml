@@ -16,13 +16,14 @@ let has_consec_digits s =
   |> Option.is_some
 ;;
 
+let is_nondecreasing s = s |> String.to_list |> List.is_sorted ~compare:[%compare: char]
+
 let a () =
   let%bind x, y = limits () in
   let c = ref 0 in
   for n = x to y do
-    if n |> Int.to_string |> has_consec_digits
-    && n |> Int.to_string |> String.to_list |> List.is_sorted ~compare:[%compare: char]
-    then incr c
+    let n = Int.to_string n in
+    if has_consec_digits n && is_nondecreasing n then incr c
   done;
   printf "%d\n" !c;
   return ()
@@ -33,26 +34,23 @@ let%expect_test "a" =
   [%expect {| 579 |}]
 ;;
 
-let has_consec_digits s =
-  let r =
-    let open Re in
-    List.init 10 ~f:(fun i ->
-      let d = Char.of_int_exn (Char.to_int '0' + i) in
-      seq
-        [ alt [ bos; compl [ char d ] ]; char d; char d; alt [ eos; compl [ char d ] ] ])
-    |> alt
-    |> compile
-  in
-  Re.execp r s
+let rex =
+  let open Re in
+  List.init 10 ~f:(fun i ->
+    let d = Char.of_int_exn (Char.to_int '0' + i) in
+    seq [ alt [ bos; compl [ char d ] ]; char d; char d; alt [ eos; compl [ char d ] ] ])
+  |> alt
+  |> compile
 ;;
+
+let has_consec_digits = Re.execp rex
 
 let b () =
   let%bind x, y = limits () in
   let c = ref 0 in
   for n = x to y do
-    if n |> Int.to_string |> has_consec_digits
-    && n |> Int.to_string |> String.to_list |> List.is_sorted ~compare:[%compare: char]
-    then incr c
+    let n = Int.to_string n in
+    if has_consec_digits n && is_nondecreasing n then incr c
   done;
   printf "%d\n" !c;
   return ()
