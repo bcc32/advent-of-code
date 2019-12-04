@@ -9,11 +9,12 @@ let limits () =
   Int.of_string x, Int.of_string y
 ;;
 
-let has_consec_digits s =
+let digit_groups s =
   s
   |> String.to_list
-  |> List.find_consecutive_duplicate ~equal:Char.equal
-  |> Option.is_some
+  |> Sequence.of_list
+  |> Sequence.group ~break:Char.( <> )
+  |> Sequence.map ~f:(fun xs -> List.hd_exn xs, List.length xs)
 ;;
 
 let is_nondecreasing s = s |> String.to_list |> List.is_sorted ~compare:[%compare: char]
@@ -23,7 +24,8 @@ let a () =
   let c = ref 0 in
   for n = x to y do
     let n = Int.to_string n in
-    if has_consec_digits n && is_nondecreasing n then incr c
+    if is_nondecreasing n && digit_groups n |> Sequence.exists ~f:(fun (_, c) -> c > 1)
+    then incr c
   done;
   printf "%d\n" !c;
   return ()
@@ -34,23 +36,13 @@ let%expect_test "a" =
   [%expect {| 579 |}]
 ;;
 
-let rex =
-  let open Re in
-  List.init 10 ~f:(fun i ->
-    let d = Char.of_int_exn (Char.to_int '0' + i) in
-    seq [ alt [ bos; compl [ char d ] ]; char d; char d; alt [ eos; compl [ char d ] ] ])
-  |> alt
-  |> compile
-;;
-
-let has_consec_digits = Re.execp rex
-
 let b () =
   let%bind x, y = limits () in
   let c = ref 0 in
   for n = x to y do
     let n = Int.to_string n in
-    if has_consec_digits n && is_nondecreasing n then incr c
+    if is_nondecreasing n && digit_groups n |> Sequence.exists ~f:(fun (_, c) -> c = 2)
+    then incr c
   done;
   printf "%d\n" !c;
   return ()
