@@ -21,13 +21,11 @@ let is_nondecreasing s = s |> String.to_list |> List.is_sorted ~compare:[%compar
 
 let a () =
   let%bind x, y = limits () in
-  let c = ref 0 in
-  for n = x to y do
+  Sequence.range x y ~stop:`inclusive
+  |> Sequence.count ~f:(fun n ->
     let n = Int.to_string n in
-    if is_nondecreasing n && digit_groups n |> Sequence.exists ~f:(fun (_, c) -> c > 1)
-    then incr c
-  done;
-  printf "%d\n" !c;
+    is_nondecreasing n && digit_groups n |> Sequence.exists ~f:(fun (_, c) -> c > 1))
+  |> printf "%d\n";
   return ()
 ;;
 
@@ -38,13 +36,11 @@ let%expect_test "a" =
 
 let b () =
   let%bind x, y = limits () in
-  let c = ref 0 in
-  for n = x to y do
+  Sequence.range x y ~stop:`inclusive
+  |> Sequence.count ~f:(fun n ->
     let n = Int.to_string n in
-    if is_nondecreasing n && digit_groups n |> Sequence.exists ~f:(fun (_, c) -> c = 2)
-    then incr c
-  done;
-  printf "%d\n" !c;
+    is_nondecreasing n && digit_groups n |> Sequence.exists ~f:(fun (_, c) -> c = 2))
+  |> printf "%d\n";
   return ()
 ;;
 
