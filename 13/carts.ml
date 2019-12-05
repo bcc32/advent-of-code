@@ -114,7 +114,7 @@ let tick t ~on_collision =
       if Cart_heap.mem t.carts (row, col)
       then (
         on_collision ~row ~col;
-        ignore (Cart_heap.find_pop_exn t.carts (row, col)))
+        ignore (Cart_heap.find_pop_exn t.carts (row, col) : Cart.t))
       else (
         cart.row <- row;
         cart.col <- col;

@@ -4,7 +4,7 @@ open! Import
 
 let demo () =
   let%bind game = Game.read () in
-  let _ =
+  let (_ : State.t) =
     let rec loop state n =
       print_s
         [%message

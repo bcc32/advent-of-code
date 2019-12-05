@@ -38,19 +38,19 @@ let topo_sort deps =
     tbl
   in
   let ready =
-    let heap = Heap.create () ~cmp:String.compare in
+    let heap = Pairing_heap.create () ~cmp:String.compare in
     List.iter all_nodes ~f:(fun node ->
-      if not (Hashtbl.mem remaining_deps node) then Heap.add heap node);
+      if not (Hashtbl.mem remaining_deps node) then Pairing_heap.add heap node);
     heap
   in
   let result = ref [] in
-  while not (Heap.is_empty ready) do
-    let step = Heap.pop_exn ready in
+  while not (Pairing_heap.is_empty ready) do
+    let step = Pairing_heap.pop_exn ready in
     let clients = Map.find_multi clients step in
     List.iter clients ~f:(fun c ->
       let set = Hashtbl.find_exn remaining_deps c in
       Hash_set.remove set step;
-      if Hash_set.is_empty set then Heap.add ready c);
+      if Hash_set.is_empty set then Pairing_heap.add ready c);
     result := step :: !result
   done;
   List.rev !result
@@ -73,17 +73,17 @@ let schedule deps ~workers ~cost =
     tbl
   in
   let ready =
-    let heap = Heap.create () ~cmp:String.compare in
+    let heap = Pairing_heap.create () ~cmp:String.compare in
     List.iter all_nodes ~f:(fun node ->
-      if not (Hashtbl.mem remaining_deps node) then Heap.add heap node);
+      if not (Hashtbl.mem remaining_deps node) then Pairing_heap.add heap node);
     heap
   in
   let current_task = Array.create None ~len:workers in
   let work_left = Array.create 0 ~len:workers in
   let rec loop time =
-    if Array.exists current_task ~f:Option.is_none && not (Heap.is_empty ready)
+    if Array.exists current_task ~f:Option.is_none && not (Pairing_heap.is_empty ready)
     then (
-      let step = Heap.pop_exn ready in
+      let step = Pairing_heap.pop_exn ready in
       let i, _ = Array.findi_exn current_task ~f:(fun _ task -> Option.is_none task) in
       current_task.(i) <- Some step;
       work_left.(i) <- cost step;
@@ -101,7 +101,7 @@ let schedule deps ~workers ~cost =
           List.iter clients ~f:(fun c ->
             let set = Hashtbl.find_exn remaining_deps c in
             Hash_set.remove set step;
-            if Hash_set.is_empty set then Heap.add ready c))
+            if Hash_set.is_empty set then Pairing_heap.add ready c))
       done;
       loop (time + 1))
     else time
