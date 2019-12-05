@@ -121,7 +121,6 @@ let b () =
   return ()
 ;;
 
-
 let%expect_test "b" =
   let%bind () = b () in
   [%expect {| 11430197 |}]
