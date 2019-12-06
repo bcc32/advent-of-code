@@ -1,6 +1,6 @@
 (library
  (name p06)
- (libraries core async expect_test_helpers re bignum)
+ (libraries core async graph expect_test_helpers re bignum)
  (preprocess
   (pps ppx_jane))
  (inline_tests
