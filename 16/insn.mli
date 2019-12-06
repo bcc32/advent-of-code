@@ -20,7 +20,7 @@ module Opcode : sig
     | Eqir
     | Eqri
     | Eqrr
-  [@@deriving enumerate]
+  [@@deriving compare, enumerate, sexp_of]
 end
 
 type t =
