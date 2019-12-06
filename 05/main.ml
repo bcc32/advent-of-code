@@ -98,7 +98,6 @@ let a () =
 ;;
 
 let%expect_test "a" =
-  Backtrace.elide := false;
   let%bind () = a () in
   [%expect {|
     0
