@@ -9,7 +9,7 @@ let main input =
     let rec loop rounds =
       match Battlefield.perform_round battlefield with
       | () -> loop (rounds + 1)
-      | exception Battlefield.End_of_combat -> rounds
+      | exception Battlefield.End_of_combat { winning_team = _ } -> rounds
     in
     loop 0
   in

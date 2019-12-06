@@ -15,9 +15,13 @@ module Square = struct
   ;;
 end
 
-exception End_of_combat
+exception End_of_combat of { winning_team : Team.t }
 
-type t = { grid : Square.t array array } [@@deriving sexp_of]
+type t =
+  { grid : Square.t array array
+  ; mutable kill_count : int Team.Total_map.t
+  }
+[@@deriving sexp_of]
 
 let to_string_hum t =
   Array.to_list t.grid
@@ -31,10 +35,8 @@ let to_string_hum t =
   |> String.concat ~sep:"\n"
 ;;
 
-let create lines =
-  let create_unit ~loc ~team =
-    Game_unit.create ~loc ~hit_points:200 ~attack_power:3 ~team
-  in
+let create ?(elf_attack_power = 3) lines =
+  let create_unit ~loc ~team = Game_unit.create ~loc ~hit_points:200 ~team in
   let grid =
     Array.of_list_mapi lines ~f:(fun x row ->
       String.to_array row
@@ -42,11 +44,12 @@ let create lines =
         function
         | '.' -> Square.Open
         | '#' -> Wall
-        | 'E' -> Unit (create_unit ~loc:{ x; y } ~team:Elf)
-        | 'G' -> Unit (create_unit ~loc:{ x; y } ~team:Goblin)
+        | 'E' ->
+          Unit (create_unit ~loc:{ x; y } ~team:Elf ~attack_power:elf_attack_power)
+        | 'G' -> Unit (create_unit ~loc:{ x; y } ~team:Goblin ~attack_power:3)
         | char -> raise_s [%message "Unrecognized grid char" ~_:(char : char)]))
   in
-  { grid }
+  { grid; kill_count = Team.Total_map.create_const 0 }
 ;;
 
 let get t { Loc.x; y } = t.grid.(x).(y)
@@ -96,7 +99,9 @@ let try_perform_attack t ~(unit : Game_unit.t) ~(targets : Game_unit.t list) =
   | Some target ->
     (match Game_unit.receive_damage target ~points:unit.attack_power with
      | `Alive -> ()
-     | `Dead -> t.grid.(target.loc.x).(target.loc.y) <- Open)
+     | `Dead ->
+       t.kill_count <- Total_map.change t.kill_count target.team ~f:succ;
+       t.grid.(target.loc.x).(target.loc.y) <- Open)
 ;;
 
 let perform_round_for_unit t ~(unit : Game_unit.t) ~units =
@@ -106,7 +111,7 @@ let perform_round_for_unit t ~(unit : Game_unit.t) ~units =
     List.filter units ~f:(fun u ->
       Game_unit.is_alive u && not ([%equal: Team.t] u.team unit.team))
   with
-  | [] -> raise End_of_combat
+  | [] -> raise (End_of_combat { winning_team = unit.team })
   | _ :: _ as targets ->
     let open_squares =
       targets
@@ -178,6 +183,8 @@ let perform_round t =
   List.iter units ~f:(fun unit ->
     if Game_unit.is_alive unit then perform_round_for_unit t ~unit ~units)
 ;;
+
+let kill_count t team = Total_map.find t.kill_count team
 
 let sum_of_hit_points t =
   units t
