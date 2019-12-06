@@ -27,8 +27,6 @@ let get program ~arg ~mode =
 
 let main ~input ~output ~program =
   let pc = ref 0 in
-  (* program.(1) <- 12;
-   * program.(2) <- 2; *)
   try
     while true do
       let opcode, mode1, mode2, _mode3 = decode program.(!pc) in
