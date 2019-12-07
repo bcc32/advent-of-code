@@ -1,0 +1,6 @@
+(library
+ (name intcode)
+ (libraries core async)
+ (preprocess
+  (pps ppx_jane))
+ (inline_tests))
