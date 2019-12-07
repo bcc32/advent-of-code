@@ -2,8 +2,13 @@ open! Core
 open! Async
 open! Import
 
+let input () =
+  let%map lines = Reader.file_lines "input" in
+  lines
+;;
+
 let a () =
-  let%bind _lines = Reader.file_lines "input" in
+  let%bind _input = input () in
   printf "output\n";
   return ()
 ;;
@@ -13,7 +18,11 @@ let%expect_test "a" =
   [%expect {| output |}]
 ;;
 
-let b () = a ()
+let b () =
+  let%bind _input = input () in
+  printf "output\n";
+  return ()
+;;
 
 let%expect_test "b" =
   let%bind () = b () in
