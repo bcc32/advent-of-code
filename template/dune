@@ -1,6 +1,6 @@
 (library
  (name template)
- (libraries core async expect_test_helpers re bignum)
+ (libraries core async expect_test_helpers re bignum graph intcode)
  (preprocess
   (pps ppx_jane))
  (inline_tests
