@@ -26,63 +26,70 @@ let get program ~arg ~mode =
 ;;
 
 let main ~input ~output ~program =
-  Deferred.repeat_until_finished 0 (fun pc ->
-    let opcode, mode1, mode2, _mode3 = decode program.(pc) in
-    match opcode with
-    | 1 ->
-      let arg1 = program.(pc + 1) in
-      let arg2 = program.(pc + 2) in
-      let x = get program ~arg:arg1 ~mode:mode1 in
-      let y = get program ~arg:arg2 ~mode:mode2 in
-      program.(program.(pc + 3)) <- x + y;
-      return (`Repeat (pc + 4))
-    | 2 ->
-      let arg1 = program.(pc + 1) in
-      let arg2 = program.(pc + 2) in
-      let x = get program ~arg:arg1 ~mode:mode1 in
-      let y = get program ~arg:arg2 ~mode:mode2 in
-      program.(program.(pc + 3)) <- x * y;
-      return (`Repeat (pc + 4))
-    | 3 ->
-      let addr = program.(pc + 1) in
-      let%bind input = input () in
-      program.(addr) <- input;
-      return (`Repeat (pc + 2))
-    | 4 ->
-      let arg1 = program.(pc + 1) in
-      let x = get program ~arg:arg1 ~mode:mode1 in
-      output x;
-      return (`Repeat (pc + 2))
-    | 5 ->
-      let arg1 = program.(pc + 1) in
-      let arg2 = program.(pc + 2) in
-      let x = get program ~arg:arg1 ~mode:mode1 in
-      let y = get program ~arg:arg2 ~mode:mode2 in
-      if x <> 0 then return (`Repeat y) else return (`Repeat (pc + 3))
-    | 6 ->
-      let arg1 = program.(pc + 1) in
-      let arg2 = program.(pc + 2) in
-      let x = get program ~arg:arg1 ~mode:mode1 in
-      let y = get program ~arg:arg2 ~mode:mode2 in
-      if x = 0 then return (`Repeat y) else return (`Repeat (pc + 3))
-    | 7 ->
-      let arg1 = program.(pc + 1) in
-      let arg2 = program.(pc + 2) in
-      let arg3 = program.(pc + 3) in
-      let x = get program ~arg:arg1 ~mode:mode1 in
-      let y = get program ~arg:arg2 ~mode:mode2 in
-      program.(arg3) <- Bool.to_int (x < y);
-      return (`Repeat (pc + 4))
-    | 8 ->
-      let arg1 = program.(pc + 1) in
-      let arg2 = program.(pc + 2) in
-      let arg3 = program.(pc + 3) in
-      let x = get program ~arg:arg1 ~mode:mode1 in
-      let y = get program ~arg:arg2 ~mode:mode2 in
-      program.(arg3) <- Bool.to_int (x = y);
-      return (`Repeat (pc + 4))
-    | 99 -> return (`Finished ())
-    | code -> raise_s [%message "unrecognized opcode" (code : int)])
+  let%bind () =
+    Deferred.repeat_until_finished 0 (fun pc ->
+      let opcode, mode1, mode2, _mode3 = decode program.(pc) in
+      match opcode with
+      | 1 ->
+        let arg1 = program.(pc + 1) in
+        let arg2 = program.(pc + 2) in
+        let x = get program ~arg:arg1 ~mode:mode1 in
+        let y = get program ~arg:arg2 ~mode:mode2 in
+        program.(program.(pc + 3)) <- x + y;
+        return (`Repeat (pc + 4))
+      | 2 ->
+        let arg1 = program.(pc + 1) in
+        let arg2 = program.(pc + 2) in
+        let x = get program ~arg:arg1 ~mode:mode1 in
+        let y = get program ~arg:arg2 ~mode:mode2 in
+        program.(program.(pc + 3)) <- x * y;
+        return (`Repeat (pc + 4))
+      | 3 ->
+        let addr = program.(pc + 1) in
+        (match%bind Pipe.read input with
+         | `Eof -> raise_s [%message "program received EOF on input"]
+         | `Ok input ->
+           program.(addr) <- input;
+           return (`Repeat (pc + 2)))
+      | 4 ->
+        let arg1 = program.(pc + 1) in
+        let x = get program ~arg:arg1 ~mode:mode1 in
+        let%bind () = Pipe.write output x in
+        return (`Repeat (pc + 2))
+      | 5 ->
+        let arg1 = program.(pc + 1) in
+        let arg2 = program.(pc + 2) in
+        let x = get program ~arg:arg1 ~mode:mode1 in
+        let y = get program ~arg:arg2 ~mode:mode2 in
+        if x <> 0 then return (`Repeat y) else return (`Repeat (pc + 3))
+      | 6 ->
+        let arg1 = program.(pc + 1) in
+        let arg2 = program.(pc + 2) in
+        let x = get program ~arg:arg1 ~mode:mode1 in
+        let y = get program ~arg:arg2 ~mode:mode2 in
+        if x = 0 then return (`Repeat y) else return (`Repeat (pc + 3))
+      | 7 ->
+        let arg1 = program.(pc + 1) in
+        let arg2 = program.(pc + 2) in
+        let arg3 = program.(pc + 3) in
+        let x = get program ~arg:arg1 ~mode:mode1 in
+        let y = get program ~arg:arg2 ~mode:mode2 in
+        program.(arg3) <- Bool.to_int (x < y);
+        return (`Repeat (pc + 4))
+      | 8 ->
+        let arg1 = program.(pc + 1) in
+        let arg2 = program.(pc + 2) in
+        let arg3 = program.(pc + 3) in
+        let x = get program ~arg:arg1 ~mode:mode1 in
+        let y = get program ~arg:arg2 ~mode:mode2 in
+        program.(arg3) <- Bool.to_int (x = y);
+        return (`Repeat (pc + 4))
+      | 99 -> return (`Finished ())
+      | code -> raise_s [%message "unrecognized opcode" (code : int)])
+  in
+  Pipe.close_read input;
+  Pipe.close output;
+  return ()
 ;;
 
 let have_exn = function
@@ -90,48 +97,42 @@ let have_exn = function
   | `Ok x -> x
 ;;
 
+module Amp = struct
+  type t =
+    { input : int Pipe.Reader.t * int Pipe.Writer.t
+    ; output : int Pipe.Reader.t * int Pipe.Writer.t
+    }
+
+  let create ~program ~setting =
+    let input = Pipe.create () in
+    let output = Pipe.create () in
+    Pipe.write_without_pushback (snd input) setting;
+    don't_wait_for
+      (main ~program:(Array.copy program) ~input:(fst input) ~output:(snd output));
+    { input; output }
+  ;;
+
+  module Infix = struct
+    let ( ||| ) t1 t2 = don't_wait_for (Pipe.transfer_id (fst t1.output) (snd t2.input))
+  end
+end
+
+open Amp.Infix
+
 let try_setting program a_setting b_setting c_setting d_setting e_setting =
-  let a_output =
-    let a_input = Pipe.of_list [ a_setting; 0 ] in
-    Pipe.create_reader ~close_on_exception:true (fun writer ->
-      main
-        ~program:(Array.copy program)
-        ~input:(fun () -> Pipe.read a_input >>| have_exn)
-        ~output:(Pipe.write_without_pushback writer))
-  in
-  let b_output =
-    let b_input = Pipe.concat [ Pipe.singleton b_setting; a_output ] in
-    Pipe.create_reader ~close_on_exception:true (fun writer ->
-      main
-        ~program:(Array.copy program)
-        ~input:(fun () -> Pipe.read b_input >>| have_exn)
-        ~output:(Pipe.write_without_pushback writer))
-  in
-  let c_output =
-    let c_input = Pipe.concat [ Pipe.singleton c_setting; b_output ] in
-    Pipe.create_reader ~close_on_exception:true (fun writer ->
-      main
-        ~program:(Array.copy program)
-        ~input:(fun () -> Pipe.read c_input >>| have_exn)
-        ~output:(Pipe.write_without_pushback writer))
-  in
-  let d_output =
-    let d_input = Pipe.concat [ Pipe.singleton d_setting; c_output ] in
-    Pipe.create_reader ~close_on_exception:true (fun writer ->
-      main
-        ~program:(Array.copy program)
-        ~input:(fun () -> Pipe.read d_input >>| have_exn)
-        ~output:(Pipe.write_without_pushback writer))
-  in
-  let e_output =
-    let e_input = Pipe.concat [ Pipe.singleton e_setting; d_output ] in
-    Pipe.create_reader ~close_on_exception:true (fun writer ->
-      main
-        ~program:(Array.copy program)
-        ~input:(fun () -> Pipe.read e_input >>| have_exn)
-        ~output:(Pipe.write_without_pushback writer))
-  in
-  Pipe.read e_output >>| have_exn
+  let a_amp = Amp.create ~program ~setting:a_setting in
+  let b_amp = Amp.create ~program ~setting:b_setting in
+  let c_amp = Amp.create ~program ~setting:c_setting in
+  let d_amp = Amp.create ~program ~setting:d_setting in
+  let e_amp = Amp.create ~program ~setting:e_setting in
+  a_amp ||| b_amp;
+  b_amp ||| c_amp;
+  c_amp ||| d_amp;
+  d_amp ||| e_amp;
+  Pipe.write_without_pushback (snd a_amp.input) 0;
+  match%map Pipe.read (fst e_amp.output) with
+  | `Eof -> assert false
+  | `Ok x -> x
 ;;
 
 let a () =
@@ -177,50 +178,21 @@ let%expect_test "a" =
 ;;
 
 let try_setting program a_setting b_setting c_setting d_setting e_setting =
-  let a_input_from_e_r, a_input_from_e_w = Pipe.create () in
-  let a_output =
-    let a_input = Pipe.concat [ Pipe.of_list [ a_setting; 0 ]; a_input_from_e_r ] in
-    Pipe.create_reader ~close_on_exception:true (fun writer ->
-      main
-        ~program:(Array.copy program)
-        ~input:(fun () -> Pipe.read a_input >>| have_exn)
-        ~output:(Pipe.write_without_pushback writer))
+  let a_amp = Amp.create ~program ~setting:a_setting in
+  let b_amp = Amp.create ~program ~setting:b_setting in
+  let c_amp = Amp.create ~program ~setting:c_setting in
+  let d_amp = Amp.create ~program ~setting:d_setting in
+  let e_amp = Amp.create ~program ~setting:e_setting in
+  a_amp ||| b_amp;
+  b_amp ||| c_amp;
+  c_amp ||| d_amp;
+  d_amp ||| e_amp;
+  let e_output_1, e_output_2 =
+    Pipe.fork (fst e_amp.output) ~pushback_uses:`Both_consumers
   in
-  let b_output =
-    let b_input = Pipe.concat [ Pipe.singleton b_setting; a_output ] in
-    Pipe.create_reader ~close_on_exception:true (fun writer ->
-      main
-        ~program:(Array.copy program)
-        ~input:(fun () -> Pipe.read b_input >>| have_exn)
-        ~output:(Pipe.write_without_pushback writer))
-  in
-  let c_output =
-    let c_input = Pipe.concat [ Pipe.singleton c_setting; b_output ] in
-    Pipe.create_reader ~close_on_exception:true (fun writer ->
-      main
-        ~program:(Array.copy program)
-        ~input:(fun () -> Pipe.read c_input >>| have_exn)
-        ~output:(Pipe.write_without_pushback writer))
-  in
-  let d_output =
-    let d_input = Pipe.concat [ Pipe.singleton d_setting; c_output ] in
-    Pipe.create_reader ~close_on_exception:true (fun writer ->
-      main
-        ~program:(Array.copy program)
-        ~input:(fun () -> Pipe.read d_input >>| have_exn)
-        ~output:(Pipe.write_without_pushback writer))
-  in
-  let e_output =
-    let e_input = Pipe.concat [ Pipe.singleton e_setting; d_output ] in
-    Pipe.create_reader ~close_on_exception:true (fun writer ->
-      main
-        ~program:(Array.copy program)
-        ~input:(fun () -> Pipe.read e_input >>| have_exn)
-        ~output:(fun x ->
-          Pipe.write_without_pushback writer x;
-          Pipe.write_without_pushback a_input_from_e_w x))
-  in
-  Pipe.fold e_output ~init:0 ~f:(fun _ x -> return x)
+  don't_wait_for (Pipe.transfer_id e_output_1 (snd a_amp.input));
+  Pipe.write_without_pushback (snd a_amp.input) 0;
+  Pipe.read_all e_output_2 >>| Queue.last_exn
 ;;
 
 let b () =
