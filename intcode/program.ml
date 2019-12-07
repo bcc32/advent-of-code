@@ -91,3 +91,13 @@ let run t ~input ~output =
   Pipe.close output;
   return ()
 ;;
+
+let run_without_io t =
+  run
+    t
+    ~input:(Pipe.of_list [])
+    ~output:
+      (Pipe.create_writer (fun r ->
+         Pipe.close_read r;
+         return ()))
+;;

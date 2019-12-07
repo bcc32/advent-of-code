@@ -7,12 +7,7 @@ let a () =
   let%bind program = Reader.file_contents "input" >>| Program.of_string in
   program.(1) <- 12;
   program.(2) <- 2;
-  let%bind () =
-    Program.run
-      program
-      ~input:(Pipe.of_list [])
-      ~output:(Pipe.create_writer (Fn.const (return ())))
-  in
+  let%bind () = Program.run_without_io program in
   printf "%d\n" program.(0);
   return ()
 ;;
@@ -26,12 +21,7 @@ let try_ program ~noun ~verb =
   let program = Program.copy program in
   program.(1) <- noun;
   program.(2) <- verb;
-  let%map () =
-    Program.run
-      program
-      ~input:(Pipe.of_list [])
-      ~output:(Pipe.create_writer (Fn.const (return ())))
-  in
+  let%map () = Program.run_without_io program in
   program.(0)
 ;;
 
