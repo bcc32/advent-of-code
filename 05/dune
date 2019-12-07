@@ -1,6 +1,6 @@
 (library
  (name p05)
- (libraries core async expect_test_helpers re bignum)
+ (libraries core async expect_test_helpers re bignum intcode)
  (preprocess
   (pps ppx_jane))
  (inline_tests
