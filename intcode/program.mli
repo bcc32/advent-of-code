@@ -2,7 +2,11 @@ open! Core
 open! Async
 open! Import
 
-type t = int array [@@deriving sexp_of]
+type t = private
+  { mutable memory : int array
+  ; mutable relative_base : int
+  }
+[@@deriving sexp_of]
 
 val of_string : string -> t
 val copy : t -> t

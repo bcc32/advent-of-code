@@ -5,10 +5,10 @@ open Intcode
 
 let a () =
   let%bind program = Reader.file_contents "input" >>| Program.of_string in
-  program.(1) <- 12;
-  program.(2) <- 2;
+  program.memory.(1) <- 12;
+  program.memory.(2) <- 2;
   let%bind () = Program.run_without_io program in
-  printf "%d\n" program.(0);
+  printf "%d\n" program.memory.(0);
   return ()
 ;;
 
@@ -19,10 +19,10 @@ let%expect_test "a" =
 
 let try_ program ~noun ~verb =
   let program = Program.copy program in
-  program.(1) <- noun;
-  program.(2) <- verb;
+  program.memory.(1) <- noun;
+  program.memory.(2) <- verb;
   let%map () = Program.run_without_io program in
-  program.(0)
+  program.memory.(0)
 ;;
 
 let b () =

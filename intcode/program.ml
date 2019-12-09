@@ -2,13 +2,20 @@ open! Core
 open! Async
 open! Import
 
-type t = int array [@@deriving sexp_of]
+type t =
+  { mutable memory : int array
+  ; mutable relative_base : int
+  }
+[@@deriving sexp_of]
 
 let of_string input =
-  input |> String.strip |> String.split ~on:',' |> Array.of_list_map ~f:Int.of_string
+  let memory =
+    input |> String.strip |> String.split ~on:',' |> Array.of_list_map ~f:Int.of_string
+  in
+  { memory; relative_base = 0 }
 ;;
 
-let copy = Array.copy
+let copy t = { t with memory = Array.copy t.memory }
 
 let decode instr =
   let opcode = instr % 100 in
@@ -19,36 +26,60 @@ let decode instr =
 ;;
 
 let get t ~arg ~mode =
+  let try_get index =
+    try t.memory.(index) with
+    | _ -> 0
+  in
   match mode with
-  | 0 -> t.(arg)
+  | 0 -> try_get arg
   | 1 -> arg
+  | 2 -> try_get (arg + t.relative_base)
   | _ -> assert false
 ;;
 
 let set t ~arg ~mode ~value =
+  let grow index =
+    let new_array =
+      Array.create 0 ~len:(Int.max (index + 1) (Array.length t.memory * 2))
+    in
+    Array.blit
+      ~src:t.memory
+      ~dst:new_array
+      ~src_pos:0
+      ~dst_pos:0
+      ~len:(Array.length t.memory);
+    t.memory <- new_array
+  in
+  let try_set index value =
+    try t.memory.(index) <- value with
+    | _ ->
+      grow index;
+      t.memory.(index) <- value
+  in
   match mode with
-  | 0 -> t.(arg) <- value
+  | 0 -> try_set arg value
   | 1 -> failwith "Cannot set using addressing mode 1"
+  | 2 -> try_set (arg + t.relative_base) value
   | _ -> assert false
 ;;
 
 let run t ~input ~output =
   let%bind () =
     Deferred.repeat_until_finished 0 (fun pc ->
-      let opcode, mode1, mode2, mode3 = decode t.(pc) in
+      let opcode, mode1, mode2, mode3 = decode t.memory.(pc) in
       let with1 f =
-        let arg1 = t.(pc + 1) in
+        let arg1 = t.memory.(pc + 1) in
         f ~x:(get t ~arg:arg1 ~mode:mode1)
       in
       let with2 f =
-        let arg1 = t.(pc + 1) in
-        let arg2 = t.(pc + 2) in
+        let arg1 = t.memory.(pc + 1) in
+        let arg2 = t.memory.(pc + 2) in
         f ~x:(get t ~arg:arg1 ~mode:mode1) ~y:(get t ~arg:arg2 ~mode:mode2)
       in
       let with3 f =
-        let arg1 = t.(pc + 1) in
-        let arg2 = t.(pc + 2) in
-        let arg3 = t.(pc + 3) in
+        let arg1 = t.memory.(pc + 1) in
+        let arg2 = t.memory.(pc + 2) in
+        let arg3 = t.memory.(pc + 3) in
         f ~x:(get t ~arg:arg1 ~mode:mode1) ~y:(get t ~arg:arg2 ~mode:mode2) ~arg3 ~mode3
       in
       match opcode with
@@ -59,7 +90,7 @@ let run t ~input ~output =
         with3 (fun ~x ~y ~arg3 ~mode3 -> set t ~arg:arg3 ~mode:mode3 ~value:(x * y));
         return (`Repeat (pc + 4))
       | 3 ->
-        let arg1 = t.(pc + 1) in
+        let arg1 = t.memory.(pc + 1) in
         (match%bind Pipe.read input with
          | `Eof -> raise_s [%message "t received EOF on input"]
          | `Ok input ->
@@ -83,6 +114,9 @@ let run t ~input ~output =
         with3 (fun ~x ~y ~arg3 ~mode3 ->
           set t ~arg:arg3 ~mode:mode3 ~value:(Bool.to_int (x = y)));
         return (`Repeat (pc + 4))
+      | 9 ->
+        with1 (fun ~x -> t.relative_base <- t.relative_base + x);
+        return (`Repeat (pc + 2))
       | 99 -> return (`Finished ())
       | code -> raise_s [%message "unrecognized opcode" (code : int)])
   in
