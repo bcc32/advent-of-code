@@ -27,17 +27,11 @@ let try_ program ~noun ~verb =
 
 let b () =
   let%bind program = Reader.file_contents "input" >>| Program.of_string in
-  let deferreds = ref [] in
-  for noun = 0 to 99 do
-    for verb = 0 to 99 do
-      deferreds
-      := (match%map try_ (Program.copy program) ~noun ~verb with
-        | 19690720 -> printf "%d\n" ((100 * noun) + verb)
-        | _ -> ())
-         :: !deferreds
-    done
-  done;
-  Deferred.List.all_unit !deferreds
+  Deferred.for_ 0 ~to_:99 ~do_:(fun noun ->
+    Deferred.for_ 0 ~to_:99 ~do_:(fun verb ->
+      match%map try_ (Program.copy program) ~noun ~verb with
+      | 19690720 -> printf "%d\n" ((100 * noun) + verb)
+      | _ -> ()))
 ;;
 
 let%expect_test "b" =
