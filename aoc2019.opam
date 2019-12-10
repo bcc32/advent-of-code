@@ -3,9 +3,9 @@ maintainer: "Aaron L. Zeng <me@bcc32.com>"
 authors: [ "Aaron L. Zeng <me@bcc32.com>" ]
 tags: []
 license: "MIT"
-homepage: "https://github.com/bcc32/advent-of-code-2018"
-dev-repo: "git+https://github.com/bcc32/advent-of-code-2018/issues"
-bug-reports: "https://github.com/bcc32/advent-of-code-2018/issues"
+homepage: "https://github.com/bcc32/advent-of-code-2019"
+dev-repo: "git+https://github.com/bcc32/advent-of-code-2019/issues"
+bug-reports: "https://github.com/bcc32/advent-of-code-2019/issues"
 doc: "https://adventofcode.com"
 build: [
   ["dune" "subst" ] {pinned}
