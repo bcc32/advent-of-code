@@ -10,29 +10,51 @@ let input () =
 ;;
 
 module Coord : sig
-  type t = int * int [@@deriving compare, hash, sexp_of]
+  type t = int * int [@@deriving compare, sexp_of]
   type coord := t
 
   include Comparable.S_plain with type t := t
-  include Hashable.S_plain with type t := t
 
   val dist : t -> t -> float
+  val all : 'a array array -> t Sequence.t
+  val get : 'a array array -> t -> 'a
 
   module Dir : sig
-    type t [@@deriving compare, equal, hash, sexp_of]
+    type t [@@deriving compare, equal, sexp_of]
 
     include Comparable.S_plain with type t := t
 
     val vec : from:coord -> to_:coord -> t
   end
 end = struct
+  module T = struct
+    type t = int * int [@@deriving compare, sexp_of]
+  end
+
+  include T
+
+  let dist (x, y) (x', y') =
+    (* y axis is inverted. *)
+    let dx = float (x' - x) in
+    let dy = float (y - y') in
+    Float.hypot dx dy
+  ;;
+
+  let all grid =
+    Sequence.cartesian_product
+      (Sequence.range 0 (Array.length grid.(0)))
+      (Sequence.range 0 (Array.length grid))
+  ;;
+
+  let get grid (x, y) = grid.(y).(x)
+
   module Dir = struct
     module T = struct
       type t =
         { vec : int * int
         ; theta_from_north : float [@equal.ignore] [@hash.ignore]
         }
-      [@@deriving equal, hash, sexp_of]
+      [@@deriving equal, sexp_of]
 
       let compare t u =
         if equal t u then 0 else Float.compare t.theta_from_north u.theta_from_north
@@ -63,48 +85,34 @@ end = struct
     include Comparable.Make_plain (T)
   end
 
-  module T = struct
-    type t = int * int [@@deriving compare, hash, sexp_of]
-  end
-
-  include T
   include Comparable.Make_plain (T)
-  include Hashable.Make_plain (T)
-
-  let dist (x, y) (x', y') =
-    let dx = float (x' - x) in
-    let dy = float (y - y') in
-    Float.hypot dx dy
-  ;;
 end
 
-let scan grid ~from =
-  let scanned_vecs = Hash_set.create (module Coord.Dir) in
-  for x' = 0 to Array.length grid.(0) - 1 do
-    for y' = 0 to Array.length grid - 1 do
-      if Char.( = ) grid.(y').(x') '#'
-      then (
-        try Hash_set.add scanned_vecs (Coord.Dir.vec ~from ~to_:(x', y')) with
-        | _ -> ())
-    done
-  done;
-  Hash_set.length scanned_vecs
+let count_visible_asteroids grid ~from =
+  Sequence.filter_map (Coord.all grid) ~f:(fun coord ->
+    if Coord.( <> ) from coord && Char.( = ) (Coord.get grid coord) '#'
+    then Some (Coord.Dir.vec ~from ~to_:coord)
+    else None)
+  |> Sequence.to_list
+  |> Coord.Dir.Set.of_list
+  |> Set.length
 ;;
 
 let best_station_coordinates grid =
-  Sequence.range 0 (Array.length grid.(0))
-  |> Sequence.cartesian_product (Sequence.range 0 (Array.length grid))
-  |> Sequence.filter ~f:(fun (x, y) -> Char.( = ) grid.(y).(x) '#')
+  Coord.all grid
+  |> Sequence.filter ~f:(fun c -> Char.( = ) (Coord.get grid c) '#')
   |> Sequence.max_elt
-       ~compare:(Comparable.lift [%compare: int] ~f:(fun v -> scan grid ~from:v))
-  |> uw
+       ~compare:
+         (Comparable.lift [%compare: int] ~f:(fun v ->
+            count_visible_asteroids grid ~from:v))
+  |> Option.value_exn
 ;;
 
 let a () =
   let%bind grid = input () in
   let v = best_station_coordinates grid in
   if debug then print_s [%sexp (v : Coord.t)];
-  scan grid ~from:v |> printf "%d\n";
+  count_visible_asteroids grid ~from:v |> printf "%d\n";
   return ()
 ;;
 
@@ -114,10 +122,7 @@ let%expect_test "a" =
 ;;
 
 let all_asteroids grid =
-  Sequence.range 0 (Array.length grid.(0))
-  |> Sequence.cartesian_product (Sequence.range 0 (Array.length grid))
-  |> Sequence.filter ~f:(fun (x, y) -> Char.( = ) grid.(y).(x) '#')
-  |> Sequence.to_list
+  Coord.all grid |> Sequence.filter ~f:(fun c -> Char.( = ) (Coord.get grid c) '#')
 ;;
 
 let b () =
@@ -125,9 +130,9 @@ let b () =
   let v = best_station_coordinates grid in
   let asteroids_in_laser_order =
     all_asteroids grid
-    |> List.filter ~f:(Coord.( <> ) v)
-    |> List.map ~f:(fun p -> Coord.Dir.vec ~from:v ~to_:p, p)
-    |> Coord.Dir.Map.of_alist_multi
+    |> Sequence.filter ~f:(Coord.( <> ) v)
+    |> Sequence.map ~f:(fun p -> Coord.Dir.vec ~from:v ~to_:p, p)
+    |> Coord.Dir.Map.of_sequence_multi
     |> Map.map
          ~f:(List.sort ~compare:(Comparable.lift [%compare: float] ~f:(Coord.dist v)))
     |> Map.data
