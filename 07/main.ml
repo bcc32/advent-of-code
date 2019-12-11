@@ -45,22 +45,9 @@ let a () =
       let c = i / 100 % 10 in
       let d = i / 1000 % 10 in
       let e = i / 10_000 % 10 in
-      let is_ok x = 0 <= x && x < 5 in
-      if is_ok a
-      && is_ok b
-      && is_ok c
-      && is_ok d
-      && is_ok e
-      && a <> b
-      && a <> c
-      && a <> d
-      && a <> e
-      && b <> c
-      && b <> d
-      && b <> e
-      && c <> d
-      && c <> e
-      && d <> e
+      if [%equal: int list]
+           [ 0; 1; 2; 3; 4 ]
+           (List.sort [ a; b; c; d; e ] ~compare:[%compare: int])
       then Some (a, b, c, d, e)
       else None)
     |> Sequence.map ~f:(fun (a, b, c, d, e) -> try_setting program a b c d e)
@@ -103,22 +90,9 @@ let b () =
       let c = i / 100 % 10 in
       let d = i / 1000 % 10 in
       let e = i / 10_000 % 10 in
-      let is_ok x = 5 <= x && x <= 9 in
-      if is_ok a
-      && is_ok b
-      && is_ok c
-      && is_ok d
-      && is_ok e
-      && a <> b
-      && a <> c
-      && a <> d
-      && a <> e
-      && b <> c
-      && b <> d
-      && b <> e
-      && c <> d
-      && c <> e
-      && d <> e
+      if [%equal: int list]
+           [ 5; 6; 7; 8; 9 ]
+           (List.sort [ a; b; c; d; e ] ~compare:[%compare: int])
       then Some (a, b, c, d, e)
       else None)
     |> Sequence.map ~f:(fun (a, b, c, d, e) -> try_setting program a b c d e)
