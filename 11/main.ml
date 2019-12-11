@@ -27,6 +27,7 @@ let apply_turn dir turn =
     | W -> N)
 ;;
 
+(* TODO: Library for logo robot-like logic. *)
 let move_forward (x, y) dir =
   match dir with
   | N -> x, y + 1
@@ -66,13 +67,13 @@ let paint program ~starting =
       | `Eof -> return (`Finished ()))
   in
   let%bind () = robot_done in
-  return (Hashtbl.length paint, paint)
+  return paint
 ;;
 
 let a () =
   let%bind program = input () in
-  let%bind n, _ = paint program ~starting:0 in
-  printf "%d\n" n;
+  let%bind paint = paint program ~starting:0 in
+  printf "%d\n" (Hashtbl.length paint);
   return ()
 ;;
 
@@ -81,24 +82,20 @@ let%expect_test "a" =
   [%expect {| 1747 |}]
 ;;
 
+let min xs = List.min_elt xs ~compare:[%compare: int] |> Option.value_exn
+let max xs = List.max_elt xs ~compare:[%compare: int] |> Option.value_exn
+
 let b () =
   let%bind program = input () in
-  let%bind _, grid = paint program ~starting:1 in
-  let minx =
-    grid |> Hashtbl.keys |> List.map ~f:fst |> List.min_elt ~compare:[%compare: int] |> uw
-  in
-  let maxx =
-    grid |> Hashtbl.keys |> List.map ~f:fst |> List.max_elt ~compare:[%compare: int] |> uw
-  in
-  let miny =
-    grid |> Hashtbl.keys |> List.map ~f:snd |> List.min_elt ~compare:[%compare: int] |> uw
-  in
-  let maxy =
-    grid |> Hashtbl.keys |> List.map ~f:snd |> List.max_elt ~compare:[%compare: int] |> uw
-  in
+  let%bind paint = paint program ~starting:1 in
+  let points = Hashtbl.keys paint in
+  let minx = points |> List.map ~f:fst |> min in
+  let maxx = points |> List.map ~f:fst |> max in
+  let miny = points |> List.map ~f:snd |> min in
+  let maxy = points |> List.map ~f:snd |> max in
   for y = maxy downto miny do
     for x = minx to maxx do
-      match Hashtbl.find grid (x, y) with
+      match Hashtbl.find paint (x, y) with
       | None | Some 0 -> print_char '.'
       | Some 1 -> print_char '#'
       | _ -> assert false
