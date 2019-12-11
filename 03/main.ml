@@ -2,46 +2,25 @@ open! Core
 open! Async
 open! Import
 
-module Point = struct
-  type t = int * int [@@deriving compare, hash, sexp_of]
-
-  let abs (x, y) = Int.abs x + Int.abs y
-end
-
-module Step = struct
-  type t =
-    | R
-    | U
-    | L
-    | D
-  [@@deriving sexp]
-
-  let add (x, y) = function
-    | R -> x + 1, y
-    | L -> x - 1, y
-    | U -> x, y + 1
-    | D -> x, y - 1
-  ;;
-end
-
 let follow path =
-  let points = Hashtbl.create (module Point) in
-  let p = ref (0, 0) in
+  let points = Hashtbl.create (module Robot.Point) in
+  let robot = Robot.create_without_dir ~initial_loc:(0, 0) in
   let c = ref 0 in
   path
-  |> List.iter ~f:(fun (n, step) ->
+  |> List.iter ~f:(fun (n, dir) ->
     for _ = 1 to n do
       incr c;
-      p := Step.add !p step;
-      ignore (Hashtbl.add points ~key:!p ~data:!c : [ `Duplicate | `Ok ])
+      Robot.step_dir robot ~dir;
+      ignore
+        (Hashtbl.add points ~key:(Robot.loc robot) ~data:!c : [ `Duplicate | `Ok ])
     done);
   points
 ;;
 
 let parse_path_part part =
-  let step = [%of_sexp: Step.t] (Sexp.Atom (String.make 1 part.[0])) in
+  let dir = Robot.Dir.of_char_urdl_exn part.[0] in
   let n = Int.of_string (String.sub part ~pos:1 ~len:(String.length part - 1)) in
-  n, step
+  n, dir
 ;;
 
 let parse_path path = path |> String.split ~on:',' |> List.map ~f:parse_path_part
@@ -61,7 +40,7 @@ let a () =
     | `Both _ -> Some point
     | `Left _ | `Right _ -> None)
   |> Hashtbl.keys
-  |> List.map ~f:Point.abs
+  |> List.map ~f:(fun p -> Robot.Point.dist_manhattan p (0, 0))
   |> List.min_elt ~compare:[%compare: int]
   |> Option.value_exn
   |> printf "%d\n";
