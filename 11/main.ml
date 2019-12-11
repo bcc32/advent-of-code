@@ -22,6 +22,7 @@ let paint program ~starting_color =
     Deferred.repeat_until_finished () (fun () ->
       match%bind Pipe.read_exactly robot_output_r ~num_values:2 with
       | `Fewer _ -> failwith "eof"
+      | `Eof -> return (`Finished ())
       | `Exactly elts ->
         let color = Queue.get elts 0 in
         let turn = Queue.get elts 1 in
@@ -31,8 +32,7 @@ let paint program ~starting_color =
         Pipe.write_without_pushback
           robot_input_w
           (Hashtbl.find paint (Robot.loc robot) |> Option.value ~default:0);
-        return (`Repeat ())
-      | `Eof -> return (`Finished ()))
+        return (`Repeat ()))
   in
   let%bind () = robot_done in
   return paint
