@@ -5,11 +5,11 @@ open Intcode
 
 let a () =
   let%bind program = Reader.file_contents "input" >>| Program.of_string in
-  let output =
-    Pipe.create_reader ~close_on_exception:true (fun output ->
-      Program.run program ~input:(Pipe.of_list [ 1 ]) ~output)
-  in
-  Pipe.iter_without_pushback output ~f:(printf "%d\n")
+  match Program.run program with
+  | { input; output; done_ } ->
+    Pipe.write_without_pushback input 1;
+    let%bind () = Pipe.iter_without_pushback output ~f:(printf "%d\n") in
+    done_
 ;;
 
 let%expect_test "a" =
@@ -29,11 +29,11 @@ let%expect_test "a" =
 
 let b () =
   let%bind program = Reader.file_contents "input" >>| Program.of_string in
-  let output =
-    Pipe.create_reader ~close_on_exception:true (fun output ->
-      Program.run program ~input:(Pipe.of_list [ 5 ]) ~output)
-  in
-  Pipe.iter_without_pushback output ~f:(printf "%d\n")
+  match Program.run program with
+  | { input; output; done_ } ->
+    Pipe.write_without_pushback input 5;
+    let%bind () = Pipe.iter_without_pushback output ~f:(printf "%d\n") in
+    done_
 ;;
 
 let%expect_test "b" =

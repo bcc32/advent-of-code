@@ -2,6 +2,14 @@ open! Core
 open! Async
 open! Import
 
+module Run = struct
+  type t =
+    { input : int Pipe.Writer.t
+    ; output : int Pipe.Reader.t
+    ; done_ : unit Deferred.t
+    }
+end
+
 type t =
   { mutable memory : int array
   ; mutable relative_base : int
@@ -63,8 +71,10 @@ let set t ~arg ~mode ~value =
   | _ -> assert false
 ;;
 
-let run t ~input ~output =
-  let%bind () =
+let run t =
+  let input_r, input_w = Pipe.create () in
+  let output_r, output_w = Pipe.create () in
+  let done_ =
     Deferred.repeat_until_finished 0 (fun pc ->
       let opcode, mode1, mode2, mode3 = decode t.memory.(pc) in
       let with1 f =
@@ -91,14 +101,14 @@ let run t ~input ~output =
         return (`Repeat (pc + 4))
       | 3 ->
         let arg1 = t.memory.(pc + 1) in
-        (match%bind Pipe.read input with
+        (match%bind Pipe.read input_r with
          | `Eof -> raise_s [%message "t received EOF on input"]
          | `Ok input ->
            set t ~arg:arg1 ~mode:mode1 ~value:input;
            return (`Repeat (pc + 2)))
       | 4 ->
         let x = with1 (fun ~x -> x) in
-        let%bind () = Pipe.write output x in
+        let%bind () = Pipe.write output_w x in
         return (`Repeat (pc + 2))
       | 5 ->
         let pc = with2 (fun ~x ~y -> if x <> 0 then y else pc + 3) in
@@ -120,17 +130,16 @@ let run t ~input ~output =
       | 99 -> return (`Finished ())
       | code -> raise_s [%message "unrecognized opcode" (code : int)])
   in
-  Pipe.close_read input;
-  Pipe.close output;
-  return ()
+  don't_wait_for
+    (let%map () = done_ in
+     Pipe.close_read input_r;
+     Pipe.close output_w);
+  { Run.input = input_w; output = output_r; done_ }
 ;;
 
 let run_without_io t =
-  run
-    t
-    ~input:(Pipe.of_list [])
-    ~output:
-      (Pipe.create_writer (fun r ->
-         Pipe.close_read r;
-         return ()))
+  let { Run.input; output; done_ } = run t in
+  Pipe.close input;
+  Pipe.close_read output;
+  done_
 ;;

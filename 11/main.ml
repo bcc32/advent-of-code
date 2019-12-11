@@ -14,28 +14,27 @@ let paint program ~starting_color =
       end)
   in
   Hashtbl.set paint ~key:(Robot.loc robot) ~data:starting_color;
-  let robot_input_r, robot_input_w = Pipe.create () in
-  let robot_output_r, robot_output_w = Pipe.create () in
-  let robot_done = Program.run program ~input:robot_input_r ~output:robot_output_w in
-  Pipe.write_without_pushback robot_input_w starting_color;
-  let%bind () =
-    Deferred.repeat_until_finished () (fun () ->
-      match%bind Pipe.read_exactly robot_output_r ~num_values:2 with
-      | `Fewer _ -> failwith "eof"
-      | `Eof -> return (`Finished ())
-      | `Exactly elts ->
-        let color = Queue.get elts 0 in
-        let turn = Queue.get elts 1 in
-        Hashtbl.set paint ~key:(Robot.loc robot) ~data:color;
-        Robot.turn robot (if turn = 0 then `Left else `Right);
-        Robot.step_forward robot;
-        Pipe.write_without_pushback
-          robot_input_w
-          (Hashtbl.find paint (Robot.loc robot) |> Option.value ~default:0);
-        return (`Repeat ()))
-  in
-  let%bind () = robot_done in
-  return paint
+  match Program.run program with
+  | { input; output; done_ } ->
+    Pipe.write_without_pushback input starting_color;
+    let%bind () =
+      Deferred.repeat_until_finished () (fun () ->
+        match%bind Pipe.read_exactly output ~num_values:2 with
+        | `Fewer _ -> failwith "eof"
+        | `Eof -> return (`Finished ())
+        | `Exactly elts ->
+          let color = Queue.get elts 0 in
+          let turn = Queue.get elts 1 in
+          Hashtbl.set paint ~key:(Robot.loc robot) ~data:color;
+          Robot.turn robot (if turn = 0 then `Left else `Right);
+          Robot.step_forward robot;
+          Pipe.write_without_pushback
+            input
+            (Hashtbl.find paint (Robot.loc robot) |> Option.value ~default:0);
+          return (`Repeat ()))
+    in
+    let%bind () = done_ in
+    return paint
 ;;
 
 let a () =

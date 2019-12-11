@@ -4,22 +4,16 @@ open! Import
 open Intcode
 
 module Amp = struct
-  type t =
-    { input : int Pipe.Reader.t * int Pipe.Writer.t
-    ; output : int Pipe.Reader.t * int Pipe.Writer.t
-    }
+  type t = Program.Run.t
 
   let create ~program ~setting =
-    let input = Pipe.create () in
-    let output = Pipe.create () in
-    Pipe.write_without_pushback (snd input) setting;
-    don't_wait_for
-      (Program.run (Program.copy program) ~input:(fst input) ~output:(snd output));
-    { input; output }
+    let run = Program.run (Program.copy program) in
+    Pipe.write_without_pushback run.input setting;
+    run
   ;;
 
   module Infix = struct
-    let ( --> ) t1 t2 = don't_wait_for (Pipe.transfer_id (fst t1.output) (snd t2.input))
+    let ( --> ) (t1 : t) (t2 : t) = don't_wait_for (Pipe.transfer_id t1.output t2.input)
   end
 end
 
@@ -35,8 +29,8 @@ let try_setting program a_setting b_setting c_setting d_setting e_setting =
   b_amp --> c_amp;
   c_amp --> d_amp;
   d_amp --> e_amp;
-  Pipe.write_without_pushback (snd a_amp.input) 0;
-  match%map Pipe.read (fst e_amp.output) with
+  Pipe.write_without_pushback a_amp.input 0;
+  match%map Pipe.read e_amp.output with
   | `Eof -> assert false
   | `Ok x -> x
 ;;
@@ -93,11 +87,9 @@ let try_setting program a_setting b_setting c_setting d_setting e_setting =
   b_amp --> c_amp;
   c_amp --> d_amp;
   d_amp --> e_amp;
-  let e_output_1, e_output_2 =
-    Pipe.fork (fst e_amp.output) ~pushback_uses:`Both_consumers
-  in
-  don't_wait_for (Pipe.transfer_id e_output_1 (snd a_amp.input));
-  Pipe.write_without_pushback (snd a_amp.input) 0;
+  let e_output_1, e_output_2 = Pipe.fork e_amp.output ~pushback_uses:`Both_consumers in
+  don't_wait_for (Pipe.transfer_id e_output_1 a_amp.input);
+  Pipe.write_without_pushback a_amp.input 0;
   Pipe.read_all e_output_2 >>| Queue.last_exn
 ;;
 
