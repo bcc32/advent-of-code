@@ -99,18 +99,13 @@ module Moon_one = struct
 end
 
 let step (moon_ones : Moon_one.t list) =
+  let gravity one ~on =
+    if phys_equal on one then 0 else Int.compare one.Moon_one.x on.Moon_one.x
+  in
   moon_ones
   |> List.map ~f:(fun moon_one ->
     { moon_one with
-      vx =
-        moon_one.vx
-        + List.sum
-            (module Int)
-            moon_ones
-            ~f:(fun other ->
-              if not (phys_equal moon_one other)
-              then Int.compare other.x moon_one.x
-              else 0)
+      vx = moon_one.vx + List.sum (module Int) moon_ones ~f:(gravity ~on:moon_one)
     })
   |> List.map ~f:(fun moon_one -> { moon_one with x = moon_one.x + moon_one.vx })
 ;;
@@ -146,7 +141,9 @@ let b () =
   let y_cycle = find_cycle_length ys in
   let z_cycle = find_cycle_length zs in
   if debug then print_s [%message (x_cycle : cycle) (y_cycle : cycle) (z_cycle : cycle)];
-  (* Simplifying assumptions. *)
+  (* Simplifying assumptions.  If the offsets were not zero, we could use, e.g.,
+     the Chinese Remainder Theorem to calculate the required modulus and
+     residue. *)
   assert (x_cycle.offset = 0);
   assert (y_cycle.offset = 0);
   assert (z_cycle.offset = 0);
