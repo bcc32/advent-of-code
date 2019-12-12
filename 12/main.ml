@@ -79,23 +79,8 @@ type cycle =
   }
 [@@deriving sexp_of]
 
-(* let find_cycle x ~equal ~f =
- *   let slow = ref x in
- *   let fast = ref x in
- *   let c = ref 0 in
- *   incr c;
- *   slow := f !slow;
- *   fast := f !fast;
- *   fast := f !fast;
- *   while not (equal slow fast) do
- *     incr c;
- *     slow := f !slow;
- *     fast := f !fast;
- *     fast := f !fast;
- *   done;
- *   { offset = !c; length = 2 * !c }
- * ;; *)
-
+(* Simulate each vector component of the moons separately, then combine using
+   least common multiple. *)
 module Moon_one = struct
   type t =
     { mutable x : int
@@ -142,6 +127,9 @@ let find_cycle_length moon_ones =
   loop 1
 ;;
 
+let rec gcd a b = if b = 0 then a else gcd b (a % b)
+let lcm a b = a / gcd a b * b
+
 let b () =
   let%bind moons = input () in
   let xs = List.map moons ~f:(Moon_one.of_moon ~which:`x) in
@@ -150,16 +138,16 @@ let b () =
   let x_cycle = find_cycle_length xs in
   let y_cycle = find_cycle_length ys in
   let z_cycle = find_cycle_length zs in
-  print_s [%message (x_cycle : cycle) (y_cycle : cycle) (z_cycle : cycle)];
+  (* Simplifying assumptions. *)
+  assert (x_cycle.offset = 0);
+  assert (y_cycle.offset = 0);
+  assert (z_cycle.offset = 0);
+  List.reduce_exn [ x_cycle.length; y_cycle.length; z_cycle.length ] ~f:lcm
+  |> printf "%d\n";
   return ()
 ;;
 
-(* 290314621566528 is LCM *)
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect
-    {|
-    ((x_cycle ((offset 0) (length 84032)))
-     (y_cycle ((offset 0) (length 286332)))
-     (z_cycle ((offset 0) (length 193052)))) |}]
+  [%expect {| 290314621566528 |}]
 ;;
