@@ -34,7 +34,6 @@ end = struct
   include T
 
   let dist (x, y) (x', y') =
-    (* y axis is inverted. *)
     let dx = float (x' - x) in
     let dy = float (y - y') in
     Float.hypot dx dy
@@ -75,6 +74,7 @@ end = struct
     ;;
 
     let vec ~from:(x, y) ~to_:(x', y') =
+      (* y axis is inverted. *)
       let dx = x' - x in
       let dy = y - y' in
       let g = gcd (Int.abs dx) (Int.abs dy) in
