@@ -71,7 +71,7 @@ let set t ~arg ~mode ~value =
   | _ -> assert false
 ;;
 
-let run t =
+let run' t ~on_waiting_for_input =
   let input_r, input_w = Pipe.create () in
   let output_r, output_w = Pipe.create () in
   let done_ =
@@ -101,6 +101,7 @@ let run t =
         return (`Repeat (pc + 4))
       | 3 ->
         let arg1 = t.memory.(pc + 1) in
+        let%bind () = on_waiting_for_input () in
         (match%bind Pipe.read input_r with
          | `Eof -> raise_s [%message "t received EOF on input"]
          | `Ok input ->
@@ -136,6 +137,8 @@ let run t =
      Pipe.close output_w);
   { Run.input = input_w; output = output_r; done_ }
 ;;
+
+let run t = run' t ~on_waiting_for_input:(fun () -> return ())
 
 let run_without_io t =
   let { Run.input; output; done_ } = run t in

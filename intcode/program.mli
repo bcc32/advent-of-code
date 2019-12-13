@@ -19,4 +19,5 @@ type t = private
 val of_string : string -> t
 val copy : t -> t
 val run : t -> Run.t
+val run' : t -> on_waiting_for_input:(unit -> unit Deferred.t) -> Run.t
 val run_without_io : t -> unit Deferred.t
