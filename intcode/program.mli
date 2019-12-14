@@ -20,4 +20,4 @@ val of_string : string -> t
 val copy : t -> t
 val run : t -> Run.t
 val run_without_io : t -> unit Deferred.t
-val run' : t -> input:int Mvar.Read_only.t -> int Pipe.Reader.t
+val run' : t -> input:(int, [> read ]) Mvar.t -> int Pipe.Reader.t

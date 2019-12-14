@@ -92,51 +92,55 @@ let play ~user_input ~draw =
   Deferred.ignore_m (simulate program ~user_input ~on_game_changed:draw)
 ;;
 
-let game_command =
+let term_image ~tiles ~score =
+  let image =
+    if Hashtbl.is_empty tiles
+    then Notty.I.empty
+    else (
+      let maxx =
+        Hashtbl.keys tiles
+        |> List.map ~f:Point.x
+        |> List.max_elt ~compare:[%compare: int]
+        |> uw
+      in
+      let maxy =
+        Hashtbl.keys tiles
+        |> List.map ~f:Point.y
+        |> List.max_elt ~compare:[%compare: int]
+        |> uw
+      in
+      Notty.I.tabulate (maxx + 1) (maxy + 1) (fun x y ->
+        let char =
+          Hashtbl.find tiles { x; y }
+          |> Option.value ~default:Tile.Empty
+          |> Tile.to_char
+        in
+        Notty.I.char Notty.A.empty char 1 1))
+  in
+  Notty.I.(strf "Score: %d" score <-> image)
+;;
+
+let play_command =
   Command.async
     ~summary:"Play the block arcade game"
     (let%map_open.Command () = return () in
      fun () ->
-       let%bind term = Notty_async.Term.create () in
+       let%bind term = Notty_async.Term.create () ~nosig:false in
        let user_input = Mvar.create () in
-       let () =
-         don't_wait_for
-           (Pipe.iter_without_pushback (Notty_async.Term.events term) ~f:(function
-              | `Mouse _ | `Paste _ | `Resize _ -> ()
-              | `Key (`Arrow `Left, _) -> Mvar.set user_input (-1)
-              | `Key (`Arrow `Down, _) -> Mvar.set user_input 0
-              | `Key (`Arrow `Right, _) -> Mvar.set user_input 1
-              | `Key _ -> ()))
-       in
-       let draw ~tiles ~score =
-         if Hashtbl.is_empty tiles
-         then return ()
-         else (
-           let maxx =
-             Hashtbl.keys tiles
-             |> List.map ~f:Point.x
-             |> List.max_elt ~compare:[%compare: int]
-             |> uw
-           in
-           let maxy =
-             Hashtbl.keys tiles
-             |> List.map ~f:Point.y
-             |> List.max_elt ~compare:[%compare: int]
-             |> uw
-           in
-           let image =
-             Notty.I.tabulate (maxx + 1) (maxy + 1) (fun x y ->
-               let char =
-                 Hashtbl.find tiles { x; y }
-                 |> Option.value ~default:Tile.Empty
-                 |> Tile.to_char
-               in
-               Notty.I.char Notty.A.empty char 1 1)
-           in
-           let image = Notty.I.(strf "Score: %d" score <-> image) in
-           Notty_async.Term.image term image)
-       in
-       play ~user_input:(Mvar.read_only user_input) ~draw)
+       don't_wait_for
+         (Pipe.iter (Notty_async.Term.events term) ~f:(function
+            | `Mouse _ | `Paste _ | `Resize _ -> return ()
+            | `Key (`Arrow `Left, _) -> Mvar.put user_input (-1)
+            | `Key (`Arrow `Down, _) -> Mvar.put user_input 0
+            | `Key (`Arrow `Right, _) -> Mvar.put user_input 1
+            | `Key _ -> return ()));
+       let image = Mvar.create () in
+       Deferred.forever () (fun () ->
+         let%bind image = Mvar.take image in
+         Notty_async.Term.image term image);
+       play ~user_input:(Mvar.read_only user_input) ~draw:(fun ~tiles ~score ->
+         Mvar.set image (term_image ~tiles ~score);
+         return ()))
 ;;
 
 let draw_plain ~tiles ~score =
@@ -167,29 +171,53 @@ let draw_plain ~tiles ~score =
     done)
 ;;
 
-let solve () =
+let solve ?term () =
   let%bind program = input () in
   program.memory.(0) <- 2;
   let score = ref 0 in
+  (* FIXME: Unused *)
   let last_tiles = ref (Hashtbl.create (module Point)) in
-  let user_input = Mvar.create () in
+  let ai_input = Mvar.create () in
+  let image = Mvar.create () in
+  let finished = Ivar.create () in
+  (match term with
+   | None -> ()
+   | Some term ->
+     don't_wait_for
+       (Deferred.repeat_until_finished () (fun () ->
+          match%bind
+            choose
+              [ choice (Ivar.read finished) (fun () -> `Finished)
+              ; choice (Mvar.take image) (fun image -> `Image image)
+              ]
+          with
+          | `Finished -> return (`Finished ())
+          | `Image image ->
+            let%bind () = Notty_async.Term.image term image in
+            return (`Repeat ()))));
   let%bind tiles =
     simulate
       program
-      ~user_input:(Mvar.read_only user_input)
+      ~user_input:(Mvar.read_only ai_input)
       ~on_game_changed:(fun ~tiles ~score:new_score ->
+        (* KLUDGE: Clear the Mvar while we recalculate.  If the program just
+           took an input, wait a bit so the animation isn't too fast. *)
+        let%bind () =
+          match Mvar.take_now ai_input, term with
+          | None, Some _ -> Clock_ns.after (Time_ns.Span.of_ms 10.)
+          | None, None | Some _, _ -> return ()
+        in
         score := new_score;
         last_tiles := tiles;
         if debug then draw_plain ~tiles ~score:!score;
+        if Option.is_some term then Mvar.set image (term_image ~tiles ~score:!score);
         let find_tile_col tile =
           with_return_option (fun { return } ->
             Hashtbl.iteri !last_tiles ~f:(fun ~key:{ x; y = _ } ~data:tile' ->
               if [%equal: Tile.t] tile tile' then return x))
         in
         let joystick_action =
-          let ball_col = find_tile_col Ball in
-          let paddle_col = find_tile_col Horizontal_paddle in
-          match ball_col, paddle_col with
+          match find_tile_col Ball, find_tile_col Horizontal_paddle with
           | None, _ | _, None -> `Neutral
           | Some target, Some current ->
             (match Ordering.of_int (Int.compare target current) with
@@ -198,13 +226,14 @@ let solve () =
              | Greater -> `Right)
         in
         Mvar.set
-          user_input
+          ai_input
           (match joystick_action with
            | `Left -> -1
            | `Neutral -> 0
            | `Right -> 1);
         return ())
   in
+  Ivar.fill finished ();
   assert (not (Hashtbl.exists tiles ~f:([%equal: Tile.t] Block)));
   return !score
 ;;
@@ -218,4 +247,22 @@ let b () =
 let%expect_test "b" =
   let%bind () = b () in
   [%expect {| 17468 |}]
+;;
+
+let watch_command =
+  Command.async
+    ~summary:"Watch the AI play the block arcade game"
+    (let%map_open.Command () = return () in
+     fun () ->
+       let%bind term = Notty_async.Term.create () ~nosig:false in
+       let%bind score = solve () ~term in
+       let%bind () = Notty_async.Term.release term in
+       printf "Final score: %d\n" score;
+       return ())
+;;
+
+let game_command =
+  Command.group
+    ~summary:"Block arcade game"
+    [ "play", play_command; "watch", watch_command ]
 ;;
