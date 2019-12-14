@@ -40,8 +40,8 @@ let input () =
   let ways_to_make = String.Table.create () in
   let reactions = List.map lines ~f:parse_line in
   List.iter reactions ~f:(fun ({ inputs = _; output } as rxn) ->
-    Hashtbl.add_multi ways_to_make ~key:output.name ~data:rxn);
-  reactions, ways_to_make
+    Hashtbl.add_exn ways_to_make ~key:output.name ~data:rxn);
+  ways_to_make
 ;;
 
 let ore_cost ~how_much_fuel ~ways_to_make =
@@ -50,10 +50,9 @@ let ore_cost ~how_much_fuel ~ways_to_make =
       (module String)
       (Hashtbl.keys ways_to_make)
       (Hashtbl.to_alist ways_to_make
-       |> List.concat_map ~f:(fun (output, reactions) ->
-         List.concat_map reactions ~f:(fun reaction ->
-           List.map reaction.inputs ~f:(fun r ->
-             { Topological_sort.Edge.from = output; to_ = r.name }))))
+       |> List.concat_map ~f:(fun (output, reaction) ->
+         List.map reaction.inputs ~f:(fun r ->
+           { Topological_sort.Edge.from = output; to_ = r.name })))
     |> ok_exn
   in
   let want_to_make = String.Table.of_alist_exn [ "FUEL", how_much_fuel ] in
@@ -64,7 +63,7 @@ let ore_cost ~how_much_fuel ~ways_to_make =
     ~f:(fun need ->
       if debug then Debug.eprint_s [%message (want_to_make : (string, int) Hashtbl.t)];
       let need_amt = Hashtbl.find_exn want_to_make need in
-      let rxn = Hashtbl.find_multi ways_to_make need |> List.hd_exn in
+      let rxn = Hashtbl.find_exn ways_to_make need in
       let how_many_rxn =
         Int.round_up need_amt ~to_multiple_of:rxn.output.amt / rxn.output.amt
       in
@@ -77,7 +76,7 @@ let ore_cost ~how_much_fuel ~ways_to_make =
 ;;
 
 let a () =
-  let%bind _reactions, ways_to_make = input () in
+  let%bind ways_to_make = input () in
   ore_cost ~how_much_fuel:1 ~ways_to_make |> printf "%d\n";
   return ()
 ;;
@@ -108,7 +107,7 @@ let how_much_fuel_can_we_make ~max_ore ~ways_to_make =
 ;;
 
 let b () =
-  let%bind _reactions, ways_to_make = input () in
+  let%bind ways_to_make = input () in
   let max_fuel = how_much_fuel_can_we_make ~max_ore:1_000_000_000_000 ~ways_to_make in
   printf "%d\n" max_fuel;
   return ()
