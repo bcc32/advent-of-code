@@ -1,30 +1,31 @@
 open! Core
 
-let relational_of_string =
-  function
-  | "<" -> Int.(<)
-  | ">" -> Int.(>)
-  | ">=" -> Int.(>=)
-  | "<=" -> Int.(<=)
-  | "==" -> Int.(=)
-  | "!=" -> Int.(<>)
+let relational_of_string = function
+  | "<" -> Int.( < )
+  | ">" -> Int.( > )
+  | ">=" -> Int.( >= )
+  | "<=" -> Int.( <= )
+  | "==" -> Int.( = )
+  | "!=" -> Int.( <> )
   | s -> invalid_arg s
 ;;
 
 let () =
   let input =
-    In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
-      In_channel.input_lines file
-      |> List.map ~f:(fun line ->
-        match String.split line ~on:' ' with
-        | [ reg; ins; amt; _; other; rel; lit ] ->
-          ( reg
-          , (if (String.(=))ins "inc" then 1 else -1)
-          , Int.of_string amt
-          , other
-          , relational_of_string rel
-          , Int.of_string lit)
-        | _ -> invalid_arg line))
+    In_channel.with_file
+      (Sys.get_argv ()).(1)
+      ~f:(fun file ->
+        In_channel.input_lines file
+        |> List.map ~f:(fun line ->
+          match String.split line ~on:' ' with
+          | [ reg; ins; amt; _; other; rel; lit ] ->
+            ( reg
+            , (if String.( = ) ins "inc" then 1 else -1)
+            , Int.of_string amt
+            , other
+            , relational_of_string rel
+            , Int.of_string lit )
+          | _ -> invalid_arg line))
   in
   let registers = String.Table.create () in
   let max = ref 0 in
@@ -33,9 +34,8 @@ let () =
     let reg_cur = Hashtbl.find_or_add registers reg ~default:(fun () -> 0) in
     if f other lit
     then (
-      let data = factor * amt + reg_cur in
+      let data = (factor * amt) + reg_cur in
       Hashtbl.set registers ~key:reg ~data;
-      if data > !max
-      then (max := data)));
+      if data > !max then max := data));
   printf "%d\n" !max
 ;;

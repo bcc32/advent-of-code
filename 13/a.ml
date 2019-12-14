@@ -7,10 +7,10 @@ let () =
       let index = String.index_exn line ':' in
       let depth = line |> String.subo ~len:index |> Int.of_string in
       let range = line |> String.subo ~pos:(index + 2) |> Int.of_string in
-      (depth, range))
+      depth, range)
     |> Int.Map.of_alist_exn
   in
-  let (end_, _) = Map.max_elt_exn layers in
+  let end_, _ = Map.max_elt_exn layers in
   let scanners = Array.create 0 ~len:(end_ + 1) in
   let severity = ref 0 in
   for i = 0 to end_ do
@@ -20,7 +20,7 @@ let () =
        if scanners.(i) % (2 * (range - 1)) = 0
        then (
          Debug.eprint_s [%message (i : int) (range : int)];
-         severity := !severity + i * range));
+         severity := !severity + (i * range)));
     for j = 0 to Array.length scanners - 1 do
       match Map.find layers j with
       | None -> ()

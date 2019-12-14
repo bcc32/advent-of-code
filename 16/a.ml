@@ -27,18 +27,26 @@ let () =
   List.iter input ~f:(function
     | Spin len ->
       let programs' = Array.create ' ' ~len:16 in
-      Array.blit ~src:programs ~dst:programs'
-        ~src_pos:(Array.length programs - len) ~dst_pos:0 ~len;
-      Array.blit ~src:programs ~dst:programs'
-        ~src_pos:0 ~dst_pos:len ~len:(Array.length programs - len);
+      Array.blit
+        ~src:programs
+        ~dst:programs'
+        ~src_pos:(Array.length programs - len)
+        ~dst_pos:0
+        ~len;
+      Array.blit
+        ~src:programs
+        ~dst:programs'
+        ~src_pos:0
+        ~dst_pos:len
+        ~len:(Array.length programs - len);
       Array.blito () ~src:programs' ~dst:programs
     | Exchange (i, j) ->
       let t = programs.(i) in
       programs.(i) <- programs.(j);
       programs.(j) <- t
     | Partner (a, b) ->
-      let (i, _) = Array.findi_exn programs ~f:(fun _ p -> Char.(=) p  a) in
-      let (j, _) = Array.findi_exn programs ~f:(fun _ p -> Char.(=) p  b) in
+      let i, _ = Array.findi_exn programs ~f:(fun _ p -> Char.( = ) p a) in
+      let j, _ = Array.findi_exn programs ~f:(fun _ p -> Char.( = ) p b) in
       let t = programs.(i) in
       programs.(i) <- programs.(j);
       programs.(j) <- t);

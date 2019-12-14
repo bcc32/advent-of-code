@@ -9,18 +9,26 @@ let transform moves array =
   List.iter moves ~f:(function
     | Spin len ->
       let array' = Array.create ' ' ~len:16 in
-      Array.blit ~src:array ~dst:array'
-        ~src_pos:(Array.length array - len) ~dst_pos:0 ~len;
-      Array.blit ~src:array ~dst:array'
-        ~src_pos:0 ~dst_pos:len ~len:(Array.length array - len);
+      Array.blit
+        ~src:array
+        ~dst:array'
+        ~src_pos:(Array.length array - len)
+        ~dst_pos:0
+        ~len;
+      Array.blit
+        ~src:array
+        ~dst:array'
+        ~src_pos:0
+        ~dst_pos:len
+        ~len:(Array.length array - len);
       Array.blito () ~src:array' ~dst:array
     | Exchange (i, j) ->
       let t = array.(i) in
       array.(i) <- array.(j);
       array.(j) <- t
     | Partner (a, b) ->
-      let (i, _) = Array.findi_exn array ~f:(fun _ p -> Char.(=) p a) in
-      let (j, _) = Array.findi_exn array ~f:(fun _ p -> Char.(=) p b) in
+      let i, _ = Array.findi_exn array ~f:(fun _ p -> Char.( = ) p a) in
+      let j, _ = Array.findi_exn array ~f:(fun _ p -> Char.( = ) p b) in
       let t = array.(i) in
       array.(i) <- array.(j);
       array.(j) <- t)
@@ -49,9 +57,7 @@ let () =
   let cycle_length =
     let rec loop i =
       transform input dry_run;
-      if [%compare.equal: char array] dry_run starting
-      then i
-      else (loop (i + 1))
+      if [%compare.equal: char array] dry_run starting then i else loop (i + 1)
     in
     loop 1
   in

@@ -11,8 +11,8 @@ let redistribute blocks =
     |> fst
   in
   let blocks = Array.of_list blocks in
-  let extra = blocks.( index ) in
-  blocks.( index ) <- 0;
+  let extra = blocks.(index) in
+  blocks.(index) <- 0;
   let residue = ref (extra % Array.length blocks) in
   for i = 1 to Array.length blocks do
     let index' = (index + i) % Array.length blocks in
@@ -20,9 +20,9 @@ let redistribute blocks =
     if !residue > 0
     then (
       let amt = amt + 1 in
-      blocks.( index' ) <- blocks.( index' ) + amt;
+      blocks.(index') <- blocks.(index') + amt;
       decr residue)
-    else (blocks.( index' ) <- blocks.( index' ) + amt)
+    else blocks.(index') <- blocks.(index') + amt
   done;
   Array.to_list blocks
 ;;
@@ -33,16 +33,18 @@ module Key = struct
   end
 
   include T
-  include Hashable.Make(T)
+  include Hashable.Make (T)
 end
 
 let () =
   let seen = Key.Hash_set.create () in
   let blocks =
-    In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
-      In_channel.input_line_exn file
-      |> String.split ~on:'\t'
-      |> List.map ~f:Int.of_string)
+    In_channel.with_file
+      (Sys.get_argv ()).(1)
+      ~f:(fun file ->
+        In_channel.input_line_exn file
+        |> String.split ~on:'\t'
+        |> List.map ~f:Int.of_string)
   in
   Hash_set.add seen blocks;
   let rec loop blocks count =
@@ -54,6 +56,5 @@ let () =
       Hash_set.add seen blocks;
       loop blocks count)
   in
-  loop blocks 0
-  |> printf "%d\n"
+  loop blocks 0 |> printf "%d\n"
 ;;

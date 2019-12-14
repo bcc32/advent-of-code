@@ -31,12 +31,7 @@ let command_of_string input =
 ;;
 
 let num_sends = ref 0
-
-let inboxes =
-  [| Squeue.create 1000000
-   ; Squeue.create 1000000
-  |]
-;;
+let inboxes = [| Squeue.create 1000000; Squeue.create 1000000 |]
 
 let run input prog_id =
   let state = Char.Table.create () in
@@ -56,20 +51,25 @@ let run input prog_id =
       let get_or_zero x = Option.value x ~default:0 in
       match command with
       | Snd x ->
-        if prog_id = 1 then (incr num_sends);
+        if prog_id = 1 then incr num_sends;
         send x;
         loop (pc + 1)
       | Rcv x ->
         Hashtbl.set state ~key:x ~data:(receive ());
         loop (pc + 1)
-      | Set (r, y) -> Hashtbl.set state ~key:r ~data:(get_value y); loop (pc + 1)
-      | Add (r, y) -> Hashtbl.update state r ~f:(fun x -> get_or_zero x + get_value y); loop (pc + 1)
-      | Mul (r, y) -> Hashtbl.update state r ~f:(fun x -> get_or_zero x * get_value y); loop (pc + 1)
-      | Mod (r, y) -> Hashtbl.update state r ~f:(fun x -> get_or_zero x % get_value y); loop (pc + 1)
-      | Jgz (x, y) ->
-        if get_value x > 0
-        then (loop (pc + get_value y))
-        else (loop (pc + 1)))
+      | Set (r, y) ->
+        Hashtbl.set state ~key:r ~data:(get_value y);
+        loop (pc + 1)
+      | Add (r, y) ->
+        Hashtbl.update state r ~f:(fun x -> get_or_zero x + get_value y);
+        loop (pc + 1)
+      | Mul (r, y) ->
+        Hashtbl.update state r ~f:(fun x -> get_or_zero x * get_value y);
+        loop (pc + 1)
+      | Mod (r, y) ->
+        Hashtbl.update state r ~f:(fun x -> get_or_zero x % get_value y);
+        loop (pc + 1)
+      | Jgz (x, y) -> if get_value x > 0 then loop (pc + get_value y) else loop (pc + 1))
   in
   loop 0
 ;;

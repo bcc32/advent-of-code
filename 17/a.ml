@@ -17,6 +17,5 @@ let () =
     buf := buf';
     incr pos
   done;
-  !buf.(!pos + 1)
-  |> printf "%d\n"
+  !buf.(!pos + 1) |> printf "%d\n"
 ;;

@@ -6,9 +6,7 @@ let rec dfs edges x =
   if not (Hash_set.mem visited x)
   then (
     Hash_set.add visited x;
-    Map.find edges x
-    |> Option.iter ~f:(List.iter ~f:(fun other ->
-      dfs edges other)))
+    Map.find edges x |> Option.iter ~f:(List.iter ~f:(fun other -> dfs edges other)))
 ;;
 
 let () =
@@ -25,7 +23,7 @@ let () =
         |> List.map ~f:String.strip
         |> List.map ~f:Int.of_string
       in
-      (self, others))
+      self, others)
     |> Int.Map.of_alist_exn
   in
   let groups = ref 0 in

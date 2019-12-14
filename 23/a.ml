@@ -25,7 +25,6 @@ let command_of_string input =
 ;;
 
 let num_mul = ref 0
-
 let state = Char.Table.create ()
 
 let run input =
@@ -41,13 +40,17 @@ let run input =
       let command = input.(pc) in
       let get_or_zero x = Option.value x ~default:0 in
       match command with
-      | Set (r, y) -> Hashtbl.set state ~key:r ~data:(get_value y); loop (pc + 1)
-      | Sub (r, y) -> Hashtbl.update state r ~f:(fun x -> get_or_zero x - get_value y); loop (pc + 1)
-      | Mul (r, y) -> incr num_mul; Hashtbl.update state r ~f:(fun x -> get_or_zero x * get_value y); loop (pc + 1)
-      | Jnz (x, y) ->
-        if get_value x <> 0
-        then (loop (pc + get_value y))
-        else (loop (pc + 1)))
+      | Set (r, y) ->
+        Hashtbl.set state ~key:r ~data:(get_value y);
+        loop (pc + 1)
+      | Sub (r, y) ->
+        Hashtbl.update state r ~f:(fun x -> get_or_zero x - get_value y);
+        loop (pc + 1)
+      | Mul (r, y) ->
+        incr num_mul;
+        Hashtbl.update state r ~f:(fun x -> get_or_zero x * get_value y);
+        loop (pc + 1)
+      | Jnz (x, y) -> if get_value x <> 0 then loop (pc + get_value y) else loop (pc + 1))
   in
   loop 0
 ;;
