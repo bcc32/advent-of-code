@@ -18,6 +18,5 @@ depends: [
   "dune"                {build}
   "core"                {>= "v0.13" & < "v0.14"}
   "re"                  {>= "v0.13" & < "v0.14"}
-  "euler"
 ]
 synopsis: "Advent of Code 2017 solutions"

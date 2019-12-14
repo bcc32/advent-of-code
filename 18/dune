@@ -1,6 +1,6 @@
 (executables
  (names a b)
- (libraries core euler re2 core.squeue)
+ (libraries core re2 core.squeue)
  (preprocess
   (pps ppx_jane)))
 
