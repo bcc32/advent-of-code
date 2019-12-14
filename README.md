@@ -1,7 +1,7 @@
 # Advent of Code 2017
 
 This repository contains my solutions to the challenges from the [Advent of
-Code][aoc] event. They are all written in OCaml (compiler version 4.05.0) with
+Code][aoc] event. They are all written in OCaml (compiler version 4.08.0) with
 Jane Street's [Core][core] standard library overlay.
 
 ## Usage
