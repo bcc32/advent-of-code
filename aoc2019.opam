@@ -23,5 +23,6 @@ depends: [
   "expect_test_helpers" {>= "v0.13" & < "v0.14"}
   "ppx_jane"            {>= "v0.13" & < "v0.14"}
   "notty_async"         {>= "v0.13" & < "v0.14"}
+  "topological_sort"    {>= "v0.13" & < "v0.14"}
 ]
 synopsis: "Advent of Code 2019 solutions"
