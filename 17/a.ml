@@ -2,7 +2,7 @@ open! Core
 
 let () =
   let input =
-    In_channel.with_file Sys.argv.(1) ~f:In_channel.input_all
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_all
     |> String.strip
     |> Int.of_string
   in

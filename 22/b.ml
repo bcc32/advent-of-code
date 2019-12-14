@@ -8,7 +8,7 @@ let set i j x = Hashtbl.set map ~key:(i, j) ~data:x
 
 let () =
   let input =
-    In_channel.with_file Sys.argv.(1) ~f:In_channel.input_lines
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_lines
     |> List.to_array
   in
   Array.iteri input ~f:(fun i x ->

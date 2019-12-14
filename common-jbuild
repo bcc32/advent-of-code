@@ -1,7 +1,7 @@
 (executables
  ((names     (a b))
   (libraries (core euler re2))
-  (preprocess (pps (ppx_jane -annotated-ignores ppx_driver.runner)))))
+  (preprocess (pps (ppx_jane)))))
 
 (alias
  ((name runtest)

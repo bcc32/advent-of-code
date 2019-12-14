@@ -32,7 +32,7 @@ let run_step state pos =
 
 let () =
   let (start, steps) =
-    In_channel.with_file Sys.argv.(1) ~f:(fun file ->
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
       let line () = In_channel.input_line_exn file in
       let start =
         line ()
@@ -47,8 +47,8 @@ let () =
       in
       let read_step () =
         ignore (line () : string);
-        let value = (line ()).[22] = '1' in
-        let move = if (line ()).[27] = 'r' then `Right else `Left in
+        let value = Char.(= )(line ()).[22] '1' in
+        let move = if (Char.(=))(line ()).[27] 'r' then `Right else `Left in
         let next = String.sub (line ()) ~pos:26 ~len:1 in
         { write = value; move; next }
       in

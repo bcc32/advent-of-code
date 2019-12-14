@@ -1,5 +1,4 @@
 open! Core
-open Re2.Std
 
 let pattern =
   Re2.create_exn "^p=<(-?\\d+),(-?\\d+),(-?\\d+)>, v=<(-?\\d+),(-?\\d+),(-?\\d+)>, a=<(-?\\d+),(-?\\d+),(-?\\d+)>$"
@@ -16,7 +15,7 @@ let step ((px, py, pz), (vx, vy, vz), (ax, ay, az)) =
 
 let () =
   let input =
-    In_channel.with_file Sys.argv.(1) ~f:In_channel.input_lines
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_lines
     |> List.map ~f:(fun line ->
       match Re2.find_submatches_exn pattern line with
       | [| _; Some px; Some py; Some pz; Some vx; Some vy; Some vz; Some ax; Some ay; Some az |]
@@ -31,7 +30,7 @@ let () =
   let closest =
     loop 1 input
     |> List.mapi ~f:(fun i x -> (i, x))
-    |> List.min_elt ~cmp:(fun (_, ((px, py, pz), _, _)) (_, ((px', py', pz'), _, _)) ->
+    |> List.min_elt ~compare:(fun (_, ((px, py, pz), _, _)) (_, ((px', py', pz'), _, _)) ->
       Int.compare (abs px + abs py + abs pz) (abs px' + abs py' + abs pz'))
     |> uw
     |> fst

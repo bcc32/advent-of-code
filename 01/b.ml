@@ -3,7 +3,7 @@ open! Core
 let count_matches s =
   let count = ref 0 in
   let check i j =
-    if s.[i] = s.[j]
+    if Char.(=) s.[i] s.[j]
     then (count := !count + (int_of_char s.[i] - int_of_char '0'))
   in
   let length = String.length s in
@@ -15,7 +15,7 @@ let count_matches s =
 ;;
 
 let () =
-  In_channel.with_file Sys.argv.(1) ~f:(fun file ->
+  In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
     file
     |> In_channel.input_all
     |> String.strip

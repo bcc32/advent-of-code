@@ -2,7 +2,7 @@ open! Core
 
 let () =
   let lines =
-    In_channel.with_file Sys.argv.(1) ~f:(fun file ->
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
       In_channel.input_lines file
       |> List.map ~f:(fun line ->
         let word = String.split line ~on:' ' |> List.hd_exn in

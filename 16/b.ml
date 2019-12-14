@@ -19,8 +19,8 @@ let transform moves array =
       array.(i) <- array.(j);
       array.(j) <- t
     | Partner (a, b) ->
-      let (i, _) = Array.findi_exn array ~f:(fun _ p -> p = a) in
-      let (j, _) = Array.findi_exn array ~f:(fun _ p -> p = b) in
+      let (i, _) = Array.findi_exn array ~f:(fun _ p -> Char.(=) p a) in
+      let (j, _) = Array.findi_exn array ~f:(fun _ p -> Char.(=) p b) in
       let t = array.(i) in
       array.(i) <- array.(j);
       array.(j) <- t)
@@ -28,7 +28,7 @@ let transform moves array =
 
 let () =
   let input =
-    In_channel.with_file Sys.argv.(1) ~f:In_channel.input_all
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_all
     |> String.split ~on:','
     |> List.map ~f:(fun instr ->
       let data = String.subo instr ~pos:1 in

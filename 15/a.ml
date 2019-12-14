@@ -7,7 +7,7 @@ let b_factor = 48271
 
 let () =
   let input =
-    In_channel.with_file Sys.argv.(1) ~f:In_channel.input_lines
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_lines
     |> List.map ~f:(fun line ->
       String.subo line ~pos:24
       |> Int.of_string)

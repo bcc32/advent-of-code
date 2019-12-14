@@ -13,7 +13,7 @@ let rec dfs edges x =
 
 let () =
   let pipes =
-    In_channel.with_file Sys.argv.(1) ~f:In_channel.input_lines
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_lines
     |> List.map ~f:(fun line ->
       let index = String.substr_index_exn line ~pattern:"<->" in
       let left = String.subo line ~len:(index - 1) in

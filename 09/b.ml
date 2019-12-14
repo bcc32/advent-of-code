@@ -18,7 +18,7 @@ let parse input ~f =
     | Some '{' ->
       advance ();
       zero_or_more_items ();
-      assert (peek () = Some '}');
+      assert ([%equal: char option](peek ()) (Some '}'));
       advance ()
     | Some '<' ->
       advance ();
@@ -51,7 +51,7 @@ let parse input ~f =
 let () =
   let garbage = ref 0 in
   let f Garbage = incr garbage in
-  In_channel.with_file Sys.argv.(1) ~f:(fun file ->
+  In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
     In_channel.input_all file |> String.strip)
   |> parse ~f;
   printf "%d\n" !garbage

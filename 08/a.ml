@@ -13,13 +13,13 @@ let relational_of_string =
 
 let () =
   let input =
-    In_channel.with_file Sys.argv.(1) ~f:(fun file ->
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
       In_channel.input_lines file
       |> List.map ~f:(fun line ->
         match String.split line ~on:' ' with
         | [ reg; ins; amt; _; other; rel; lit ] ->
           ( reg
-          , (if ins = "inc" then 1 else -1)
+          , (if String.(=) ins "inc" then 1 else -1)
           , Int.of_string amt
           , other
           , relational_of_string rel
@@ -33,7 +33,7 @@ let () =
     if f other lit
     then (Hashtbl.set registers ~key:reg ~data:(factor * amt + reg_cur)));
   Hashtbl.data registers
-  |> List.max_elt ~cmp:Int.compare
+  |> List.max_elt ~compare:Int.compare
   |> uw
   |> printf "%d\n"
 ;;

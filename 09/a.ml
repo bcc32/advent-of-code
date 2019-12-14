@@ -20,7 +20,7 @@ let parse input ~f =
       advance ();
       f Open;
       zero_or_more_items ();
-      assert (peek () = Some '}');
+      assert ([%equal: char option] (peek ()) (Some '}'));
       advance ();
       f Close
     | Some '<' ->
@@ -60,7 +60,7 @@ let () =
       sum := !sum + !level;
       decr level
   in
-  In_channel.with_file Sys.argv.(1) ~f:(fun file ->
+  In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
     In_channel.input_all file |> String.strip)
   |> parse ~f;
   printf "%d\n" !sum

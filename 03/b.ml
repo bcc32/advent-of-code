@@ -35,7 +35,7 @@ let () = Hashtbl.add_exn memory ~key:(0, 0) ~data:1
 
 let () =
   let threshold =
-    In_channel.with_file Sys.argv.(1) ~f:(fun file ->
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
       In_channel.input_all file
       |> String.strip
       |> Int.of_string)

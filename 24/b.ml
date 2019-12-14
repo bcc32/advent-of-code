@@ -21,7 +21,7 @@ let rec dfs parts start end_ =
 
 let () =
   let input =
-    In_channel.with_file Sys.argv.(1) ~f:In_channel.input_lines
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_lines
     |> List.map ~f:(fun line ->
       match String.split line ~on:'/' with
       | [ a; b ] -> (Int.of_string a, Int.of_string b)

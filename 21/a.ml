@@ -81,7 +81,7 @@ let apply_rules grid rules =
 
 let () =
   let rules =
-    In_channel.with_file Sys.argv.(1) ~f:In_channel.input_lines
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_lines
     |> List.map ~f:(fun line ->
       match String.split line ~on:'=' with
       | [ left; right ] ->
@@ -101,6 +101,6 @@ let () =
     else (grid := apply_rules !grid (List.filter rules ~f:(function | Two _ -> false | Three _ -> true)))
   done;
   (* Debug.eprint_s [%sexp (!grid : char array array)]; *)
-  Array.sum (module Int) !grid ~f:(fun row -> Array.count row ~f:(fun x -> x = '#'))
+  Array.sum (module Int) !grid ~f:(fun row -> Array.count row ~f:(fun x -> Char.(=) x '#'))
   |> printf "%d\n"
 ;;

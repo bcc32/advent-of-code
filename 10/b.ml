@@ -2,7 +2,7 @@ open! Core
 
 let () =
   let lengths =
-    In_channel.with_file Sys.argv.(1) ~f:(fun file ->
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
       In_channel.input_all file
       |> String.strip
       |> String.to_list

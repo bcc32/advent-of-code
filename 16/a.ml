@@ -7,7 +7,7 @@ type move =
 
 let () =
   let input =
-    In_channel.with_file Sys.argv.(1) ~f:In_channel.input_all
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_all
     |> String.split ~on:','
     |> List.map ~f:(fun instr ->
       let data = String.subo instr ~pos:1 in
@@ -37,8 +37,8 @@ let () =
       programs.(i) <- programs.(j);
       programs.(j) <- t
     | Partner (a, b) ->
-      let (i, _) = Array.findi_exn programs ~f:(fun _ p -> p = a) in
-      let (j, _) = Array.findi_exn programs ~f:(fun _ p -> p = b) in
+      let (i, _) = Array.findi_exn programs ~f:(fun _ p -> Char.(=) p  a) in
+      let (j, _) = Array.findi_exn programs ~f:(fun _ p -> Char.(=) p  b) in
       let t = programs.(i) in
       programs.(i) <- programs.(j);
       programs.(j) <- t);

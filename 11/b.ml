@@ -21,7 +21,7 @@ let distance x y =
 
 let () =
   let steps =
-    In_channel.with_file Sys.argv.(1) ~f:(fun file ->
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
       In_channel.input_line_exn file
       |> String.split ~on:',')
   in

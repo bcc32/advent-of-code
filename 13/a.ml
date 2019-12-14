@@ -2,7 +2,7 @@ open! Core
 
 let () =
   let layers =
-    In_channel.with_file Sys.argv.(1) ~f:In_channel.input_lines
+    In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_lines
     |> List.map ~f:(fun line ->
       let index = String.index_exn line ':' in
       let depth = line |> String.subo ~len:index |> Int.of_string in

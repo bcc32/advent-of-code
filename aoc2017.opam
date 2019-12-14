@@ -1,0 +1,23 @@
+opam-version: "2.0"
+maintainer: "Aaron L. Zeng <me@bcc32.com>"
+authors: [ "Aaron L. Zeng <me@bcc32.com>" ]
+tags: []
+license: "MIT"
+homepage: "https://github.com/bcc32/advent-of-code-2017"
+dev-repo: "git+https://github.com/bcc32/advent-of-code-2017/issues"
+bug-reports: "https://github.com/bcc32/advent-of-code-2017/issues"
+doc: "https://adventofcode.com"
+build: [
+  ["dune" "subst" ] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs "@doc"] {with-doc}
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+]
+depends: [
+  "ocaml"               {>= "4.07"}
+  "dune"                {build}
+  "core"                {>= "v0.13" & < "v0.14"}
+  "re"                  {>= "v0.13" & < "v0.14"}
+  "euler"
+]
+synopsis: "Advent of Code 2017 solutions"

@@ -9,7 +9,7 @@ let get_whole_division nums =
 ;;
 
 let () =
-  In_channel.with_file Sys.argv.(1) ~f:(fun file ->
+  In_channel.with_file (Sys.get_argv ()).(1) ~f:(fun file ->
     In_channel.input_lines file
     |> List.sum (module Int) ~f:(fun row ->
       let nums =
