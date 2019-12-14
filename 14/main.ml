@@ -44,8 +44,7 @@ let input () =
   reactions, ways_to_make
 ;;
 
-let ore_to_make ~how_much_fuel =
-  let%bind _reactions, ways_to_make = input () in
+let ore_cost ~how_much_fuel ~ways_to_make =
   let nodes =
     Topological_sort.sort
       (module String)
@@ -74,12 +73,12 @@ let ore_to_make ~how_much_fuel =
         Hashtbl.update want_to_make name ~f:(fun current_amt ->
           Option.value current_amt ~default:0 + (amt * how_many_rxn)));
       Hashtbl.remove want_to_make need);
-  return (Hashtbl.data want_to_make |> List.hd_exn)
+  Hashtbl.data want_to_make |> List.hd_exn
 ;;
 
 let a () =
-  let%bind ore_to_make = ore_to_make ~how_much_fuel:1 in
-  printf "%d\n" ore_to_make;
+  let%bind _reactions, ways_to_make = input () in
+  ore_cost ~how_much_fuel:1 ~ways_to_make |> printf "%d\n";
   return ()
 ;;
 
@@ -88,26 +87,34 @@ let%expect_test "a" =
   [%expect {| 654909 |}]
 ;;
 
-(* let how_much_fuel_can_we_make ~max_ore =
- *   let rec loop how_much_fuel =
- *   in
- *   loop 1
- *   let%bind ore_to_make = ore_to_make ~how_much_fuel:1 in
- *   printf "%d\n" ore_to_make;
- *   return ()
- * ;; *)
+let how_much_fuel_can_we_make ~max_ore ~ways_to_make =
+  let rec loop1 power_of_two =
+    if ore_cost ~how_much_fuel:power_of_two ~ways_to_make > max_ore
+    then power_of_two
+    else loop1 (power_of_two * 2)
+  in
+  let ceil_pow2_loop1 = loop1 1 in
+  let rec bisect ubound pow2 =
+    (* The desired value is in [ubound - pow2, ubound) *)
+    if pow2 = 1
+    then ubound - 1
+    else (
+      let midpoint = ubound - (pow2 / 2) in
+      if ore_cost ~how_much_fuel:midpoint ~ways_to_make > max_ore
+      then bisect midpoint (pow2 / 2)
+      else bisect ubound (pow2 / 2))
+  in
+  bisect ceil_pow2_loop1 ceil_pow2_loop1
+;;
 
 let b () =
-  let%bind ore_to_make = ore_to_make ~how_much_fuel:2876992 in
-  printf "%d\n" ore_to_make;
-  print_s
-    [%sexp (Int.compare ore_to_make 1_000_000_000_000 |> Ordering.of_int : Ordering.t)];
+  let%bind _reactions, ways_to_make = input () in
+  let max_fuel = how_much_fuel_can_we_make ~max_ore:1_000_000_000_000 ~ways_to_make in
+  printf "%d\n" max_fuel;
   return ()
 ;;
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {|
-    999999895242
-    Less |}]
+  [%expect {| 2876992 |}]
 ;;
