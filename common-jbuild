@@ -1,9 +1,0 @@
-(executables
- ((names     (a b))
-  (libraries (core euler re2))
-  (preprocess (pps (ppx_jane)))))
-
-(alias
- ((name runtest)
-  (deps (input))
-  (action (progn (run ${exe:a.exe} input) (run ${exe:b.exe} input)))))
