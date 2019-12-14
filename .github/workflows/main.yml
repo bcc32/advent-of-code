@@ -10,8 +10,8 @@ jobs:
     steps:
     - uses: avsm/setup-ocaml@v1.0
     - uses: actions/checkout@v1
-    - run: opam pin add aoc2018.dev -n .
-    - run: opam depext -yt aoc2018
+    - run: opam pin add aoc2017.dev -n .
+    - run: opam depext -yt aoc2017
     - run: opam install -t . --deps-only
     - run: opam exec -- dune build
     - run: opam exec -- dune runtest
