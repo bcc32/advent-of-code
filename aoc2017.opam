@@ -17,6 +17,6 @@ depends: [
   "ocaml"               {>= "4.07"}
   "dune"                {build}
   "core"                {>= "v0.13" & < "v0.14"}
-  "re"                  {>= "v0.13" & < "v0.14"}
+  "re2"                 {>= "v0.13" & < "v0.14"}
 ]
 synopsis: "Advent of Code 2017 solutions"
