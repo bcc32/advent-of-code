@@ -85,14 +85,16 @@ let explore ~program =
     return (grid, path)
 ;;
 
+let find_oxy_exn grid =
+  Hashtbl.to_alist grid
+  |> List.find_exn ~f:(fun (_point, material) -> [%equal: Material.t] material Oxygen)
+  |> fst
+;;
+
 let a () =
   let%bind program = input () in
   let%bind grid, path = explore ~program in
-  let oxy_point =
-    Hashtbl.to_alist grid
-    |> List.find_exn ~f:(fun (_point, material) -> [%equal: Material.t] material Oxygen)
-    |> fst
-  in
+  let oxy_point = find_oxy_exn grid in
   let path = Hashtbl.find_exn path oxy_point in
   printf "%d\n" (List.length path);
   return ()
@@ -130,11 +132,7 @@ let spread_oxygen grid start =
 let b () =
   let%bind program = input () in
   let%bind grid, _path = explore ~program in
-  let oxy_point =
-    Hashtbl.to_alist grid
-    |> List.find_exn ~f:(fun (_point, material) -> [%equal: Material.t] material Oxygen)
-    |> fst
-  in
+  let oxy_point = find_oxy_exn grid in
   let spread_time = spread_oxygen grid oxy_point in
   printf "%d\n" spread_time;
   return ()
