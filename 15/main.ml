@@ -103,23 +103,28 @@ let%expect_test "a" =
   [%expect {| 298 |}]
 ;;
 
-let spread_oxygen grid (x, y) =
-  let q = Queue.of_list [ x, y ] in
-  let dist = Hashtbl.create (module Robot.Point) in
-  Hashtbl.set dist ~key:(x, y) ~data:0;
-  while not (Queue.is_empty q) do
-    let p = Queue.dequeue_exn q in
-    let d = Hashtbl.find_exn dist p in
-    Robot.Dir.all
-    |> List.iter ~f:(fun dir ->
-      let p' = Robot.Point.add p dir in
-      if (not (Hashtbl.mem dist p'))
-      && [%equal: Material.t option] (Hashtbl.find grid p') (Some Empty)
-      then (
-        Hashtbl.set dist ~key:p' ~data:(d + 1);
-        Queue.enqueue q p'))
-  done;
-  Hashtbl.data dist |> List.max_elt ~compare:Int.compare |> uw
+let spread_oxygen grid start =
+  let graph =
+    Graph.of_functions
+      ()
+      ~hashable:(Hashtbl.Hashable.of_key (module Robot.Point))
+      ~incoming_edges:(fun _ -> failwith "unimplemented")
+      ~outgoing_edges:(fun point ->
+        Robot.Dir.all
+        |> List.map ~f:(fun d -> Robot.Point.add point d)
+        |> List.filter ~f:(fun p ->
+          match (Hashtbl.find grid p : Material.t option) with
+          | Some Wall -> false
+          | None | Some Empty | Some Oxygen -> true))
+  in
+  let distance = unstage (Graph.bfs graph ~start) in
+  Hashtbl.filter grid ~f:(function
+    | Wall -> false
+    | Empty | Oxygen -> true)
+  |> Hashtbl.keys
+  |> List.map ~f:(fun p -> Option.value_exn (distance p))
+  |> List.max_elt ~compare:[%compare: int]
+  |> Option.value_exn
 ;;
 
 let b () =
