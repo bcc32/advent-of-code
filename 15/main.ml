@@ -119,14 +119,8 @@ let spread_oxygen grid start =
           | Some Wall -> false
           | None | Some Empty | Some Oxygen -> true))
   in
-  let distance = unstage (Graph.bfs graph ~start) in
-  Hashtbl.filter grid ~f:(function
-    | Wall -> false
-    | Empty | Oxygen -> true)
-  |> Hashtbl.keys
-  |> List.map ~f:(fun p -> Option.value_exn (distance p))
-  |> List.max_elt ~compare:[%compare: int]
-  |> Option.value_exn
+  let distance = Graph.bfs graph ~start in
+  Hashtbl.data distance |> List.max_elt ~compare:[%compare: int] |> Option.value_exn
 ;;
 
 let b () =

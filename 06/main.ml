@@ -36,8 +36,8 @@ let orbits pairs =
   let graph = Graph.of_edges pairs ~hashable:String.hashable ~edge_kind:`Undirected in
   let start = Graph.incoming_edges graph "YOU" |> List.hd_exn in
   let end_ = Graph.incoming_edges graph "SAN" |> List.hd_exn in
-  let distance = unstage (Graph.bfs graph ~start) in
-  distance end_ |> Option.value_exn
+  let distance = Graph.bfs graph ~start in
+  Hashtbl.find_exn distance end_
 ;;
 
 let b () =

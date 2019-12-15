@@ -21,4 +21,4 @@ val outgoing_edges : 'node t -> 'node -> 'node list
 val incoming_edges : 'node t -> 'node -> 'node list
 
 (* TODO: Add early termination condition. *)
-val bfs : 'node t -> start:'node -> ('node -> int option) Staged.t
+val bfs : 'node t -> start:'node -> ('node, int) Hashtbl.t

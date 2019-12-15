@@ -55,7 +55,7 @@ let bfs { hashable; outgoing_edges; incoming_edges = _; nodes = _ } ~start =
         Hashtbl.add_exn distance ~key:y ~data:(d + 1);
         Queue.enqueue q y)
   done;
-  stage (Hashtbl.find distance)
+  distance
 ;;
 
 let error_no_node_set = Error.of_string "Graph does not know its node set"
