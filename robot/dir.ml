@@ -6,7 +6,14 @@ type t =
   | E
   | S
   | W
-[@@deriving enumerate, sexp_of]
+[@@deriving enumerate, equal, sexp_of]
+
+let opp = function
+  | N -> S
+  | E -> W
+  | S -> N
+  | W -> E
+;;
 
 let turn t which_way =
   match which_way with

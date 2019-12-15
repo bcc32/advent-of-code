@@ -6,7 +6,8 @@ type t =
   | E
   | S
   | W
-[@@deriving enumerate, sexp_of]
+[@@deriving enumerate, equal, sexp_of]
 
+val opp : t -> t
 val turn : t -> [ `Left | `Right ] -> t
 val of_char_urdl_exn : char -> t
