@@ -1,7 +1,7 @@
 open! Core
 open! Import
 
-type t = int * int [@@deriving compare, hash, sexp_of]
+type t = int * int [@@deriving compare, equal, hash, sexp_of]
 
 let dist_manhattan (x1, y1) (x2, y2) = Int.abs (x1 - x2) + Int.abs (y1 - y2)
 let dist_euclidean (x1, y1) (x2, y2) = Float.hypot (float (x1 - x2)) (float (y1 - y2))

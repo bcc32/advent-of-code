@@ -1,7 +1,7 @@
 open! Core
 open! Import
 
-type t = int * int [@@deriving compare, hash, sexp_of]
+type t = int * int [@@deriving compare, equal, hash, sexp_of]
 
 val dist_euclidean : t -> t -> float
 val dist_manhattan : t -> t -> int
