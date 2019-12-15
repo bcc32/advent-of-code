@@ -5,7 +5,7 @@ open! Import
 let input () = Reader.file_lines "input" >>| List.map ~f:(String.lsplit2_exn ~on:')')
 
 let orbits pairs =
-  let graph = Graph.of_edges pairs ~hashable:String.hashable ~edge_kind:`Directed in
+  let graph = Graph.of_edges (module String) pairs ~edge_kind:`Directed in
   let rec indirectly_and_directly_orbiting =
     let cache = String.Table.create () in
     fun inner ->
@@ -33,7 +33,7 @@ let%expect_test "a" =
 ;;
 
 let orbits pairs =
-  let graph = Graph.of_edges pairs ~hashable:String.hashable ~edge_kind:`Undirected in
+  let graph = Graph.of_edges (module String) pairs ~edge_kind:`Undirected in
   let start = Graph.incoming_edges graph "YOU" |> List.hd_exn in
   let end_ = Graph.incoming_edges graph "SAN" |> List.hd_exn in
   let distance = Graph.bfs graph ~start in

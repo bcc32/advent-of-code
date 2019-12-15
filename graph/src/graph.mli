@@ -3,14 +3,13 @@ open! Core
 type 'node t
 
 val of_functions
-  :  ?hashable:'node Hashtbl.Hashable.t
+  :  (module Hashtbl.Key_plain with type t = 'node)
   -> incoming_edges:('node -> 'node list)
   -> outgoing_edges:('node -> 'node list)
-  -> unit
   -> 'node t
 
 val of_edges
-  :  ?hashable:'node Hashtbl.Hashable.t
+  :  (module Hashtbl.Key_plain with type t = 'node)
   -> ('node * 'node) list
   -> edge_kind:[ `Directed | `Undirected ]
   -> 'node t

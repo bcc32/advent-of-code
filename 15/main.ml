@@ -108,8 +108,7 @@ let%expect_test "a" =
 let spread_oxygen grid start =
   let graph =
     Graph.of_functions
-      ()
-      ~hashable:(Hashtbl.Hashable.of_key (module Robot.Point))
+      (module Robot.Point)
       ~incoming_edges:(fun _ -> failwith "unimplemented")
       ~outgoing_edges:(fun point ->
         Robot.Dir.all
