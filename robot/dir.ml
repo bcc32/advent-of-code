@@ -6,7 +6,7 @@ type t =
   | E
   | S
   | W
-[@@deriving sexp_of]
+[@@deriving enumerate, sexp_of]
 
 let turn t which_way =
   match which_way with
