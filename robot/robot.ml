@@ -23,6 +23,7 @@ let loc : type a. a t -> Point.t = function
 ;;
 
 let step_forward (With_dir t : with_dir t) = t.loc <- Point.add t.loc t.dir
+let step_backward (With_dir t : with_dir t) = t.loc <- Point.add t.loc (Dir.opp t.dir)
 
 let step_dir (type a) (t : a t) ~dir =
   match t with
