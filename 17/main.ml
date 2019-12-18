@@ -8,13 +8,15 @@ let input () = Reader.file_contents "input" >>| Program.of_string
 
 let output program =
   match Program.run program with
-  | { input = _; output; done_ = _ } ->
+  | { input; output; done_ } ->
     let buffer = Buffer.create 0 in
+    Pipe.close input;
     let%bind () =
       Pipe.iter_without_pushback output ~f:(fun c ->
         Buffer.add_char buffer (Char.of_int_exn c))
-    in
-    (* TODO: Investigate *)
+    and () = done_ in
+    (* Need the String.strip because there is an empty line at the end of the
+       output. *)
     return (Buffer.contents buffer |> String.strip |> String.split_lines |> Array.of_list)
 ;;
 
