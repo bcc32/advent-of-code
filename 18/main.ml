@@ -6,16 +6,16 @@ module Square = struct
   type t =
     | Wall
     | Empty
-    | Key of char
-    | Door of char
+    | Key of int
+    | Door of int
     | Entrance
   [@@deriving equal]
 
   let of_char_exn = function
     | '#' -> Wall
     | '.' -> Empty
-    | 'a' .. 'z' as lower -> Key lower
-    | 'A' .. 'Z' as upper -> Door (Char.lowercase upper)
+    | 'a' .. 'z' as lower -> Key (Char.to_int lower - Char.to_int 'a')
+    | 'A' .. 'Z' as upper -> Door (Char.to_int upper - Char.to_int 'A')
     | '@' -> Entrance
     | c -> invalid_argf "Square.of_char_exn: %c" c ()
   ;;
@@ -32,7 +32,7 @@ module State = struct
   type t =
     { i : int
     ; j : int
-    ; collected_keys : Set.M(Char).t
+    ; collected_keys : Bitset.t
     }
   [@@deriving compare, hash, sexp_of]
 end
@@ -46,10 +46,10 @@ let a () =
       |> Option.map ~f:(fun j -> i, j))
   in
   let all_keys =
-    Array.fold grid ~init:Char.Set.empty ~f:(fun accum row ->
-      Array.fold row ~init:accum ~f:(fun accum x ->
-        match x with
-        | Key c -> Set.add accum c
+    Array.fold grid ~init:Bitset.empty ~f:(fun accum row ->
+      Array.fold row ~init:accum ~f:(fun accum square ->
+        match square with
+        | Key c -> Bitset.add accum c
         | _ -> accum))
   in
   let graph =
@@ -62,15 +62,15 @@ let a () =
         |> List.filter_map ~f:(fun (i, j) ->
           match grid.(i).(j) with
           | exception _ -> None
-          | Door c when Set.mem collected_keys c ->
+          | Door c when Bitset.mem collected_keys c ->
             Some { State.i; j; collected_keys }
           | Wall | Door _ -> None
           | Empty | Entrance -> Some { i; j; collected_keys }
-          | Key c -> Some { i; j; collected_keys = Set.add collected_keys c }))
+          | Key c -> Some { i; j; collected_keys = Bitset.add collected_keys c }))
   in
-  Graph.bfs graph ~start:{ i; j; collected_keys = Char.Set.empty }
+  Graph.bfs graph ~start:{ i; j; collected_keys = Bitset.empty }
   |> Hashtbl.filter_keys ~f:(fun { i = _; j = _; collected_keys } ->
-    [%equal: Char.Set.t] collected_keys all_keys)
+    Bitset.equal collected_keys all_keys)
   |> Hashtbl.data
   |> List.min_elt ~compare:[%compare: int]
   |> uw
