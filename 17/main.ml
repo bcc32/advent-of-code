@@ -228,28 +228,34 @@ let definition_too_long defn =
   length > 20
 ;;
 
+let list_chop_prefix list ~prefix ~equal =
+  if List.is_prefix list ~prefix ~equal
+  then Some (List.drop list (List.length prefix))
+  else None
+;;
+
 let rec try_to_complete ~route ~programs ~programs_to_define =
   match route with
   | [] -> Succeed (programs, [])
   | _ :: _ as route ->
     (match
        Map.to_sequence programs
-       |> Sequence.find_map ~f:(fun (name, program) ->
-         if List.is_prefix route ~prefix:program ~equal:[%equal: Route_component.t]
-         then (
-           match
-             try_to_complete
-               ~route:(List.drop route (List.length program))
-               ~programs
-               ~programs_to_define
-           with
-           | Fail -> None
-           | Succeed (programs, programs_called) ->
-             Some (Succeed (programs, name :: programs_called)))
-         else None)
+       |> Sequence.fold_until
+            ~init:()
+            ~finish:(fun () -> Fail)
+            ~f:(fun () (name, program) ->
+              match
+                list_chop_prefix route ~prefix:program ~equal:[%equal: Route_component.t]
+              with
+              | None -> Continue ()
+              | Some route ->
+                (match try_to_complete ~route ~programs ~programs_to_define with
+                 | Fail -> Continue ()
+                 | Succeed (programs, programs_called) ->
+                   Stop (Succeed (programs, name :: programs_called))))
      with
-     | Some success -> success
-     | None ->
+     | Succeed _ as success -> success
+     | Fail ->
        (match programs_to_define with
         | [] -> Fail
         | program_to_define :: programs_to_define ->
