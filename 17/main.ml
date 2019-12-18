@@ -18,13 +18,18 @@ let output program =
     return (Buffer.contents buffer |> String.strip |> String.split_lines |> Array.of_list)
 ;;
 
+let map =
+  Lazy_deferred.create (fun () ->
+    let%bind program = input () in
+    output program)
+;;
+
 let a () =
-  let%bind program = input () in
-  let%bind output = output program in
+  let%bind map = Lazy_deferred.force_exn map in
   let sum = ref 0 in
-  for i = 1 to Array.length output - 2 do
-    for j = 1 to String.length output.(i) - 2 do
-      let is_scaffold (x, y) = Char.( = ) output.(i + x).[j + y] '#' in
+  for i = 1 to Array.length map - 2 do
+    for j = 1 to String.length map.(i) - 2 do
+      let is_scaffold (x, y) = Char.( = ) map.(i + x).[j + y] '#' in
       if List.for_all [ -1, 0; 1, 0; 0, -1; 0, 1; 0, 0 ] ~f:is_scaffold
       then sum := !sum + (i * j)
     done
@@ -38,13 +43,8 @@ let%expect_test "a" =
   [%expect {| 2660 |}]
 ;;
 
-let map () =
-  let%bind program = input () in
-  output (Program.copy program)
-;;
-
 let show_map () =
-  let%map map = map () in
+  let%map map = Lazy_deferred.force_exn map in
   Array.iter map ~f:print_endline
 ;;
 
@@ -183,7 +183,7 @@ let line_wrap_with_commas strings =
 ;;
 
 let%expect_test "find_route" =
-  let%bind map = map () in
+  let%bind map = Lazy_deferred.force_exn map in
   find_route map
   |> List.map ~f:Route_component.to_string
   |> line_wrap_with_commas
@@ -287,9 +287,8 @@ let compress ~route =
   | Succeed (programs, programs_called) -> programs, programs_called
 ;;
 
-(* FIXME: Cache map for testing *)
 let%expect_test "compress" =
-  let%bind map = map () in
+  let%bind map = Lazy_deferred.force_exn map in
   let programs, programs_called = compress ~route:(find_route map) in
   print_s
     [%message
@@ -329,7 +328,7 @@ let%expect_test "compress" =
    B,A,B,C,B,A,C,A,C,A *)
 
 let b () =
-  let%bind map = map () in
+  let%bind map = Lazy_deferred.force_exn map in
   let programs, programs_called = compress ~route:(find_route map) in
   let%bind program = input () in
   program.memory.(0) <- 2;
