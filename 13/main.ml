@@ -175,8 +175,6 @@ let solve ?term () =
   let%bind program = input () in
   program.memory.(0) <- 2;
   let score = ref 0 in
-  (* FIXME: Unused *)
-  let last_tiles = ref (Hashtbl.create (module Point)) in
   let ai_input = Mvar.create () in
   let image = Mvar.create () in
   let finished = Ivar.create () in
@@ -208,12 +206,11 @@ let solve ?term () =
           | None, None | Some _, _ -> return ()
         in
         score := new_score;
-        last_tiles := tiles;
         if debug then draw_plain ~tiles ~score:!score;
         if Option.is_some term then Mvar.set image (term_image ~tiles ~score:!score);
         let find_tile_col tile =
           with_return_option (fun { return } ->
-            Hashtbl.iteri !last_tiles ~f:(fun ~key:{ x; y = _ } ~data:tile' ->
+            Hashtbl.iteri tiles ~f:(fun ~key:{ x; y = _ } ~data:tile' ->
               if [%equal: Tile.t] tile tile' then return x))
         in
         let joystick_action =
