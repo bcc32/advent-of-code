@@ -6,17 +6,17 @@ module Square = struct
   type t =
     | Wall
     | Empty
+    | Entrance
     | Key of int
     | Door of int
-    | Entrance
   [@@deriving equal]
 
   let of_char_exn = function
     | '#' -> Wall
     | '.' -> Empty
+    | '@' -> Entrance
     | 'a' .. 'z' as lower -> Key (Char.to_int lower - Char.to_int 'a')
     | 'A' .. 'Z' as upper -> Door (Char.to_int upper - Char.to_int 'A')
-    | '@' -> Entrance
     | c -> invalid_argf "Square.of_char_exn: %c" c ()
   ;;
 end
