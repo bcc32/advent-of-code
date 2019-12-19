@@ -107,11 +107,12 @@ let%expect_test "map" =
 
 let b () =
   let%bind program = input () in
+  let backup = Program.copy program in
   let scan =
     Memo.general
       (fun (x, y) ->
-         if y > 10_000 then raise_s [%message [%here]];
-         scan x y ~program:(Program.copy program) <> 0)
+         Program.restore ~src:backup ~dst:program;
+         scan x y ~program <> 0)
       ~hashable:
         (Hashtbl.Hashable.of_key
            (module struct
@@ -121,13 +122,13 @@ let b () =
   assert (scan (0, 0));
   (* The closest point other than (0, 0) is (6, 5). *)
   assert (scan (6, 5));
-  let y_bounds =
+  let y_min =
     Memo.general (fun x ->
-      let y_min = naturals ~from:0 |> Sequence.find_exn ~f:(fun y -> scan (x, y)) in
-      let y_max =
-        naturals ~from:y_min |> Sequence.find_exn ~f:(fun y -> not (scan (x, y)))
-      in
-      y_min, y_max)
+      naturals ~from:0 |> Sequence.find_exn ~f:(fun y -> scan (x, y)))
+  in
+  let y_max =
+    Memo.general (fun x ->
+      naturals ~from:(y_min x) |> Sequence.find_exn ~f:(fun y -> not (scan (x, y))))
   in
   (* Try to fit Santa's ship in [x_min, x_min+ship_size).  If it can be done, report the
      minimum y coordinate, such that [scan (x, y)] for all (x, y) in [x_min,
@@ -135,7 +136,7 @@ let b () =
   let try_fit ~x_min =
     let y_min, y_max =
       Sequence.range x_min (x_min + ship_size)
-      |> Sequence.map ~f:y_bounds
+      |> Sequence.map ~f:(fun x -> y_min x, y_max x)
       |> Sequence.reduce ~f:(fun (y_min, y_max) (y_min', y_max') ->
         (* Tighten the bounds *)
         Int.max y_min y_min', Int.min y_max y_max')

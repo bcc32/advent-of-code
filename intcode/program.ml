@@ -26,13 +26,32 @@ let copy t =
   { t with memory = Array.copy t.memory; input = Queue.create () }
 ;;
 
-let decode instr =
-  let opcode = instr % 100 in
-  let mode1 = instr / 100 % 10 in
-  let mode2 = instr / 1000 % 10 in
-  let mode3 = instr / 10_000 % 10 in
-  opcode, mode1, mode2, mode3
+let restore ~src ~dst =
+  if (not (Queue.is_empty src.input)) || not (Queue.is_empty dst.input)
+  then raise_s [%message "Program.restore: tried to restore a program with pending input"];
+  let gap = Array.length dst.memory - Array.length src.memory in
+  match Int.sign gap with
+  | Neg -> dst.memory <- Array.copy src.memory
+  | Zero | Pos ->
+    Array.blit
+      ~src:src.memory
+      ~src_pos:0
+      ~dst:dst.memory
+      ~dst_pos:0
+      ~len:(Int.min (Array.length src.memory) (Array.length dst.memory));
+    if gap > 0 then Array.fill dst.memory 0 ~pos:(Array.length src.memory) ~len:gap;
+    dst.pc <- src.pc;
+    dst.relative_base <- src.relative_base
 ;;
+
+module Insn = struct
+  (* TODO: These divisions are actually kind of slow (they take up a lot of time in
+     problem 19).  Perhaps we should just store instructions as strings? *)
+  let opcode t = t % 100
+  let mode1 t = t / 100 % 10
+  let mode2 t = t / 1000 % 10
+  let mode3 t = t / 10_000 % 10
+end
 
 let get t ~arg ~mode =
   let try_get index =
@@ -81,20 +100,20 @@ module Sync = struct
   end
 
   let rec step ({ memory; relative_base; pc; input } as t) : Step_result.t =
-    let opcode, mode1, mode2, mode3 = decode memory.(pc) in
+    let insn = memory.(pc) in
     let x () =
       let arg = memory.(pc + 1) in
-      get t ~arg ~mode:mode1
+      get t ~arg ~mode:(Insn.mode1 insn)
     in
     let y () =
       let arg = memory.(pc + 2) in
-      get t ~arg ~mode:mode2
+      get t ~arg ~mode:(Insn.mode2 insn)
     in
     let set_z value =
       let arg = memory.(pc + 3) in
-      set t ~arg ~mode:mode3 ~value
+      set t ~arg ~mode:(Insn.mode3 insn) ~value
     in
-    match opcode with
+    match Insn.opcode insn with
     | 1 ->
       set_z (x () + y ());
       t.pc <- pc + 4;
@@ -108,7 +127,7 @@ module Sync = struct
       (match Queue.dequeue input with
        | None -> Need_input
        | Some input ->
-         set t ~arg:arg1 ~mode:mode1 ~value:input;
+         set t ~arg:arg1 ~mode:(Insn.mode1 insn) ~value:input;
          t.pc <- pc + 2;
          step t)
     | 4 ->

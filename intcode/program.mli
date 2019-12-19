@@ -12,6 +12,7 @@ type t = private
 
 val of_string : string -> t
 val copy : t -> t
+val restore : src:t -> dst:t -> unit
 
 module Sync : sig
   module Step_result : sig
