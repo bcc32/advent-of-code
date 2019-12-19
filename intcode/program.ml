@@ -159,6 +159,8 @@ module Sync = struct
 end
 
 module Async = struct
+  open Eager_deferred.Let_syntax
+
   module Run = struct
     type t =
       { input : int Pipe.Writer.t

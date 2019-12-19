@@ -1,6 +1,6 @@
 (library
  (name intcode)
- (libraries core async)
+ (libraries core async async_kernel.eager_deferred)
  (preprocess
   (pps ppx_jane))
  (inline_tests))
