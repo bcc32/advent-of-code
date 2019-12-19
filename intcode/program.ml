@@ -82,28 +82,25 @@ module Sync = struct
 
   let rec step ({ memory; relative_base; pc; input } as t) : Step_result.t =
     let opcode, mode1, mode2, mode3 = decode memory.(pc) in
-    let with1 f =
-      let arg1 = memory.(pc + 1) in
-      f ~x:(get t ~arg:arg1 ~mode:mode1)
+    let x () =
+      let arg = memory.(pc + 1) in
+      get t ~arg ~mode:mode1
     in
-    let with2 f =
-      let arg1 = memory.(pc + 1) in
-      let arg2 = memory.(pc + 2) in
-      f ~x:(get t ~arg:arg1 ~mode:mode1) ~y:(get t ~arg:arg2 ~mode:mode2)
+    let y () =
+      let arg = memory.(pc + 2) in
+      get t ~arg ~mode:mode2
     in
-    let with3 f =
-      let arg1 = memory.(pc + 1) in
-      let arg2 = memory.(pc + 2) in
-      let arg3 = memory.(pc + 3) in
-      f ~x:(get t ~arg:arg1 ~mode:mode1) ~y:(get t ~arg:arg2 ~mode:mode2) ~arg3 ~mode3
+    let set_z value =
+      let arg = memory.(pc + 3) in
+      set t ~arg ~mode:mode3 ~value
     in
     match opcode with
     | 1 ->
-      with3 (fun ~x ~y ~arg3 ~mode3 -> set t ~arg:arg3 ~mode:mode3 ~value:(x + y));
+      set_z (x () + y ());
       t.pc <- pc + 4;
       step t
     | 2 ->
-      with3 (fun ~x ~y ~arg3 ~mode3 -> set t ~arg:arg3 ~mode:mode3 ~value:(x * y));
+      set_z (x () * y ());
       t.pc <- pc + 4;
       step t
     | 3 ->
@@ -115,27 +112,25 @@ module Sync = struct
          t.pc <- pc + 2;
          step t)
     | 4 ->
-      let x = with1 (fun ~x -> x) in
+      let x = x () in
       t.pc <- pc + 2;
       Output x
     | 5 ->
-      t.pc <- with2 (fun ~x ~y -> if x <> 0 then y else pc + 3);
+      t.pc <- (if x () <> 0 then y () else pc + 3);
       step t
     | 6 ->
-      t.pc <- with2 (fun ~x ~y -> if x = 0 then y else pc + 3);
+      t.pc <- (if x () = 0 then y () else pc + 3);
       step t
     | 7 ->
-      with3 (fun ~x ~y ~arg3 ~mode3 ->
-        set t ~arg:arg3 ~mode:mode3 ~value:(Bool.to_int (x < y)));
+      set_z (Bool.to_int (x () < y ()));
       t.pc <- pc + 4;
       step t
     | 8 ->
-      with3 (fun ~x ~y ~arg3 ~mode3 ->
-        set t ~arg:arg3 ~mode:mode3 ~value:(Bool.to_int (x = y)));
+      set_z (Bool.to_int (x () = y ()));
       t.pc <- pc + 4;
       step t
     | 9 ->
-      with1 (fun ~x -> t.relative_base <- relative_base + x);
+      t.relative_base <- relative_base + x ();
       t.pc <- pc + 2;
       step t
     | 99 -> Done
