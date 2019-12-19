@@ -7,6 +7,8 @@ let debug = false
 let input () = Reader.file_contents "input" >>| Program.of_string
 
 let output program =
+  (* FIXME: Replace match statements like these with the equivalent let-binding when
+     type-directed disambiguation works therefor. *)
   match Program.Async.run program with
   | { input; output; done_ } ->
     let buffer = Buffer.create 0 in
