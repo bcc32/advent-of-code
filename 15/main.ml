@@ -30,7 +30,7 @@ end
 (* TODO: Add a way to represent programs persistently and immutably. *)
 
 let explore ~program =
-  match Program.run program with
+  match Program.Async.run program with
   | { input; output; done_ = _ } ->
     let robot = Robot.create_without_dir ~initial_loc:(0, 0) in
     let grid = Hashtbl.create (module Robot.Point) in

@@ -4,10 +4,10 @@ open! Import
 open Intcode
 
 module Amp = struct
-  type t = Program.Run.t
+  type t = Program.Async.Run.t
 
   let create ~program ~setting =
-    let run = Program.run (Program.copy program) in
+    let run = Program.Async.run (Program.copy program) in
     Pipe.write_without_pushback run.input setting;
     run
   ;;

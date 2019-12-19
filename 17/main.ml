@@ -7,7 +7,7 @@ let debug = false
 let input () = Reader.file_contents "input" >>| Program.of_string
 
 let output program =
-  match Program.run program with
+  match Program.Async.run program with
   | { input; output; done_ } ->
     let buffer = Buffer.create 0 in
     Pipe.close input;
@@ -340,7 +340,7 @@ let b () =
   let programs, programs_called = compress ~route:(find_route map) in
   let%bind program = input () in
   program.memory.(0) <- 2;
-  match Program.run program with
+  match Program.Async.run program with
   | { input; output; done_ = _ } ->
     let write_strings strings =
       String.iter

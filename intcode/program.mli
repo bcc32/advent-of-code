@@ -2,22 +2,39 @@ open! Core
 open! Async
 open! Import
 
-module Run : sig
-  type t = private
-    { input : int Pipe.Writer.t
-    ; output : int Pipe.Reader.t
-    ; done_ : unit Deferred.t
-    }
-end
-
 type t = private
   { mutable memory : int array
   ; mutable relative_base : int
+  ; mutable pc : int
+  ; mutable input : int Queue.t
   }
 [@@deriving sexp_of]
 
 val of_string : string -> t
 val copy : t -> t
-val run : t -> Run.t
-val run_without_io : t -> unit Deferred.t
-val run' : t -> input:(int, [> read ]) Mvar.t -> int Pipe.Reader.t
+
+module Sync : sig
+  module Step_result : sig
+    type t =
+      | Done
+      | Need_input
+      | Output of int
+  end
+
+  val run_without_input_exn : t -> f:(int -> unit) -> unit
+  val step : t -> Step_result.t
+  val provide_input : t -> int -> unit
+  val provide_input' : t -> int Queue.t -> unit
+end
+
+module Async : sig
+  module Run : sig
+    type t = private
+      { input : int Pipe.Writer.t
+      ; output : int Pipe.Reader.t
+      ; done_ : unit Deferred.t
+      }
+  end
+
+  val run : t -> Run.t
+end

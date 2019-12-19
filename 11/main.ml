@@ -14,7 +14,7 @@ let paint program ~starting_color =
       end)
   in
   Hashtbl.set paint ~key:(Robot.loc robot) ~data:starting_color;
-  match Program.run program with
+  match Program.Async.run program with
   | { input; output; done_ } ->
     Pipe.write_without_pushback input starting_color;
     let%bind () =

@@ -7,7 +7,7 @@ let input () = Reader.file_contents "input" >>| Program.of_string
 
 let a () =
   let%bind program = input () in
-  match Program.run program with
+  match Program.Async.run program with
   | { input; output; done_ } ->
     Pipe.write_without_pushback input 1;
     let%bind () = Pipe.iter_without_pushback output ~f:(printf "%d\n") in
@@ -21,7 +21,7 @@ let%expect_test "a" =
 
 let b () =
   let%bind program = input () in
-  match Program.run program with
+  match Program.Async.run program with
   | { input; output; done_ } ->
     Pipe.write_without_pushback input 2;
     let%bind () = Pipe.iter_without_pushback output ~f:(printf "%d\n") in
