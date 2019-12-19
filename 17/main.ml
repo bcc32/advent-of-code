@@ -177,10 +177,7 @@ let find_route map =
 let line_wrap_with_commas strings =
   let fmt = Format.str_formatter in
   Format.pp_set_margin fmt 20;
-  List.iter strings ~f:(fun s ->
-    Format.pp_print_string fmt s;
-    Format.pp_print_char fmt ',';
-    Format.pp_print_cut fmt ());
+  List.iter strings ~f:(Format.fprintf fmt "%s,@,");
   Format.flush_str_formatter ()
 ;;
 
