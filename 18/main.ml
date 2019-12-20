@@ -91,22 +91,31 @@ let a () =
     bfs
       (module Robot.Point)
       ~start
-      ~outgoing_edges:(fun point ->
-        Robot.Dir.all
-        |> List.map ~f:(fun d -> Robot.Point.add point d)
-        |> List.filter_map ~f:(fun (i, j) ->
-          match grid.(i).(j) with
-          | exception _ -> None
-          | Wall -> None
-          | Empty | Entrance | Key _ -> Some ((i, j), None)
-          | Door c -> Some ((i, j), Some c)))
+      ~outgoing_edges:(fun ((i, j) as point) ->
+        (* Prune edges leading from keys that were not the starting point.  We
+           would never want to pass a key without collect it. *)
+        if (not ([%equal: int * int] point start))
+           &&
+           match grid.(i).(j) with
+           | Key _ -> true
+           | Wall | Empty | Entrance | Door _ -> false
+        then []
+        else
+          Robot.Dir.all
+          |> List.map ~f:(fun d -> Robot.Point.add point d)
+          |> List.filter_map ~f:(fun (i, j) ->
+            match grid.(i).(j) with
+            | exception _ -> None
+            | Wall -> None
+            | Empty | Entrance | Key _ -> Some ((i, j), None)
+            | Door c -> Some ((i, j), Some c)))
   in
   let distances =
     (* We could only do about half of these because distance is symmetric, but
        BFS finds one-to-all distances so it's not that much cheaper. *)
     Array.map key_points ~f:(fun p1 ->
       let from_p1 = bfs ~start:p1 in
-      Array.map key_points ~f:(fun p2 -> Hashtbl.find_exn from_p1 p2))
+      Array.map key_points ~f:(fun p2 -> Hashtbl.find from_p1 p2))
   in
   let final_state, distance =
     Graph.dijkstra
@@ -115,18 +124,18 @@ let a () =
       ~is_end:(fun state -> Bitset.equal state.collected_keys all_keys)
       ~outgoing_edges:(fun { key_point_index; collected_keys } ->
         List.init (Array.length key_points) ~f:(fun i ->
-          let distance, keys_needed = distances.(key_point_index).(i) in
-          let collected_keys =
-            let i, j = key_points.(i) in
-            match grid.(i).(j) with
-            | Key c -> Bitset.add collected_keys c
-            | _ -> collected_keys
-          in
-          { State.key_point_index = i; collected_keys }, distance, keys_needed)
-        |> List.filter_map ~f:(fun (state, distance, keys_needed) ->
-          if Bitset.is_subset collected_keys ~subset:keys_needed
-          then Some (state, distance)
-          else None))
+          match distances.(key_point_index).(i) with
+          | Some (distance, keys_needed)
+            when Bitset.is_subset collected_keys ~subset:keys_needed ->
+            let collected_keys =
+              let i, j = key_points.(i) in
+              match grid.(i).(j) with
+              | Key c -> Bitset.add collected_keys c
+              | _ -> collected_keys
+            in
+            Some ({ State.key_point_index = i; collected_keys }, distance)
+          | None | Some _ -> None)
+        |> List.filter_opt)
     |> Option.value_exn
   in
   if debug then print_s [%message (final_state : State.t)];
