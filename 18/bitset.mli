@@ -13,3 +13,6 @@ val union : t -> t -> t
 val inter : t -> t -> t
 val diff : t -> t -> t
 val of_list : int list -> t
+
+(* TODO: Upstream this *)
+val is_subset : t -> subset:t -> bool

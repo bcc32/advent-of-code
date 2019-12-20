@@ -1,5 +1,5 @@
 (library
  (name graph)
- (libraries core)
+ (libraries core core_kernel.hash_heap)
  (preprocess
   (pps ppx_jane)))

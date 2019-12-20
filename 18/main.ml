@@ -2,6 +2,8 @@ open! Core
 open! Async
 open! Import
 
+let debug = false
+
 module Square = struct
   type t =
     | Wall
@@ -30,20 +32,40 @@ let input () =
 
 module State = struct
   type t =
-    { i : int
-    ; j : int
+    { key_point_index : int
     ; collected_keys : Bitset.t
     }
   [@@deriving compare, equal, hash, sexp_of]
 end
 
+let filter_points grid ~f =
+  Array.concat_mapi grid ~f:(fun i row ->
+    Array.filter_mapi row ~f:(fun j x -> if f x then Some (i, j) else None))
+;;
+
+let bfs key ~outgoing_edges ~start =
+  let q = Queue.of_list [ start ] in
+  let distance = Hashtbl.of_alist_exn key [ start, (0, []) ] in
+  while not (Queue.is_empty q) do
+    let x = Queue.dequeue_exn q in
+    let d, accum = Hashtbl.find_exn distance x in
+    outgoing_edges x
+    |> List.iter ~f:(fun (y, a) ->
+      match Hashtbl.mem distance y with
+      | true -> ()
+      | false ->
+        Hashtbl.add_exn distance ~key:y ~data:(d + 1, a :: accum);
+        Queue.enqueue q y)
+  done;
+  distance
+;;
+
 let a () =
   let%bind grid = input () in
-  let i, j =
-    Array.find_mapi_exn grid ~f:(fun i row ->
-      Array.find_mapi row ~f:(fun j x ->
-        if [%equal: Square.t] x Entrance then Some j else None)
-      |> Option.map ~f:(fun j -> i, j))
+  let starting_point =
+    let a = filter_points grid ~f:([%equal: Square.t] Entrance) in
+    assert (Array.length a = 1);
+    a.(0)
   in
   let all_keys =
     Array.fold grid ~init:Bitset.empty ~f:(fun accum row ->
@@ -52,29 +74,62 @@ let a () =
         | Key c -> Bitset.add accum c
         | _ -> accum))
   in
-  let graph =
-    Graph.of_functions
-      (module State)
-      ~incoming_edges:(fun _ -> failwith "unimplemented")
-      ~outgoing_edges:(fun { i; j; collected_keys } ->
+  (* Also includes the entrance. *)
+  let key_points =
+    filter_points grid ~f:(function
+      | Entrance -> true
+      | Key _ -> true
+      | _ -> false)
+  in
+  let entrance_index =
+    Array.find_mapi_exn key_points ~f:(fun x p ->
+      Option.some_if ([%equal: int * int] p starting_point) x)
+  in
+  let bfs ~start =
+    bfs
+      (module Robot.Point)
+      ~start
+      ~outgoing_edges:(fun point ->
         Robot.Dir.all
-        |> List.map ~f:(fun d -> Robot.Point.add (i, j) d)
+        |> List.map ~f:(fun d -> Robot.Point.add point d)
         |> List.filter_map ~f:(fun (i, j) ->
           match grid.(i).(j) with
           | exception _ -> None
-          | Door c when Bitset.mem collected_keys c ->
-            Some { State.i; j; collected_keys }
-          | Wall | Door _ -> None
-          | Empty | Entrance -> Some { i; j; collected_keys }
-          | Key c -> Some { i; j; collected_keys = Bitset.add collected_keys c }))
+          | Wall -> None
+          | Empty | Entrance | Key _ -> Some ((i, j), None)
+          | Door c -> Some ((i, j), Some c)))
   in
-  Graph.bfs graph ~start:{ i; j; collected_keys = Bitset.empty }
-  |> Hashtbl.filter_keys ~f:(fun { i = _; j = _; collected_keys } ->
-    Bitset.equal collected_keys all_keys)
-  |> Hashtbl.data
-  |> List.min_elt ~compare:[%compare: int]
-  |> uw
-  |> printf "%d\n";
+  let distances =
+    (* We could only do about half of these because distance is symmetric, but
+       BFS finds one-to-all distances so it's not that much cheaper. *)
+    Array.map key_points ~f:(fun p1 ->
+      let from_p1 = bfs ~start:p1 in
+      Array.map key_points ~f:(fun p2 -> Hashtbl.find_exn from_p1 p2))
+  in
+  let final_state, distance =
+    Graph.dijkstra
+      (module State)
+      ~start:{ key_point_index = entrance_index; collected_keys = Bitset.empty }
+      ~is_end:(fun state -> Bitset.equal state.collected_keys all_keys)
+      ~outgoing_edges:(fun { key_point_index; collected_keys } ->
+        List.init (Array.length key_points) ~f:(fun i ->
+          let distance, keys_needed = distances.(key_point_index).(i) in
+          let collected_keys =
+            let i, j = key_points.(i) in
+            match grid.(i).(j) with
+            | Key c -> Bitset.add collected_keys c
+            | _ -> collected_keys
+          in
+          { State.key_point_index = i; collected_keys }, distance, keys_needed)
+        |> List.filter_map ~f:(fun (state, distance, keys_needed) ->
+          let keys_needed = List.filter_opt keys_needed |> Bitset.of_list in
+          if Bitset.is_subset collected_keys ~subset:keys_needed
+          then Some (state, distance)
+          else None))
+    |> Option.value_exn
+  in
+  if debug then print_s [%message (final_state : State.t)];
+  printf "%d\n" distance;
   return ()
 ;;
 

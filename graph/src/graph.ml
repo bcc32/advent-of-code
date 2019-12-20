@@ -63,3 +63,33 @@ let error_no_node_set = Error.of_string "Graph does not know its node set"
 let node_list t =
   t.nodes |> Result.of_option ~error:error_no_node_set |> Or_error.map ~f:Hash_set.to_list
 ;;
+
+let dijkstra
+      (type node)
+      (module Key : Hashtbl.Key_plain with type t = node)
+      ~outgoing_edges
+      ~start
+      ~is_end
+  =
+  let module HH = Hash_heap.Make (Key) in
+  let distance = Hashtbl.create (module Key) in
+  Hashtbl.add_exn distance ~key:start ~data:0;
+  let frontier = HH.create [%compare: int] in
+  HH.push_exn frontier ~key:start ~data:0;
+  with_return_option (fun { return } ->
+    while HH.length frontier > 0 do
+      let node, dist = HH.pop_with_key_exn frontier in
+      if is_end node then return (node, dist);
+      outgoing_edges node
+      |> List.iter ~f:(fun (node', weight) ->
+        let new_dist = dist + weight in
+        match Hashtbl.find distance node' with
+        | None ->
+          Hashtbl.add_exn distance ~key:node' ~data:new_dist;
+          HH.push_exn frontier ~key:node' ~data:new_dist
+        | Some old_dist when new_dist < old_dist ->
+          Hashtbl.set distance ~key:node' ~data:new_dist;
+          HH.replace frontier ~key:node' ~data:new_dist
+        | Some _ -> ())
+    done)
+;;

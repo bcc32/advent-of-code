@@ -21,3 +21,10 @@ val incoming_edges : 'node t -> 'node -> 'node list
 
 (* TODO: Add early termination condition. *)
 val bfs : 'node t -> start:'node -> ('node, int) Hashtbl.t
+
+val dijkstra
+  :  (module Hashtbl.Key_plain with type t = 'node)
+  -> outgoing_edges:('node -> ('node * int) list)
+  -> start:'node
+  -> is_end:('node -> bool)
+  -> ('node * int) option
