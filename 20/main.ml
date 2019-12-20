@@ -2,6 +2,8 @@ open! Core
 open! Async
 open! Import
 
+let debug = false
+
 let input () =
   let%map lines = Reader.file_lines "input" in
   lines |> Array.of_list_map ~f:String.to_array
@@ -120,23 +122,34 @@ let dijkstra
   =
   let module HH = Hash_heap.Make (Key) in
   let distance = Hashtbl.create (module Key) in
+  let back = Hashtbl.create (module Key) in
+  let trace_back node =
+    let rec loop accum node =
+      match Hashtbl.find back node with
+      | None -> node :: accum
+      | Some next -> loop (node :: accum) next
+    in
+    loop [] node
+  in
   Hashtbl.add_exn distance ~key:start ~data:0;
   let frontier = HH.create [%compare: int] in
   HH.push_exn frontier ~key:start ~data:0;
   with_return_option (fun { return } ->
     while HH.length frontier > 0 do
       let node, dist = HH.pop_with_key_exn frontier in
-      if is_end node then return (node, dist);
+      if is_end node then return (node, dist, trace_back node);
       outgoing_edges node
       |> Array.iter ~f:(fun (node', weight) ->
         let new_dist = dist + weight in
         match Hashtbl.find distance node' with
         | None ->
           Hashtbl.add_exn distance ~key:node' ~data:new_dist;
-          HH.push_exn frontier ~key:node' ~data:new_dist
+          HH.push_exn frontier ~key:node' ~data:new_dist;
+          Hashtbl.add_exn back ~key:node' ~data:node
         | Some old_dist when new_dist < old_dist ->
           Hashtbl.set distance ~key:node' ~data:new_dist;
-          HH.replace frontier ~key:node' ~data:new_dist
+          HH.replace frontier ~key:node' ~data:new_dist;
+          Hashtbl.set back ~key:node' ~data:node
         | Some _ -> ())
     done)
 ;;
@@ -243,15 +256,18 @@ let b () =
         |> Array.map
              ~f:
                (Tuple2.map_fst ~f:(fun (state : State.t) ->
-                  { state with level = state.level + level })))
+                  { state with level = state.level + level }))
+        (* Not allowed to go outwards from level = 0. *)
+        |> Array.filter ~f:(fun (state, _) -> state.level >= 0))
   with
   | None -> failwith "no path"
-  | Some (_end, distance) ->
+  | Some (_end, distance, path) ->
+    if debug then print_s [%sexp (path : State.t list)];
     printf "%d\n" distance;
     return ()
 ;;
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 5080 |}]
+  [%expect {| 6986 |}]
 ;;
