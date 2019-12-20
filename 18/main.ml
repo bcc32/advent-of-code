@@ -58,6 +58,8 @@ let bfs key ~outgoing_edges ~start =
         Queue.enqueue q y)
   done;
   distance
+  |> Hashtbl.map
+       ~f:(Tuple2.map_snd ~f:(fun key -> key |> List.filter_opt |> Bitset.of_list))
 ;;
 
 let a () =
@@ -122,7 +124,6 @@ let a () =
           in
           { State.key_point_index = i; collected_keys }, distance, keys_needed)
         |> List.filter_map ~f:(fun (state, distance, keys_needed) ->
-          let keys_needed = List.filter_opt keys_needed |> Bitset.of_list in
           if Bitset.is_subset collected_keys ~subset:keys_needed
           then Some (state, distance)
           else None))
