@@ -163,9 +163,6 @@ let b () =
         else `Two { Inner_outer.inner = x; outer = y }
       | _ -> assert false)
   in
-  let by_point =
-    labels |> List.map ~f:Tuple2.swap |> Hashtbl.of_alist_exn (module Robot.Point)
-  in
   let all_labeled_points =
     Hashtbl.to_alist by_label
     |> List.concat_map ~f:(fun (label, points) ->
@@ -175,20 +172,13 @@ let b () =
         [ { Labeled_point.point = inner; label; which = `Inner }
         ; { Labeled_point.point = outer; label; which = `Outer }
         ])
-    |> Array.of_list
   in
   let all_labeled_points_index_by_lp =
-    Hashtbl.to_alist by_label
-    |> List.concat_map ~f:(fun (label, points) ->
-      match points with
-      | `One point -> [ { Labeled_point.point; label; which = `Only } ]
-      | `Two { inner; outer } ->
-        [ { Labeled_point.point = inner; label; which = `Inner }
-        ; { Labeled_point.point = outer; label; which = `Outer }
-        ])
+    all_labeled_points
     |> List.mapi ~f:(fun i p -> p, i)
     |> Hashtbl.of_alist_exn (module Labeled_point)
   in
+  let all_labeled_points = Array.of_list all_labeled_points in
   let label_to_label_distance =
     let graph =
       Graph.of_functions
@@ -214,8 +204,14 @@ let b () =
          let labeled_point_index = Hashtbl.find_exn all_labeled_points_index_by_lp point in
          Array.append
            (match point.which with
-            | `Inner -> [| { State.point; level = 1 }, 1 |]
-            | `Outer -> [| { State.point; level = -1 }, 1 |]
+            | `Inner ->
+              let point' = all_labeled_points.(labeled_point_index + 1) in
+              assert (String.( = ) point.label point'.label);
+              [| { State.point = point'; level = 1 }, 1 |]
+            | `Outer ->
+              let point' = all_labeled_points.(labeled_point_index - 1) in
+              assert (String.( = ) point.label point'.label);
+              [| { State.point = point'; level = -1 }, 1 |]
             | `Only -> [||])
            (label_to_label_distance.(labeled_point_index)
             |> Array.filter_mapi ~f:(fun i distance ->
@@ -241,9 +237,7 @@ let b () =
         ; level = 0
         }
       ~is_end:(fun (state : State.t) ->
-        match Hashtbl.find by_point state.point.point with
-        | Some "ZZ" -> true
-        | _ -> false)
+        String.( = ) state.point.label "ZZ" && state.level = 0)
       ~outgoing_edges:(fun { State.point; level } ->
         outgoing_edges_by_point_offset_by_level point
         |> Array.map
@@ -257,19 +251,7 @@ let b () =
     return ()
 ;;
 
-let _ = b
-
-(* let%expect_test "b" =
- *   let%bind () = b () in
- *   [%expect.unreachable]
- * [@@expect.uncaught_exn {|
- *   (\* CR expect_test_collector: This test expectation appears to contain a backtrace.
- *      This is strongly discouraged as backtraces are fragile.
- *      Please change this test to not include a backtrace. *\)
- *
- *   (monitor.ml.Error "Assert_failure 20/main.ml:228:11"
- *     ("<backtrace elided in test>" "Caught by monitor block_on_async"))
- *   Raised at file "src/result.ml" (inlined), line 187, characters 17-26
- *   Called from file "src/thread_safe.ml", line 131, characters 29-63
- *   Called from file "collector/expect_test_collector.ml", line 253, characters 12-19 |}]
- * ;; *)
+let%expect_test "b" =
+  let%bind () = b () in
+  [%expect {| 5080 |}]
+;;
