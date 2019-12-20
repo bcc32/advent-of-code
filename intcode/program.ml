@@ -47,13 +47,13 @@ let restore ~src ~dst =
 module Insn = struct
   (* TODO: These divisions are actually kind of slow (they take up a lot of time in
      problem 19).  Perhaps we should just store instructions as strings? *)
-  let opcode t = t % 100
-  let mode1 t = t / 100 % 10
-  let mode2 t = t / 1000 % 10
-  let mode3 t = t / 10_000 % 10
+  let[@inline always] opcode t = t % 100
+  let[@inline always] mode1 t = t / 100 % 10
+  let[@inline always] mode2 t = t / 1000 % 10
+  let[@inline always] mode3 t = t / 10_000 % 10
 end
 
-let get t ~arg ~mode =
+let[@inline always] get t ~arg ~mode =
   let try_get index =
     try t.memory.(index) with
     | _ -> 0
@@ -63,6 +63,10 @@ let get t ~arg ~mode =
   | 1 -> arg
   | 2 -> try_get (arg + t.relative_base)
   | _ -> assert false
+;;
+
+let[@cold] raise_set_invalid_addressing_mode ~mode =
+  raise_s [%message "Cannot set using addressing mode" (mode : int)]
 ;;
 
 let set t ~arg ~mode ~value =
@@ -86,7 +90,7 @@ let set t ~arg ~mode ~value =
   in
   match mode with
   | 0 -> try_set arg value
-  | 1 -> failwith "Cannot set using addressing mode 1"
+  | 1 -> raise_set_invalid_addressing_mode ~mode
   | 2 -> try_set (arg + t.relative_base) value
   | _ -> assert false
 ;;
@@ -99,17 +103,21 @@ module Sync = struct
       | Output of int
   end
 
+  let[@cold] raise_unrecognized_opcode t ~code =
+    raise_s [%message "unrecognized opcode" (code : int) (t : t)]
+  ;;
+
   let rec step ({ memory; relative_base; pc; input } as t) : Step_result.t =
     let insn = memory.(pc) in
-    let x () =
+    let[@inline always] x () =
       let arg = memory.(pc + 1) in
       get t ~arg ~mode:(Insn.mode1 insn)
     in
-    let y () =
+    let[@inline always] y () =
       let arg = memory.(pc + 2) in
       get t ~arg ~mode:(Insn.mode2 insn)
     in
-    let set_z value =
+    let[@inline always] set_z value =
       let arg = memory.(pc + 3) in
       set t ~arg ~mode:(Insn.mode3 insn) ~value
     in
@@ -153,7 +161,7 @@ module Sync = struct
       t.pc <- pc + 2;
       step t
     | 99 -> Done
-    | code -> raise_s [%message "unrecognized opcode" (code : int) (t : t)]
+    | code -> raise_unrecognized_opcode t ~code
   ;;
 
   let run_without_input_exn t ~f =
