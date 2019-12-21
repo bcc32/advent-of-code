@@ -13,3 +13,5 @@ let add (x, y) (dir : Dir.t) =
   | S -> x, y - 1
   | W -> x - 1, y
 ;;
+
+let adjacent t = Dir.all |> List.map ~f:(fun dir -> add t dir)

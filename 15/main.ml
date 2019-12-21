@@ -111,8 +111,7 @@ let spread_oxygen grid start =
       (module Robot.Point)
       ~incoming_edges:(fun _ -> failwith "unimplemented")
       ~outgoing_edges:(fun point ->
-        Robot.Dir.all
-        |> List.map ~f:(fun d -> Robot.Point.add point d)
+        Robot.Point.adjacent point
         |> List.filter ~f:(fun p ->
           match (Hashtbl.find grid p : Material.t option) with
           | Some Wall -> false

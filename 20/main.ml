@@ -101,8 +101,7 @@ let a () =
               assert (String.( = ) labeled_point.label point'.label);
               [ point'.point ]
             | `Only -> []))
-        @ (Robot.Dir.all
-           |> List.map ~f:(fun d -> Robot.Point.add point d)
+        @ (Robot.Point.adjacent point
            |> List.filter ~f:(fun (i, j) ->
              match grid.(i).(j) with
              | exception _ -> false
@@ -180,9 +179,8 @@ let b () =
       Graph.of_functions
         (module Robot.Point)
         ~incoming_edges:(fun _ -> assert false)
-        ~outgoing_edges:(fun (i, j) ->
-          Robot.Dir.all
-          |> List.map ~f:(fun d -> Robot.Point.add (i, j) d)
+        ~outgoing_edges:(fun point ->
+          Robot.Point.adjacent point
           |> List.filter ~f:(fun (i, j) ->
             match grid.(i).(j) with
             | exception _ -> false

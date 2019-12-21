@@ -101,8 +101,7 @@ let a () =
            | Wall | Empty | Entrance | Door _ -> false
         then []
         else
-          Robot.Dir.all
-          |> List.map ~f:(fun d -> Robot.Point.add point d)
+          Robot.Point.adjacent point
           |> List.filter_map ~f:(fun (i, j) ->
             match grid.(i).(j) with
             | exception _ -> None
@@ -192,8 +191,7 @@ let b () =
       ~outgoing_edges:(fun state ->
         let i, j = Field.get field state in
         let do_the_thing () =
-          Robot.Dir.all
-          |> List.map ~f:(fun d -> Robot.Point.add (i, j) d)
+          Robot.Point.adjacent (i, j)
           |> List.filter_map ~f:(fun (i, j) ->
             match grid.(i).(j) with
             | exception _ -> None
