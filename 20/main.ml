@@ -73,6 +73,24 @@ let find_labels grid =
   |> Array.of_list
 ;;
 
+let label_to_label_distance grid (all_labeled_points : Labeled_point.t array) =
+  let graph =
+    Graph.of_functions
+      (module Robot.Point)
+      ~incoming_edges:(fun _ -> assert false)
+      ~outgoing_edges:(fun point ->
+        Robot.Point.adjacent point
+        |> List.filter ~f:(fun (i, j) ->
+          match grid.(i).(j) with
+          | exception _ -> false
+          | '.' -> true
+          | _ -> false))
+  in
+  Array.map all_labeled_points ~f:(fun p1 ->
+    let distance = Graph.bfs graph ~start:p1.point in
+    Array.map all_labeled_points ~f:(fun p2 -> Hashtbl.find distance p2.point))
+;;
+
 let dijkstra
       (type node)
       (module Key : Hashtbl.Key_plain with type t = node)
@@ -117,23 +135,7 @@ let dijkstra
 let a () =
   let%bind grid = input () in
   let all_labeled_points = find_labels grid in
-  let label_to_label_distance =
-    let graph =
-      Graph.of_functions
-        (module Robot.Point)
-        ~incoming_edges:(fun _ -> assert false)
-        ~outgoing_edges:(fun point ->
-          Robot.Point.adjacent point
-          |> List.filter ~f:(fun (i, j) ->
-            match grid.(i).(j) with
-            | exception _ -> false
-            | '.' -> true
-            | _ -> false))
-    in
-    Array.map all_labeled_points ~f:(fun p1 ->
-      let distance = Graph.bfs graph ~start:p1.point in
-      Array.map all_labeled_points ~f:(fun p2 -> Hashtbl.find distance p2.point))
-  in
+  let label_to_label_distance = label_to_label_distance grid all_labeled_points in
   let the_one_and_only_exn label =
     Array.find_mapi_exn all_labeled_points ~f:(fun i lp ->
       Option.some_if (String.( = ) lp.label label) i)
@@ -184,23 +186,7 @@ end
 let b () =
   let%bind grid = input () in
   let all_labeled_points = find_labels grid in
-  let label_to_label_distance =
-    let graph =
-      Graph.of_functions
-        (module Robot.Point)
-        ~incoming_edges:(fun _ -> assert false)
-        ~outgoing_edges:(fun point ->
-          Robot.Point.adjacent point
-          |> List.filter ~f:(fun (i, j) ->
-            match grid.(i).(j) with
-            | exception _ -> false
-            | '.' -> true
-            | _ -> false))
-    in
-    Array.map all_labeled_points ~f:(fun p1 ->
-      let distance = Graph.bfs graph ~start:p1.point in
-      Array.map all_labeled_points ~f:(fun p2 -> Hashtbl.find distance p2.point))
-  in
+  let label_to_label_distance = label_to_label_distance grid all_labeled_points in
   let outgoing_edges_by_point_offset_by_level =
     Memo.general ~hashable:Int.hashable (fun labeled_point_index ->
       let point = all_labeled_points.(labeled_point_index) in
