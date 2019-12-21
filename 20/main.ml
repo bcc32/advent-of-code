@@ -73,55 +73,6 @@ let find_labels grid =
   |> Array.of_list
 ;;
 
-let a () =
-  let%bind grid = input () in
-  let all_labeled_points = find_labels grid in
-  let all_labeled_points_index_by_point =
-    all_labeled_points
-    |> Array.mapi ~f:(fun i p -> p.point, i)
-    |> Array.to_list
-    |> Hashtbl.of_alist_exn (module Robot.Point)
-  in
-  let graph =
-    Graph.of_functions
-      (module Robot.Point)
-      ~incoming_edges:(fun _ -> assert false)
-      ~outgoing_edges:(fun point ->
-        (match Hashtbl.find all_labeled_points_index_by_point point with
-         | None -> []
-         | Some i ->
-           let labeled_point = all_labeled_points.(i) in
-           (match labeled_point.which with
-            | `Inner ->
-              let point' = all_labeled_points.(i + 1) in
-              assert (String.( = ) labeled_point.label point'.label);
-              [ point'.point ]
-            | `Outer ->
-              let point' = all_labeled_points.(i - 1) in
-              assert (String.( = ) labeled_point.label point'.label);
-              [ point'.point ]
-            | `Only -> []))
-        @ (Robot.Point.adjacent point
-           |> List.filter ~f:(fun (i, j) ->
-             match grid.(i).(j) with
-             | exception _ -> false
-             | '.' -> true
-             | _ -> false)))
-  in
-  let the_one_and_only_exn label =
-    Array.find_map_exn all_labeled_points ~f:(fun lp ->
-      Option.some_if (String.( = ) lp.label label) lp.point)
-  in
-  let distance = Graph.bfs graph ~start:(the_one_and_only_exn "AA") in
-  Hashtbl.find_exn distance (the_one_and_only_exn "ZZ") |> printf "%d\n";
-  return ()
-;;
-
-let%expect_test "a" =
-  let%bind () = a () in
-  [%expect {| 602 |}]
-;;
-
 let dijkstra
       (type node)
       (module Key : Hashtbl.Key_plain with type t = node)
@@ -161,6 +112,65 @@ let dijkstra
           Hashtbl.set back ~key:node' ~data:node
         | Some _ -> ())
     done)
+;;
+
+let a () =
+  let%bind grid = input () in
+  let all_labeled_points = find_labels grid in
+  let label_to_label_distance =
+    let graph =
+      Graph.of_functions
+        (module Robot.Point)
+        ~incoming_edges:(fun _ -> assert false)
+        ~outgoing_edges:(fun point ->
+          Robot.Point.adjacent point
+          |> List.filter ~f:(fun (i, j) ->
+            match grid.(i).(j) with
+            | exception _ -> false
+            | '.' -> true
+            | _ -> false))
+    in
+    Array.map all_labeled_points ~f:(fun p1 ->
+      let distance = Graph.bfs graph ~start:p1.point in
+      Array.map all_labeled_points ~f:(fun p2 -> Hashtbl.find distance p2.point))
+  in
+  let the_one_and_only_exn label =
+    Array.find_mapi_exn all_labeled_points ~f:(fun i lp ->
+      Option.some_if (String.( = ) lp.label label) i)
+  in
+  match
+    dijkstra
+      (module Int)
+      ~start:(the_one_and_only_exn "AA")
+      ~is_end:(fun labeled_point_index ->
+        String.( = ) all_labeled_points.(labeled_point_index).label "ZZ")
+      ~outgoing_edges:(fun labeled_point_index ->
+        let labeled_point = all_labeled_points.(labeled_point_index) in
+        Array.append
+          (match labeled_point.which with
+           | `Inner ->
+             let point' = all_labeled_points.(labeled_point_index + 1) in
+             assert (String.( = ) labeled_point.label point'.label);
+             [| labeled_point_index + 1, 1 |]
+           | `Outer ->
+             let point' = all_labeled_points.(labeled_point_index - 1) in
+             assert (String.( = ) labeled_point.label point'.label);
+             [| labeled_point_index - 1, 1 |]
+           | `Only -> [||])
+          (label_to_label_distance.(labeled_point_index)
+           |> Array.filter_mapi ~f:(fun next_index distance ->
+             Option.map distance ~f:(fun distance -> next_index, distance))))
+  with
+  | None -> failwith "no path"
+  | Some (_end, distance, path) ->
+    if debug then print_s [%sexp (path : int list)];
+    printf "%d\n" distance;
+    return ()
+;;
+
+let%expect_test "a" =
+  let%bind () = a () in
+  [%expect {| 602 |}]
 ;;
 
 module State = struct
