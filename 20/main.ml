@@ -15,36 +15,26 @@ let find_labels grid =
   for i = 0 to Array.length grid - 1 do
     for j = 0 to Array.length grid.(0) - 2 do
       if Char.is_alpha grid.(i).(j) && Char.is_alpha grid.(i).(j + 1)
-      then
+      then (
+        let label = String.of_char_list [ grid.(i).(j); grid.(i).(j + 1) ] in
         if j > 0 && Char.( = ) grid.(i).(j - 1) '.'
-        then
-          results
-          := (String.of_char_list [ grid.(i).(j); grid.(i).(j + 1) ], (i, j - 1))
-             :: !results
-        else if j + 2 < Array.length grid.(0) && Char.( = ) grid.(i).(j + 2) '.'
-        then
-          results
-          := (String.of_char_list [ grid.(i).(j); grid.(i).(j + 1) ], (i, j + 2))
-             :: !results
-        else assert false
+        then results := (label, (i, j - 1)) :: !results
+        else (
+          assert (Char.( = ) grid.(i).(j + 2) '.');
+          results := (label, (i, j + 2)) :: !results))
     done
   done;
   (* vertical *)
   for i = 0 to Array.length grid - 2 do
     for j = 0 to Array.length grid.(0) - 1 do
       if Char.is_alpha grid.(i).(j) && Char.is_alpha grid.(i + 1).(j)
-      then
+      then (
+        let label = String.of_char_list [ grid.(i).(j); grid.(i + 1).(j) ] in
         if i > 0 && Char.( = ) grid.(i - 1).(j) '.'
-        then
-          results
-          := (String.of_char_list [ grid.(i).(j); grid.(i + 1).(j) ], (i - 1, j))
-             :: !results
-        else if i + 2 < Array.length grid && Char.( = ) grid.(i + 2).(j) '.'
-        then
-          results
-          := (String.of_char_list [ grid.(i).(j); grid.(i + 1).(j) ], (i + 2, j))
-             :: !results
-        else assert false
+        then results := (label, (i - 1, j)) :: !results
+        else (
+          assert (Char.( = ) grid.(i + 2).(j) '.');
+          results := (label, (i + 2, j)) :: !results))
     done
   done;
   !results
