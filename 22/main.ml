@@ -66,8 +66,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {|
-    4684 |}]
+  [%expect {| 4684 |}]
 ;;
 
 (** [bezout a b] returns [(s, t, g)] such that [g = gcd(a, b)] and [s * a + t
@@ -258,7 +257,7 @@ let%expect_test "apply_n_times" =
       then (
         let a = a % m in
         let b = b % m in
-        match modular_inverse (1 - a) ~m with
+        match modular_inverse (a - 1) ~m with
         | exception _ -> ()
         | _ ->
           require_equal
@@ -273,26 +272,7 @@ let%expect_test "apply_n_times" =
                ~n
                (fun (a', b') -> mod_mul m a a', (mod_mul m a b' + b) % m)
                (1, 0))));
-  [%expect.unreachable]
-[@@expect.uncaught_exn
-  {|
-  (* CR expect_test_collector: This test expectation appears to contain a backtrace.
-     This is strongly discouraged as backtraces are fragile.
-     Please change this test to not include a backtrace. *)
-
-  (monitor.ml.Error
-    ("Base_quickcheck.Test.run: test failed" (input (20 (0 13808652)))
-      (error
-        ("Assert_failure 22/main.ml:93:2"
-           "Raised at file \"22/main.ml\", line 93, characters 2-16\
-          \nCalled from file \"22/main.ml\", line 247, characters 47-75\
-          \nCalled from file \"22/main.ml\", line 271, characters 12-40\
-          \nCalled from file \"src/or_error.ml\", line 75, characters 9-15\
-          \n")))
-    ("<backtrace elided in test>" "Caught by monitor block_on_async"))
-  Raised at file "src/result.ml" (inlined), line 187, characters 17-26
-  Called from file "src/thread_safe.ml", line 131, characters 29-63
-  Called from file "collector/expect_test_collector.ml", line 253, characters 12-19 |}]
+  [%expect {||}]
 ;;
 
 let b () =
