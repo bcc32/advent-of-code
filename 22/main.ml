@@ -1,0 +1,222 @@
+open! Core
+open! Async
+open! Import
+
+let debug = false
+
+module Card = Int
+
+module Technique = struct
+  type t =
+    | Deal_with_increment of int
+    | Cut of int
+    | Deal_into_new_stack
+
+  let of_string s =
+    match s with
+    | "deal into new stack" -> Deal_into_new_stack
+    | s ->
+      (match String.chop_prefix s ~prefix:"cut " with
+       | Some x -> Cut (Int.of_string x)
+       | None ->
+         (match String.chop_prefix s ~prefix:"deal with increment " with
+          | Some x -> Deal_with_increment (Int.of_string x)
+          | None -> failwith "Technique.of_string"))
+  ;;
+
+  let perform t deck =
+    match t with
+    | Deal_into_new_stack -> Array.rev_inplace deck
+    | Cut n ->
+      let next = Array.create 0 ~len:(Array.length deck) in
+      if n > 0
+      then (
+        Array.blit ~src:deck ~dst:next ~src_pos:n ~len:(Array.length deck - n) ~dst_pos:0;
+        Array.blit ~src:deck ~dst:next ~src_pos:0 ~len:n ~dst_pos:(Array.length deck - n))
+      else (
+        let n = Int.abs n in
+        Array.blit ~src:deck ~dst:next ~src_pos:0 ~len:(Array.length deck - n) ~dst_pos:n;
+        Array.blit ~src:deck ~dst:next ~src_pos:(Array.length deck - n) ~len:n ~dst_pos:0);
+      Array.blito ~src:next ~dst:deck ()
+    | Deal_with_increment n ->
+      let next = Array.create 0 ~len:(Array.length deck) in
+      let into_index = ref 0 in
+      Array.iter deck ~f:(fun x ->
+        next.(!into_index) <- x;
+        into_index := !into_index + n;
+        into_index := !into_index % Array.length deck);
+      Array.blito ~src:next ~dst:deck ()
+  ;;
+end
+
+let input () =
+  let%map lines = Reader.file_lines "input" in
+  lines |> List.map ~f:Technique.of_string
+;;
+
+let a () =
+  let%bind input = input () in
+  let deck = Array.init 10_007 ~f:Fn.id in
+  List.iter input ~f:(fun t -> Technique.perform t deck);
+  if debug then print_s [%sexp (deck : int array)];
+  let i, _ = Array.findi_exn deck ~f:(fun _ x -> x = 2019) in
+  printf "%d\n" i;
+  return ()
+;;
+
+let%expect_test "a" =
+  let%bind () = a () in
+  [%expect {| 1219 |}]
+;;
+
+let card_count = 119315717514047
+let shuffle_count = 101741582076661
+
+(** [bezout a b] returns [(s, t, g)] such that [g = gcd(a, b)] and [s * a + t
+ * b = g] *)
+
+let bezout a b =
+  let rec loop r0 s0 t0 r1 s1 t1 =
+    if r1 = 0
+    then s0, t0, r0
+    else (
+      let q = r0 / r1 in
+      loop r1 s1 t1 (r0 - (q * r1)) (s0 - (q * s1)) (t0 - (q * t1)))
+  in
+  loop a 1 0 b 0 1
+;;
+
+(* Since card_count is prime,
+
+   [n^(-1) mod card_count] = [n^(card_count - 2) mod card_count]. *)
+
+let modular_inverse =
+  Memo.general (fun n ->
+    let s, t, g = bezout n card_count in
+    assert (g = 1);
+    ignore (t : int);
+    s)
+;;
+
+(* az mod m = a(z mod q) − r[z / q]
+   where m = qa + r *)
+
+let rec mod_mul m a =
+  if a = 0
+  then Fn.const 0
+  else (
+    let q = m / a in
+    let r = m mod a in
+    fun z ->
+      let snd = if r < q then r * (z / q) else mod_mul m r (z / q) in
+      ((a * (z mod q)) - snd) % m)
+;;
+
+let mod_mul_bigint m a =
+  let m = Bigint.of_int m in
+  let a = Bigint.of_int a in
+  fun z -> Bigint.rem (Bigint.( * ) a (Bigint.of_int z)) m |> Bigint.to_int_exn
+;;
+
+let _ = mod_mul_bigint
+
+(* let%expect_test "mod_mul" =
+ *   Base_quickcheck.Test.run_exn
+ *     (module struct
+ *       type t = int * int * int [@@deriving quickcheck, sexp_of]
+ *     end)
+ *     ~f:(fun (m, a, z) ->
+ *       if m > 1
+ *       then (
+ *         let a = a % m in
+ *         let z = z % m in
+ *         require_equal
+ *           ~if_false_then_print_s:(lazy [%message (m : int) (a : int) (z : int)])
+ *           [%here]
+ *           (module Int)
+ *           (mod_mul m a z)
+ *           (mod_mul_bigint m a z)));
+ *   [%expect {| |}]
+ * ;; *)
+
+let mod_mul_for = Memo.general (fun n -> mod_mul card_count (modular_inverse n))
+
+(* let mod_mul_for n z = mod_mul card_count (modular_inverse n) z *)
+
+let where_did_it_come_from instruction card_index =
+  match (instruction : Technique.t) with
+  | Deal_with_increment n -> mod_mul_for n card_index
+  | Deal_into_new_stack -> card_count - card_index - 1
+  | Cut n -> (card_index + n) % card_count
+;;
+
+let where_did_it_come_from instructions card_index =
+  Array.fold_right instructions ~init:card_index ~f:(fun insn index ->
+    where_did_it_come_from insn index)
+;;
+
+(* let step instructions =
+ *   stage (Memo.general (fun index -> where_did_it_come_from instructions index))
+ * ;; *)
+
+let step instructions = stage (fun index -> where_did_it_come_from instructions index)
+
+(* let%expect_test _ =
+ *   let%bind instructions = input () in
+ *   Ref.set_temporarily card_count 10 ~f:(fun () ->
+ *     let f = unstage (step instructions) in
+ *     for i = 0 to 9 do
+ *       printf "%d\n" (f i)
+ *     done);
+ *   [%expect {|
+ *     9
+ *     2
+ *     5
+ *     8
+ *     1
+ *     4
+ *     7
+ *     0
+ *     3
+ *     6 |}]
+ * ;; *)
+
+(* TODO: Dedupe from 12. *)
+let find_cycle_length start step =
+  let rec loop power cycle_length slow fast =
+    if slow = fast
+    then cycle_length
+    else if power = cycle_length
+    then loop (power * 2) 1 fast (step fast)
+    else loop power (cycle_length + 1) slow (step fast)
+  in
+  let cycle_length = loop 1 1 start (step start) in
+  let rec loop offset slow fast =
+    if slow = fast then offset else loop (offset + 1) (step slow) (step fast)
+  in
+  let offset = loop 0 start (Fn.apply_n_times step start ~n:cycle_length) in
+  offset, cycle_length
+;;
+
+let b () =
+  let%bind instructions = input () >>| Array.of_list in
+  let index = 2020 in
+  let step = unstage (step instructions) in
+  let offset, cycle_length = find_cycle_length index step in
+  assert (offset = 0);
+  if debug then print_s [%message (offset : int) (cycle_length : int)];
+  let index, shuffle_count =
+    Fn.apply_n_times ~n:offset step index, shuffle_count - offset
+  in
+  let shuffle_count = shuffle_count % cycle_length in
+  let index = Fn.apply_n_times ~n:shuffle_count step index in
+  printf "%d\n" index;
+  return ()
+;;
+
+let _ = b
+
+(* let%expect_test "b" =
+ *   let%bind () = b () in
+ *   [%expect {| 51470748817722 |}]
+ * ;; *)
