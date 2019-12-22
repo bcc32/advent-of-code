@@ -85,14 +85,17 @@ let%expect_test "a" =
 
    Applying the transformation n times is equal to:
 
-   a^n x + a^(n-1) b + a^(n-2) b + ... + b *)
+   a^n x + a^(n-1) b + a^(n-2) b + ... + b, which is just the sum of a geometric
+   series:
+
+   a^n x + b (1 - a^n) / (1 - a)
+*)
 
 open Bigint.O
 
-let modular_inverse n ~m =
-  Z.invert (Bigint.to_zarith_bigint n) (Bigint.to_zarith_bigint m)
-  |> Bigint.of_zarith_bigint
-;;
+let z = Bigint.to_zarith_bigint
+let z' = Bigint.of_zarith_bigint
+let modular_inverse n ~m = Z.invert (z n) (z m) |> z'
 
 let transform_instruction ~card_count instruction (a, b) =
   match (instruction : _ Technique.t) with
@@ -112,13 +115,12 @@ let mod_exp ~m a b =
   (* Zarith has a bug (fixed in master) where the program crashes with SIGFPE if
      the modulus is zero. *)
   assert (Bigint.is_positive m);
-  let z = Bigint.to_zarith_bigint in
-  Z.powm (z a) (z b) (z m) |> Bigint.of_zarith_bigint
+  Z.powm (z a) (z b) (z m) |> z'
 ;;
 
 let apply_n_times ~m ~n (a, b) =
   let a'n = mod_exp ~m a n in
-  a'n, b * (a'n - Bigint.one) * modular_inverse (a - Bigint.one) ~m % m
+  a'n, b * (Bigint.one - a'n) * modular_inverse (Bigint.one - a) ~m % m
 ;;
 
 let b () =
