@@ -24,28 +24,18 @@ module Technique = struct
           | None -> failwith "Technique.of_string"))
   ;;
 
-  let perform t deck =
+  let perform t ~deck ~buf =
+    assert (Array.length deck = Array.length buf);
     match t with
     | Deal_into_new_stack -> Array.rev_inplace deck
     | Cut n ->
-      let next = Array.create 0 ~len:(Array.length deck) in
-      if n > 0
-      then (
-        Array.blit ~src:deck ~dst:next ~src_pos:n ~len:(Array.length deck - n) ~dst_pos:0;
-        Array.blit ~src:deck ~dst:next ~src_pos:0 ~len:n ~dst_pos:(Array.length deck - n))
-      else (
-        let n = Int.abs n in
-        Array.blit ~src:deck ~dst:next ~src_pos:0 ~len:(Array.length deck - n) ~dst_pos:n;
-        Array.blit ~src:deck ~dst:next ~src_pos:(Array.length deck - n) ~len:n ~dst_pos:0);
-      Array.blito ~src:next ~dst:deck ()
+      for i = 0 to Array.length deck - 1 do
+        buf.(i) <- deck.((i + n) % Array.length deck)
+      done;
+      Array.blito ~src:buf ~dst:deck ()
     | Deal_with_increment n ->
-      let next = Array.create 0 ~len:(Array.length deck) in
-      let into_index = ref 0 in
-      Array.iter deck ~f:(fun x ->
-        next.(!into_index) <- x;
-        into_index := !into_index + n;
-        into_index := !into_index % Array.length deck);
-      Array.blito ~src:next ~dst:deck ()
+      Array.iteri deck ~f:(fun i x -> buf.(i * n % Array.length buf) <- x);
+      Array.blito ~src:buf ~dst:deck ()
   ;;
 end
 
@@ -57,7 +47,8 @@ let input ~int_of_string =
 let a () =
   let%bind input = input ~int_of_string:Int.of_string in
   let deck = Array.init 10_007 ~f:Fn.id in
-  List.iter input ~f:(fun t -> Technique.perform t deck);
+  let buf = Array.init 10_007 ~f:Fn.id in
+  List.iter input ~f:(fun t -> Technique.perform t ~deck ~buf);
   if debug then print_s [%sexp (deck : int array)];
   let i, _ = Array.findi_exn deck ~f:(fun _ x -> x = 2019) in
   printf "%d\n" i;
