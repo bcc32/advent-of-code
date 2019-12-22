@@ -7,20 +7,20 @@ let debug = false
 module Card = Int
 
 module Technique = struct
-  type t =
-    | Deal_with_increment of int
-    | Cut of int
+  type 'int t =
+    | Deal_with_increment of 'int
+    | Cut of 'int
     | Deal_into_new_stack
 
-  let of_string s =
+  let of_string s ~int_of_string =
     match s with
     | "deal into new stack" -> Deal_into_new_stack
     | s ->
       (match String.chop_prefix s ~prefix:"cut " with
-       | Some x -> Cut (Int.of_string x)
+       | Some x -> Cut (int_of_string x)
        | None ->
          (match String.chop_prefix s ~prefix:"deal with increment " with
-          | Some x -> Deal_with_increment (Int.of_string x)
+          | Some x -> Deal_with_increment (int_of_string x)
           | None -> failwith "Technique.of_string"))
   ;;
 
@@ -49,13 +49,13 @@ module Technique = struct
   ;;
 end
 
-let input () =
+let input ~int_of_string =
   let%map lines = Reader.file_lines "input" in
-  lines |> List.map ~f:Technique.of_string
+  lines |> List.map ~f:(Technique.of_string ~int_of_string)
 ;;
 
 let a () =
-  let%bind input = input () in
+  let%bind input = input ~int_of_string:Int.of_string in
   let deck = Array.init 10_007 ~f:Fn.id in
   List.iter input ~f:(fun t -> Technique.perform t deck);
   if debug then print_s [%sexp (deck : int array)];
@@ -69,136 +69,69 @@ let%expect_test "a" =
   [%expect {| 4684 |}]
 ;;
 
-let modular_inverse n ~m = Z.invert (Z.of_int n) (Z.of_int m) |> Z.to_int
+(* Each shuffle technique is a linear mapping of positions (modulo card_count).
 
-let mod_mul m a =
-  let m = Bigint.of_int m in
-  let a = Bigint.of_int a in
-  fun z ->
-    let open Bigint.O in
-    a * Bigint.of_int z % m |> Bigint.to_int_exn
+   In the forward direction:
+
+   - cut(n): (a, b) -> (a, b - n)
+   - deal(n): (a, b) -> (an, bn)
+   - deal new: (a, b) -> (-a, -b - 1)
+
+   In the reverse direction:
+
+   - cut(n): (a, b) -> (a, b + n)
+   - deal(n): (a, b) -> (an^(-1), bn^(-1))
+   - deal new: (a, b) -> (-a, -b - 1)
+
+   Applying the transformation n times is equal to:
+
+   a^n x + a^(n-1) b + a^(n-2) b + ... + b *)
+
+open Bigint.O
+
+let modular_inverse n ~m =
+  Z.invert (Bigint.to_zarith_bigint n) (Bigint.to_zarith_bigint m)
+  |> Bigint.of_zarith_bigint
 ;;
-
-(* let mod_mul_for =
- *   Memo.general (fun n -> mod_mul card_count (modular_inverse n ~card_count))
- * ;;
- *
- * (\* let mod_mul_for n z = mod_mul card_count (modular_inverse n) z *\)
- *
- * let where_did_it_come_from instruction card_index =
- *   match (instruction : Technique.t) with
- *   | Deal_with_increment n -> mod_mul_for n card_index
- *   | Deal_into_new_stack -> card_count - card_index - 1
- *   | Cut n -> (card_index + n) % card_count
- * ;;
- *
- * let where_did_it_come_from instructions card_index =
- *   Array.fold_right instructions ~init:card_index ~f:(fun insn index ->
- *     where_did_it_come_from insn index)
- * ;; *)
-
-(* let step instructions = stage (fun index -> where_did_it_come_from instructions index)
- * let _ = step *)
-
-(* let%expect_test _ =
- *   let%bind instructions = input () in
- *   Ref.set_temporarily card_count 10 ~f:(fun () ->
- *     let f = unstage (step instructions) in
- *     for i = 0 to 9 do
- *       printf "%d\n" (f i)
- *     done);
- *   [%expect {|
- *     9
- *     2
- *     5
- *     8
- *     1
- *     4
- *     7
- *     0
- *     3
- *     6 |}]
- * ;; *)
-
-(* where_did_it_come_from for a single instruction is a linear mapping, and
-   therefore so is where_did_it_come_from for multiple instructions.
-
-   x -> a x + b
-
-   Applying the above mapping N times gives:
-
-   x
-   a x + b
-   a (a x + b) + b = a^2 x + ab + b
-   a (a (a x + b) + b) + b = a^3 x + a^2 b + ab + b
-   ...
-
-   a^n x + b (1 - a^n) / (1 - a) *)
 
 let transform_instruction ~card_count instruction (a, b) =
-  match (instruction : Technique.t) with
+  match (instruction : _ Technique.t) with
   | Deal_with_increment n ->
     let minv = modular_inverse n ~m:card_count in
-    mod_mul card_count a minv, mod_mul card_count b minv
+    a * minv % card_count, b * minv % card_count
   | Cut n -> a, (b + n) % card_count
-  | Deal_into_new_stack -> -a, -b - 1
+  | Deal_into_new_stack -> -a, -b - Bigint.one
 ;;
 
-let transform_all ~card_count instructions (a, b) =
-  Array.fold_right instructions ~init:(a, b) ~f:(fun insn (a, b) ->
+let transform_all ~card_count instructions =
+  List.fold_right instructions ~init:(Bigint.one, Bigint.zero) ~f:(fun insn (a, b) ->
     transform_instruction ~card_count insn (a, b))
 ;;
 
-let mod_exp m a b =
-  assert (m > 0);
-  Z.powm (Z.of_int a) (Z.of_int b) (Z.of_int m) |> Z.to_int
+let mod_exp ~m a b =
+  (* Zarith has a bug (fixed in master) where the program crashes with SIGFPE if
+     the modulus is zero. *)
+  assert (Bigint.is_positive m);
+  let z = Bigint.to_zarith_bigint in
+  Z.powm (z a) (z b) (z m) |> Bigint.of_zarith_bigint
 ;;
 
 let apply_n_times ~m ~n (a, b) =
-  let a'n = mod_exp m a n in
-  a'n, mod_mul m (mod_mul m b ((a'n - 1) % m)) (modular_inverse (a - 1) ~m)
-;;
-
-let%expect_test "apply_n_times" =
-  Base_quickcheck.Test.run_exn
-    (module struct
-      type t = int * (int * int) [@@deriving quickcheck, sexp_of]
-    end)
-    ~f:(fun (n, (a, b)) ->
-      let m = 10_007 in
-      if n >= 0 && n < 100
-      then (
-        let a = a % m in
-        let b = b % m in
-        match modular_inverse (a - 1) ~m with
-        | exception _ -> ()
-        | _ ->
-          require_equal
-            ~if_false_then_print_s:
-              (lazy [%message (m : int) (n : int) (a : int) (b : int)])
-            [%here]
-            (module struct
-              type t = int * int [@@deriving equal, sexp_of]
-            end)
-            (apply_n_times ~m ~n (a, b))
-            (Fn.apply_n_times
-               ~n
-               (fun (a', b') -> mod_mul m a a', (mod_mul m a b' + b) % m)
-               (1, 0))));
-  [%expect {||}]
+  let a'n = mod_exp ~m a n in
+  a'n, b * (a'n - Bigint.one) * modular_inverse (a - Bigint.one) ~m % m
 ;;
 
 let b () =
-  let%bind instructions = input () >>| Array.of_list in
-  let index = 2020 in
-  let card_count = 119315717514047 in
-  let shuffle_count = 101741582076661 in
-  let a, b = transform_all instructions ~card_count (1, 0) in
-  if debug then print_s [%message (a : int) (b : int)];
+  let%bind instructions = input ~int_of_string:Bigint.of_string in
+  let index = Bigint.of_int 2020 in
+  let card_count = Bigint.of_int 119315717514047 in
+  let shuffle_count = Bigint.of_int 101741582076661 in
+  let a, b = transform_all instructions ~card_count in
+  if debug then print_s [%message (a : Bigint.t) (b : Bigint.t)];
   let a, b = apply_n_times ~m:card_count ~n:shuffle_count (a, b) in
-  if debug then print_s [%message (a : int) (b : int)];
+  if debug then print_s [%message (a : Bigint.t) (b : Bigint.t)];
   let index = ((a * index) + b) % card_count in
-  printf "%d\n" index;
+  printf !"%{Bigint}\n" index;
   return ()
 ;;
 
@@ -208,18 +141,15 @@ let%expect_test "b" =
 ;;
 
 let b' () =
-  let%bind instructions = input () >>| Array.of_list in
-  let index = 4684 in
-  let card_count = 10_007 in
-  let shuffle_count = 1 in
+  let%bind instructions = input ~int_of_string:Bigint.of_string in
+  let index = Bigint.of_int 4684 in
+  let card_count = Bigint.of_int 10_007 in
+  let shuffle_count = Bigint.of_int 1 in
   let a, b =
-    apply_n_times
-      ~m:card_count
-      ~n:shuffle_count
-      (transform_all instructions ~card_count (1, 0))
+    apply_n_times ~m:card_count ~n:shuffle_count (transform_all instructions ~card_count)
   in
   let index = ((a * index) + b) % card_count in
-  printf "%d\n" index;
+  printf !"%{Bigint}\n" index;
   return ()
 ;;
 
