@@ -69,30 +69,7 @@ let%expect_test "a" =
   [%expect {| 4684 |}]
 ;;
 
-(** [bezout a b] returns [(s, t, g)] such that [g = gcd(a, b)] and [s * a + t
- * b = g] *)
-
-let bezout a b =
-  let rec loop r0 s0 t0 r1 s1 t1 =
-    if r1 = 0
-    then s0, t0, r0
-    else (
-      let q = r0 / r1 in
-      loop r1 s1 t1 (r0 - (q * r1)) (s0 - (q * s1)) (t0 - (q * t1)))
-  in
-  loop a 1 0 b 0 1
-;;
-
-(* Since card_count is prime,
-
-   [n^(-1) mod card_count] = [n^(card_count - 2) mod card_count]. *)
-
-let modular_inverse n ~m =
-  let s, t, g = bezout n m in
-  assert (g = 1);
-  ignore (t : int);
-  s
-;;
+let modular_inverse n ~m = Z.invert (Z.of_int n) (Z.of_int m) |> Z.to_int
 
 (* az mod m = a(z mod q) − r[z / q]
    where m = qa + r and r < q *)
