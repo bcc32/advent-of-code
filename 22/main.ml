@@ -217,9 +217,9 @@ let mod_exp m a b =
   loop a b 1
 ;;
 
-let mod_exp_bigint m a b =
-  Bigint.rem (Bigint.pow (Bigint.of_int a) (Bigint.of_int b)) (Bigint.of_int m)
-  |> Bigint.to_int_exn
+let mod_exp_zarith m a b =
+  assert (m > 0);
+  Z.powm (Z.of_int a) (Z.of_int b) (Z.of_int m) |> Z.to_int
 ;;
 
 let%expect_test "mod_exp" =
@@ -237,8 +237,8 @@ let%expect_test "mod_exp" =
           [%here]
           (module Int)
           (mod_exp m a z)
-          (mod_exp_bigint m a z)));
-  [%expect {| |}]
+          (mod_exp_zarith m a z)));
+  [%expect {||}]
 ;;
 
 let apply_n_times ~m ~n (a, b) =
