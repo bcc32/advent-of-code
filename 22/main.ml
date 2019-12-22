@@ -109,9 +109,11 @@ let rec mod_mul m a =
 ;;
 
 let mod_mul_bigint m a =
-  let m' = Bigint.of_int m in
+  let m = Bigint.of_int m in
   let a = Bigint.of_int a in
-  fun z -> (Bigint.rem (Bigint.( * ) a (Bigint.of_int z)) m' |> Bigint.to_int_exn) % m
+  fun z ->
+    let open Bigint.O in
+    a * Bigint.of_int z % m |> Bigint.to_int_exn
 ;;
 
 let%expect_test "mod_mul" =
