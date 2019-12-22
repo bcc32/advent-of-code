@@ -71,50 +71,13 @@ let%expect_test "a" =
 
 let modular_inverse n ~m = Z.invert (Z.of_int n) (Z.of_int m) |> Z.to_int
 
-(* Schrage's method: https://stackoverflow.com/a/20972369/652703
-
-   az mod m = a(z mod q) − r[z / q]
-   where m = qa + r and r < q *)
-
-let rec mod_mul m a =
-  if a = 0
-  then Fn.const 0
-  else (
-    let q = m / a in
-    let r = m mod a in
-    fun z ->
-      let snd = if r < q then r * (z / q) else mod_mul m r (z / q) in
-      ((a * (z mod q)) - snd) % m)
-;;
-
-let mod_mul_bigint m a =
+let mod_mul m a =
   let m = Bigint.of_int m in
   let a = Bigint.of_int a in
   fun z ->
     let open Bigint.O in
     a * Bigint.of_int z % m |> Bigint.to_int_exn
 ;;
-
-let%expect_test "mod_mul" =
-  Base_quickcheck.Test.run_exn
-    (module struct
-      type t = int * int * int [@@deriving quickcheck, sexp_of]
-    end)
-    ~f:(fun (m, a, z) ->
-      if m > 1
-      then (
-        let a = a % m in
-        let z = z % m in
-        require_equal
-          ~if_false_then_print_s:(lazy [%message (m : int) (a : int) (z : int)])
-          [%here]
-          (module Int)
-          (mod_mul m a z)
-          (mod_mul_bigint m a z)));
-  [%expect {| |}]
-;;
-
-let mod_mul = mod_mul_bigint
 
 (* let mod_mul_for =
  *   Memo.general (fun n -> mod_mul card_count (modular_inverse n ~card_count))
@@ -187,39 +150,8 @@ let transform_all ~card_count instructions (a, b) =
 ;;
 
 let mod_exp m a b =
-  assert (b >= 0);
-  let rec loop a b r =
-    if b = 0
-    then r
-    else if b % 2 <> 0
-    then loop a (b - 1) (mod_mul m r a)
-    else loop (mod_mul m a a) (b / 2) r
-  in
-  loop a b 1
-;;
-
-let mod_exp_zarith m a b =
   assert (m > 0);
   Z.powm (Z.of_int a) (Z.of_int b) (Z.of_int m) |> Z.to_int
-;;
-
-let%expect_test "mod_exp" =
-  Base_quickcheck.Test.run_exn
-    (module struct
-      type t = int * int * int [@@deriving quickcheck, sexp_of]
-    end)
-    ~f:(fun (m, a, z) ->
-      if m > 1 && z > 0 && z < 100
-      then (
-        let a = a % m in
-        let z = z % m in
-        require_equal
-          ~if_false_then_print_s:(lazy [%message (m : int) (a : int) (z : int)])
-          [%here]
-          (module Int)
-          (mod_exp m a z)
-          (mod_exp_zarith m a z)));
-  [%expect {||}]
 ;;
 
 let apply_n_times ~m ~n (a, b) =
