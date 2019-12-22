@@ -97,8 +97,8 @@ let z = Bigint.to_zarith_bigint
 let z' = Bigint.of_zarith_bigint
 let modular_inverse n ~m = Z.invert (z n) (z m) |> z'
 
-let transform_instruction ~card_count instruction (a, b) =
-  match (instruction : _ Technique.t) with
+let transform_instruction ~card_count (instruction : Bigint.t Technique.t) (a, b) =
+  match instruction with
   | Deal_with_increment n ->
     let minv = modular_inverse n ~m:card_count in
     a * minv % card_count, b * minv % card_count
