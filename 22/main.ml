@@ -71,7 +71,9 @@ let%expect_test "a" =
 
 let modular_inverse n ~m = Z.invert (Z.of_int n) (Z.of_int m) |> Z.to_int
 
-(* az mod m = a(z mod q) − r[z / q]
+(* Schrage's method: https://stackoverflow.com/a/20972369/652703
+
+   az mod m = a(z mod q) − r[z / q]
    where m = qa + r and r < q *)
 
 let rec mod_mul m a =
