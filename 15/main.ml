@@ -80,6 +80,13 @@ let explore ~program =
   grid, path
 ;;
 
+let map =
+  unstage
+    (Deferred.Memo.unit (fun () ->
+       let%map program = input () in
+       explore ~program))
+;;
+
 let find_oxy_exn grid =
   Hashtbl.to_alist grid
   |> List.find_exn ~f:(fun (_point, material) -> [%equal: Material.t] material Oxygen)
@@ -87,8 +94,7 @@ let find_oxy_exn grid =
 ;;
 
 let a () =
-  let%bind program = input () in
-  let grid, path = explore ~program in
+  let%bind grid, path = map () in
   let oxy_point = find_oxy_exn grid in
   let path = Hashtbl.find_exn path oxy_point in
   printf "%d\n" (List.length path);
@@ -117,8 +123,7 @@ let spread_oxygen grid start =
 ;;
 
 let b () =
-  let%bind program = input () in
-  let grid, _path = explore ~program in
+  let%bind grid, _path = map () in
   let oxy_point = find_oxy_exn grid in
   let spread_time = spread_oxygen grid oxy_point in
   printf "%d\n" spread_time;
