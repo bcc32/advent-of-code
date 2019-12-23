@@ -49,13 +49,18 @@ let restore dst ~from:(src : Snapshot.t) =
   match Int.sign gap with
   | Neg -> dst.memory <- Array.copy src.memory
   | Zero | Pos ->
-    Array.blit
+    Array.Int.blit
       ~src:src.memory
       ~src_pos:0
       ~dst:dst.memory
       ~dst_pos:0
       ~len:(Int.min (Array.length src.memory) (Array.length dst.memory));
-    if gap > 0 then Array.fill dst.memory 0 ~pos:(Array.length src.memory) ~len:gap;
+    if gap > 0
+    then
+      (* TODO: This might be able to use a C stub with memset to go *even faster*. *)
+      for pos = Array.length src.memory to Array.length dst.memory - 1 do
+        dst.memory.(pos) <- 0
+      done;
     dst.pc <- src.pc;
     dst.relative_base <- src.relative_base
 ;;
