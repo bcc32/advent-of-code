@@ -46,23 +46,23 @@ let restore dst ~from:(src : Snapshot.t) =
   if not (Queue.is_empty dst.input)
   then raise_s [%message "Program.restore: tried to restore a program with pending input"];
   let gap = Array.length dst.memory - Array.length src.memory in
-  match Int.sign gap with
-  | Neg -> dst.memory <- Array.copy src.memory
-  | Zero | Pos ->
-    Array.Int.blit
-      ~src:src.memory
-      ~src_pos:0
-      ~dst:dst.memory
-      ~dst_pos:0
-      ~len:(Int.min (Array.length src.memory) (Array.length dst.memory));
-    if gap > 0
-    then
-      (* TODO: This might be able to use a C stub with memset to go *even faster*. *)
-      for pos = Array.length src.memory to Array.length dst.memory - 1 do
-        dst.memory.(pos) <- 0
-      done;
-    dst.pc <- src.pc;
-    dst.relative_base <- src.relative_base
+  (match Int.sign gap with
+   | Neg -> dst.memory <- Array.copy src.memory
+   | Zero | Pos ->
+     Array.Int.blit
+       ~src:src.memory
+       ~src_pos:0
+       ~dst:dst.memory
+       ~dst_pos:0
+       ~len:(Int.min (Array.length src.memory) (Array.length dst.memory));
+     if gap > 0
+     then
+       (* TODO: This might be able to use a C stub with memset to go *even faster*. *)
+       for pos = Array.length src.memory to Array.length dst.memory - 1 do
+         dst.memory.(pos) <- 0
+       done);
+  dst.pc <- src.pc;
+  dst.relative_base <- src.relative_base
 ;;
 
 module Infix = struct
