@@ -27,7 +27,9 @@ module Material = struct
   ;;
 end
 
-(* TODO: Add a way to represent programs persistently and immutably. *)
+(* TODO: Add a way to represent programs persistently and immutably.  Use
+   copy-on-write program states to efficiently explore the space without
+   backtracking all the way to the origin each time. *)
 
 let explore ~program =
   let robot = Robot.create_without_dir ~initial_loc:(0, 0) in
