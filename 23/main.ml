@@ -11,8 +11,7 @@ let step_output_exn program =
   | Output x -> x
 ;;
 
-let a () =
-  let%bind program = input () in
+let run_network ~program ~on_nat_write ~on_idle =
   let computers =
     Array.init 50 ~f:(fun i ->
       let program = Program.copy program in
@@ -20,24 +19,46 @@ let a () =
       program)
   in
   let input_queues = Array.init 50 ~f:(fun _ -> Queue.create ()) in
-  with_return (fun { return } ->
-    while true do
-      Array.iteri computers ~f:(fun i program ->
-        match Program.Sync.step program with
-        | Done -> ()
-        | Need_input ->
-          if Queue.is_empty input_queues.(i)
-          then Program.Sync.provide_input program (-1)
-          else Program.Sync.provide_input' program input_queues.(i)
-        | Output dest ->
-          let x = step_output_exn program in
-          let y = step_output_exn program in
-          if dest = 255
-          then return y
-          else Queue.enqueue_all input_queues.(dest) [ x; y ])
-    done;
-    assert false)
-  |> printf "%d\n";
+  let stop = ref false in
+  let rec loop () =
+    let is_idle = ref true in
+    Array.iteri computers ~f:(fun i program ->
+      match Program.Sync.step program with
+      | Done -> ()
+      | Need_input ->
+        if Queue.is_empty input_queues.(i)
+        then Program.Sync.provide_input program (-1)
+        else (
+          is_idle := false;
+          Program.Sync.provide_input' program input_queues.(i))
+      | Output dst ->
+        let x = step_output_exn program in
+        let y = step_output_exn program in
+        if dst = 255
+        then (
+          match on_nat_write (x, y) with
+          | `Stop -> stop := true
+          | `Continue -> ())
+        else Queue.enqueue_all input_queues.(dst) [ x; y ]);
+    is_idle := !is_idle && Array.for_all input_queues ~f:Queue.is_empty;
+    if !is_idle
+    then (
+      match on_idle ~input_queues with
+      | `Stop -> stop := true
+      | `Continue -> ());
+    if not !stop then loop ()
+  in
+  loop ()
+;;
+
+let a () =
+  let%bind program = input () in
+  run_network
+    ~program
+    ~on_nat_write:(fun (_, y) ->
+      printf "%d\n" y;
+      `Stop)
+    ~on_idle:(fun ~input_queues:_ -> `Continue);
   return ()
 ;;
 
@@ -48,46 +69,23 @@ let%expect_test "a" =
 
 let b () =
   let%bind program = input () in
-  let computers =
-    Array.init 50 ~f:(fun i ->
-      let program = Program.copy program in
-      Program.Sync.provide_input program i;
-      program)
-  in
-  let input_queues = Array.init 50 ~f:(fun _ -> Queue.create ()) in
   let nat = ref (-1, -1) in
   let delivered = ref [] in
-  with_return (fun { return } ->
-    while true do
-      let is_idle = ref true in
-      Array.iteri computers ~f:(fun i program ->
-        match Program.Sync.step program with
-        | Done -> ()
-        | Need_input ->
-          if Queue.is_empty input_queues.(i)
-          then Program.Sync.provide_input program (-1)
-          else (
-            Program.Sync.provide_input' program input_queues.(i);
-            is_idle := false)
-        | Output dest ->
-          let x = step_output_exn program in
-          let y = step_output_exn program in
-          if dest = 255
-          then nat := x, y
-          else (
-            Queue.enqueue_all input_queues.(dest) [ x; y ];
-            is_idle := false));
-      if Array.exists input_queues ~f:(Fn.non Queue.is_empty) then is_idle := false;
-      if !is_idle
-      then (
-        Queue.enqueue_all input_queues.(0) [ fst !nat; snd !nat ];
-        delivered := !nat :: !delivered;
-        match !delivered with
-        | (_, y) :: (_, y') :: _ when y = y' -> return y
-        | _ -> ())
-    done;
-    assert false)
-  |> printf "%d\n";
+  let answer = Set_once.create () in
+  run_network
+    ~program
+    ~on_nat_write:(fun (x, y) ->
+      nat := x, y;
+      `Continue)
+    ~on_idle:(fun ~input_queues ->
+      Queue.enqueue_all input_queues.(0) [ fst !nat; snd !nat ];
+      delivered := !nat :: !delivered;
+      match !delivered with
+      | (_, y) :: (_, y') :: _ when y = y' ->
+        Set_once.set_exn answer [%here] y;
+        `Stop
+      | _ -> `Continue);
+  printf "%d\n" (Set_once.get_exn answer [%here]);
   return ()
 ;;
 
