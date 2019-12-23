@@ -25,6 +25,8 @@ module Sync : sig
   val run_without_input_exn : t -> f:(int -> unit) -> unit
   val step : t -> Step_result.t
   val provide_input : t -> int -> unit
+
+  (** Removes elements from queue. *)
   val provide_input' : t -> int Queue.t -> unit
 end
 
