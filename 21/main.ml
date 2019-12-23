@@ -103,9 +103,9 @@ let b () =
 let%expect_test "b" =
   let%bind () = b () in
   [%expect {|
-   Input instructions:
+    Input instructions:
 
-   Running...
+    Running...
 
-   1141857182 |}]
+    1141857182 |}]
 ;;

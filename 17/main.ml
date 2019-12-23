@@ -192,15 +192,15 @@ let%expect_test "find_route" =
   |> print_endline;
   [%expect
     {|
-      L,10,R,8,L,6,R,6,
-      L,8,L,8,R,8,L,10,
-      R,8,L,6,R,6,R,8,
-      L,6,L,10,L,10,L,10,
-      R,8,L,6,R,6,L,8,
-      L,8,R,8,R,8,L,6,
-      L,10,L,10,L,8,L,8,
-      R,8,R,8,L,6,L,10,
-      L,10,L,8,L,8,R,8, |}]
+    L,10,R,8,L,6,R,6,
+    L,8,L,8,R,8,L,10,
+    R,8,L,6,R,6,R,8,
+    L,6,L,10,L,10,L,10,
+    R,8,L,6,R,6,L,8,
+    L,8,R,8,R,8,L,6,
+    L,10,L,10,L,8,L,8,
+    R,8,R,8,L,6,L,10,
+    L,10,L,8,L,8,R,8, |}]
 ;;
 
 module Which_program = struct
