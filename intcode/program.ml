@@ -73,10 +73,10 @@ end
 module Insn = struct
   (* TODO: These divisions are actually kind of slow (they take up a lot of time in
      problem 19).  Perhaps we should just store instructions as strings? *)
-  let[@inline always] opcode t = t % 100
-  let[@inline always] mode1 t = t / 100 % 10
-  let[@inline always] mode2 t = t / 1000 % 10
-  let[@inline always] mode3 t = t / 10_000 % 10
+  let[@inline always] opcode t = t mod 100
+  let[@inline always] mode1 t = t / 100 mod 10
+  let[@inline always] mode2 t = t / 1000 mod 10
+  let[@inline always] mode3 t = t / 10_000 mod 10
 end
 
 let[@inline always] get t ~arg ~mode =
@@ -88,7 +88,7 @@ let[@inline always] get t ~arg ~mode =
   | 0 -> try_get arg
   | 1 -> arg
   | 2 -> try_get (arg + t.relative_base)
-  | _ -> assert false
+  | mode -> invalid_argf "get: invalid mode: %d" mode ()
 ;;
 
 let[@cold] raise_set_invalid_addressing_mode ~mode =
@@ -118,7 +118,7 @@ let set t ~arg ~mode ~value =
   | 0 -> try_set arg value
   | 1 -> raise_set_invalid_addressing_mode ~mode
   | 2 -> try_set (arg + t.relative_base) value
-  | _ -> assert false
+  | mode -> invalid_argf "set: invalid mode: %d" mode ()
 ;;
 
 module Sync = struct
