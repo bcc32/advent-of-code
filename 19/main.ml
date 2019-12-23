@@ -16,10 +16,12 @@ let scan x y ~program =
 
 let a () =
   let%bind program = input () in
+  let snapshot = Program.snapshot program in
   let count = ref 0 in
   for x = 0 to 49 do
     for y = 0 to 49 do
-      match scan x y ~program:(Program.copy program) with
+      Program.restore program ~from:snapshot;
+      match scan x y ~program with
       | 0 -> ()
       | 1 ->
         incr count;
@@ -41,9 +43,11 @@ let naturals ~from = Sequence.unfold ~init:from ~f:(fun n -> Some (n, n + 1))
 
 let%expect_test "map" =
   let%bind program = input () in
+  let snapshot = Program.snapshot program in
   for y = 0 to 50 do
     for x = 0 to 50 do
-      match scan x y ~program:(Program.copy program) with
+      Program.restore program ~from:snapshot;
+      match scan x y ~program with
       | 0 -> print_char '.'
       | 1 -> print_char '#'
       | _ -> failwith ""
@@ -107,11 +111,11 @@ let%expect_test "map" =
 
 let b () =
   let%bind program = input () in
-  let backup = Program.copy program in
+  let snapshot = Program.snapshot program in
   let scan =
     Memo.general
       (fun (x, y) ->
-         Program.restore ~src:backup ~dst:program;
+         Program.restore program ~from:snapshot;
          scan x y ~program <> 0)
       ~hashable:
         (Hashtbl.Hashable.of_key

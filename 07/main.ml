@@ -6,8 +6,8 @@ open Intcode
 module Amp = struct
   type t = Program.Async.Run.t
 
-  let create ~program ~setting =
-    let run = Program.Async.run (Program.copy program) in
+  let create ~snapshot ~setting =
+    let run = Program.Async.run (Program.Snapshot.instantiate snapshot) in
     Pipe.write_without_pushback run.input setting;
     run
   ;;
@@ -19,12 +19,12 @@ end
 
 open Amp.Infix
 
-let try_setting program a_setting b_setting c_setting d_setting e_setting =
-  let a_amp = Amp.create ~program ~setting:a_setting in
-  let b_amp = Amp.create ~program ~setting:b_setting in
-  let c_amp = Amp.create ~program ~setting:c_setting in
-  let d_amp = Amp.create ~program ~setting:d_setting in
-  let e_amp = Amp.create ~program ~setting:e_setting in
+let try_setting snapshot a_setting b_setting c_setting d_setting e_setting =
+  let a_amp = Amp.create ~snapshot ~setting:a_setting in
+  let b_amp = Amp.create ~snapshot ~setting:b_setting in
+  let c_amp = Amp.create ~snapshot ~setting:c_setting in
+  let d_amp = Amp.create ~snapshot ~setting:d_setting in
+  let e_amp = Amp.create ~snapshot ~setting:e_setting in
   a_amp --> b_amp;
   b_amp --> c_amp;
   c_amp --> d_amp;
@@ -37,6 +37,7 @@ let try_setting program a_setting b_setting c_setting d_setting e_setting =
 
 let a () =
   let%bind program = Reader.file_contents "input" >>| Program.of_string in
+  let snapshot = Program.snapshot program in
   let%bind best =
     Sequence.range 0 99_999 ~stop:`inclusive
     |> Sequence.filter_map ~f:(fun i ->
@@ -50,7 +51,7 @@ let a () =
            (List.sort [ a; b; c; d; e ] ~compare:[%compare: int])
       then Some (a, b, c, d, e)
       else None)
-    |> Sequence.map ~f:(fun (a, b, c, d, e) -> try_setting program a b c d e)
+    |> Sequence.map ~f:(fun (a, b, c, d, e) -> try_setting snapshot a b c d e)
     |> Deferred.Sequence.all
     >>| Sequence.max_elt ~compare:[%compare: int]
     >>| uw
@@ -64,12 +65,12 @@ let%expect_test "a" =
   [%expect {| 34852 |}]
 ;;
 
-let try_setting program a_setting b_setting c_setting d_setting e_setting =
-  let a_amp = Amp.create ~program ~setting:a_setting in
-  let b_amp = Amp.create ~program ~setting:b_setting in
-  let c_amp = Amp.create ~program ~setting:c_setting in
-  let d_amp = Amp.create ~program ~setting:d_setting in
-  let e_amp = Amp.create ~program ~setting:e_setting in
+let try_setting snapshot a_setting b_setting c_setting d_setting e_setting =
+  let a_amp = Amp.create ~snapshot ~setting:a_setting in
+  let b_amp = Amp.create ~snapshot ~setting:b_setting in
+  let c_amp = Amp.create ~snapshot ~setting:c_setting in
+  let d_amp = Amp.create ~snapshot ~setting:d_setting in
+  let e_amp = Amp.create ~snapshot ~setting:e_setting in
   a_amp --> b_amp;
   b_amp --> c_amp;
   c_amp --> d_amp;
@@ -82,6 +83,7 @@ let try_setting program a_setting b_setting c_setting d_setting e_setting =
 
 let b () =
   let%bind program = Reader.file_contents "input" >>| Program.of_string in
+  let snapshot = Program.snapshot program in
   let%bind best =
     Sequence.range 0 99_999 ~stop:`inclusive
     |> Sequence.filter_map ~f:(fun i ->
@@ -95,7 +97,7 @@ let b () =
            (List.sort [ a; b; c; d; e ] ~compare:[%compare: int])
       then Some (a, b, c, d, e)
       else None)
-    |> Sequence.map ~f:(fun (a, b, c, d, e) -> try_setting program a b c d e)
+    |> Sequence.map ~f:(fun (a, b, c, d, e) -> try_setting snapshot a b c d e)
     |> Deferred.Sequence.all
     >>| Sequence.max_elt ~compare:[%compare: int]
     >>| uw

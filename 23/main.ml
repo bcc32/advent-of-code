@@ -12,9 +12,10 @@ let step_output_exn program =
 ;;
 
 let run_network ~program ~on_nat_write ~on_idle =
+  let snapshot = Program.snapshot program in
   let computers =
     Array.init 50 ~f:(fun i ->
-      let program = Program.copy program in
+      let program = Program.Snapshot.instantiate snapshot in
       Program.Sync.provide_input program i;
       program)
   in
@@ -29,7 +30,7 @@ let run_network ~program ~on_nat_write ~on_idle =
       | Need_input ->
         if Queue.is_empty input_queues.(i)
         then Program.Sync.provide_input program (-1)
-        else Program.Sync.provide_input' program input_queues.(i)
+        else Program.Sync.provide_input' program ~from:input_queues.(i)
       | Output dst ->
         is_idle := false;
         let x = step_output_exn program in

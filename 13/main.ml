@@ -2,6 +2,7 @@ open! Core
 open! Async
 open! Import
 open Intcode
+open Program.Infix
 
 let debug = false
 let input () = Reader.file_contents "input" >>| Program.of_string
@@ -96,7 +97,7 @@ let%expect_test "a" =
 
 let play ~user_input ~draw ~tiles ~score =
   let%bind program = input () in
-  program.memory.(0) <- 2;
+  program.$(0) <- 2;
   simulate program ~user_input ~on_game_changed:draw ~tiles ~score
 ;;
 
@@ -188,7 +189,7 @@ let draw_plain ~tiles ~score =
 
 let solve ?term () =
   let%bind program = input () in
-  program.memory.(0) <- 2;
+  program.$(0) <- 2;
   let score = ref 0 in
   let image = Mvar.create () in
   let finished = Ivar.create () in

@@ -6,9 +6,24 @@ type t =
   { mutable memory : int array
   ; mutable relative_base : int
   ; mutable pc : int
-  ; mutable input : int Queue.t
+  ; input : int Queue.t
   }
 [@@deriving sexp_of]
+
+module Snapshot = struct
+  type program = t
+
+  type t =
+    { memory : int array
+    ; relative_base : int
+    ; pc : int
+    }
+  [@@deriving sexp_of]
+
+  let instantiate { memory; relative_base; pc } : program =
+    { memory = Array.copy memory; relative_base; pc; input = Queue.create () }
+  ;;
+end
 
 let of_string source_code =
   let memory =
@@ -20,14 +35,15 @@ let of_string source_code =
   { memory; relative_base = 0; pc = 0; input = Queue.create () }
 ;;
 
-let copy t =
+(* TODO: Loosen restrictions on pending input for backup and restore. *)
+let snapshot t : Snapshot.t =
   if not (Queue.is_empty t.input)
   then raise_s [%message "Program.copy: tried to copy a program with pending input"];
-  { t with memory = Array.copy t.memory; input = Queue.create () }
+  { memory = Array.copy t.memory; relative_base = t.relative_base; pc = t.pc }
 ;;
 
-let restore ~src ~dst =
-  if (not (Queue.is_empty src.input)) || not (Queue.is_empty dst.input)
+let restore dst ~from:(src : Snapshot.t) =
+  if not (Queue.is_empty dst.input)
   then raise_s [%message "Program.restore: tried to restore a program with pending input"];
   let gap = Array.length dst.memory - Array.length src.memory in
   match Int.sign gap with
@@ -43,6 +59,11 @@ let restore ~src ~dst =
     dst.pc <- src.pc;
     dst.relative_base <- src.relative_base
 ;;
+
+module Infix = struct
+  let ( .$() ) t i = t.memory.(i)
+  let ( .$()<- ) t i x = t.memory.(i) <- x
+end
 
 module Insn = struct
   (* TODO: These divisions are actually kind of slow (they take up a lot of time in
@@ -176,7 +197,7 @@ module Sync = struct
     loop ()
   ;;
 
-  let provide_input' t input = Queue.blit_transfer () ~src:input ~dst:t.input
+  let provide_input' t ~from = Queue.blit_transfer () ~src:from ~dst:t.input
   let provide_input t input = Queue.enqueue t.input input
 end
 
@@ -203,7 +224,7 @@ module Async = struct
            | `Eof ->
              raise_s [%message "Program.Async.run: Program received EOF on input"]
            | `Ok queue ->
-             Sync.provide_input' t queue;
+             Sync.provide_input' t ~from:queue;
              `Repeat ())
         | Output x ->
           let%map () = Pipe.write output_w x in

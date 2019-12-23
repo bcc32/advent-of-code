@@ -2,6 +2,7 @@ open! Core
 open! Async
 open! Import
 open Intcode
+open Program.Infix
 
 let debug = false
 let input () = Reader.file_contents "input" >>| Program.of_string
@@ -338,7 +339,7 @@ let b () =
   let%bind map = Lazy_deferred.force_exn map in
   let programs, programs_called = compress ~route:(find_route map) in
   let%bind program = input () in
-  program.memory.(0) <- 2;
+  program.$(0) <- 2;
   match Program.Async.run program with
   | { input; output; done_ = _ } ->
     let write_strings strings =
