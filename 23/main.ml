@@ -20,11 +20,12 @@ let run_network ~program ~on_nat_write ~on_idle =
   in
   let input_queues = Array.init 50 ~f:(fun _ -> Queue.create ()) in
   let stop = ref false in
+  let idle_rounds = ref 0 in
   let rec loop () =
     let is_idle = ref true in
     Array.iteri computers ~f:(fun i program ->
       match Program.Sync.step program with
-      | Done -> ()
+      | Done -> is_idle := false
       | Need_input ->
         if Queue.is_empty input_queues.(i)
         then Program.Sync.provide_input program (-1)
@@ -32,6 +33,7 @@ let run_network ~program ~on_nat_write ~on_idle =
           is_idle := false;
           Program.Sync.provide_input' program input_queues.(i))
       | Output dst ->
+        is_idle := false;
         let x = step_output_exn program in
         let y = step_output_exn program in
         if dst = 255
@@ -41,11 +43,18 @@ let run_network ~program ~on_nat_write ~on_idle =
           | `Continue -> ())
         else Queue.enqueue_all input_queues.(dst) [ x; y ]);
     is_idle := !is_idle && Array.for_all input_queues ~f:Queue.is_empty;
-    if !is_idle
+    if !is_idle then incr idle_rounds;
+    (* After we provide -1 as input to signal "no input", the program might then
+       produce an output, so the system is not yet considered "idle".  If it
+       happens twice in a row for all programs, then we must consider the system
+       idle, since we have no way of guessing how many (-1)s as input it will
+       take to get the programs to go again. *)
+    if !idle_rounds >= 2
     then (
-      match on_idle ~input_queues with
-      | `Stop -> stop := true
-      | `Continue -> ());
+      (match on_idle ~input_queues with
+       | `Stop -> stop := true
+       | `Continue -> ());
+      idle_rounds := 0);
     if not !stop then loop ()
   in
   loop ()
@@ -69,22 +78,24 @@ let%expect_test "a" =
 
 let b () =
   let%bind program = input () in
-  let nat = ref (-1, -1) in
-  let delivered = ref [] in
+  let nat = Moption.create () in
+  let last_delivered_y = Moption.create () in
   let answer = Set_once.create () in
   run_network
     ~program
-    ~on_nat_write:(fun (x, y) ->
-      nat := x, y;
+    ~on_nat_write:(fun packet ->
+      Moption.set_some nat packet;
       `Continue)
     ~on_idle:(fun ~input_queues ->
-      Queue.enqueue_all input_queues.(0) [ fst !nat; snd !nat ];
-      delivered := !nat :: !delivered;
-      match !delivered with
-      | (_, y) :: (_, y') :: _ when y = y' ->
+      let x, y = Moption.get_some_exn nat in
+      Queue.enqueue_all input_queues.(0) [ x; y ];
+      match Moption.get last_delivered_y with
+      | Some y' when y = y' ->
         Set_once.set_exn answer [%here] y;
         `Stop
-      | _ -> `Continue);
+      | None | Some _ ->
+        Moption.set_some last_delivered_y y;
+        `Continue);
   printf "%d\n" (Set_once.get_exn answer [%here]);
   return ()
 ;;
