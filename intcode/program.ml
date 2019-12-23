@@ -71,8 +71,6 @@ module Infix = struct
 end
 
 module Insn = struct
-  (* TODO: These divisions are actually kind of slow (they take up a lot of time in
-     problem 19).  Perhaps we should just store instructions as strings? *)
   let[@inline always] opcode t = t mod 100
   let[@inline always] mode1 t = t / 100 mod 10
   let[@inline always] mode2 t = t / 1000 mod 10
