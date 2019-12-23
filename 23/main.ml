@@ -22,16 +22,14 @@ let run_network ~program ~on_nat_write ~on_idle =
   let stop = ref false in
   let idle_rounds = ref 0 in
   let rec loop () =
-    let is_idle = ref true in
+    let is_idle = ref (Array.for_all input_queues ~f:Queue.is_empty) in
     Array.iteri computers ~f:(fun i program ->
       match Program.Sync.step program with
       | Done -> is_idle := false
       | Need_input ->
         if Queue.is_empty input_queues.(i)
         then Program.Sync.provide_input program (-1)
-        else (
-          is_idle := false;
-          Program.Sync.provide_input' program input_queues.(i))
+        else Program.Sync.provide_input' program input_queues.(i)
       | Output dst ->
         is_idle := false;
         let x = step_output_exn program in
@@ -42,7 +40,6 @@ let run_network ~program ~on_nat_write ~on_idle =
           | `Stop -> stop := true
           | `Continue -> ())
         else Queue.enqueue_all input_queues.(dst) [ x; y ]);
-    is_idle := !is_idle && Array.for_all input_queues ~f:Queue.is_empty;
     if !is_idle then incr idle_rounds;
     (* After we provide -1 as input to signal "no input", the program might then
        produce an output, so the system is not yet considered "idle".  If it
