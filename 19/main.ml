@@ -148,10 +148,9 @@ let b () =
     let y_min, y_max =
       Sequence.range x_min (x_min + ship_size)
       |> Sequence.map ~f:(fun x -> y_min x, y_max x)
-      |> Sequence.reduce ~f:(fun (y_min, y_max) (y_min', y_max') ->
+      |> Sequence.reduce_exn ~f:(fun (y_min, y_max) (y_min', y_max') ->
         (* Tighten the bounds *)
         Int.max y_min y_min', Int.min y_max y_max')
-      |> Option.value_exn
     in
     if y_max - y_min >= ship_size then Some y_min else None
   in
