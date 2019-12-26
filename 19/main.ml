@@ -141,9 +141,9 @@ let b () =
         let from = if x <= 6 then y_min x else y_max (x - 1) in
         naturals ~from |> Sequence.find_exn ~f:(fun y -> not (scan (x, y))))
   in
-  (* Try to fit Santa's ship in [x_min, x_min+ship_size).  If it can be done, report the
-     minimum y coordinate, such that [scan (x, y)] for all (x, y) in [x_min,
-     x_min+ship_size) × [y_min, y_min+ship_size). *)
+  (* Try to fit Santa's ship in [x_min, x_min+ship_size).  If it can be done,
+     report the minimum y coordinate, such that [scan (x, y)] for all (x, y) in
+     [x_min, x_min+ship_size) × [y_min, y_min+ship_size). *)
   let try_fit ~x_min =
     let y_min, y_max =
       Sequence.range x_min (x_min + ship_size)
