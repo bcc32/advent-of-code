@@ -134,9 +134,12 @@ let b () =
         let from = if x <= 6 then 0 else y_min (x - 1) in
         naturals ~from |> Sequence.find_exn ~f:(fun y -> scan (x, y)))
   in
-  let y_max =
-    Memo.general (fun x ->
-      naturals ~from:(y_min x) |> Sequence.find_exn ~f:(fun y -> not (scan (x, y))))
+  let rec y_max =
+    let cache = Int.Table.create () in
+    fun x ->
+      Hashtbl.findi_or_add cache x ~default:(fun x ->
+        let from = if x <= 6 then y_min x else y_max (x - 1) in
+        naturals ~from |> Sequence.find_exn ~f:(fun y -> not (scan (x, y))))
   in
   (* Try to fit Santa's ship in [x_min, x_min+ship_size).  If it can be done, report the
      minimum y coordinate, such that [scan (x, y)] for all (x, y) in [x_min,
