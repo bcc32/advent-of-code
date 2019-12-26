@@ -126,9 +126,13 @@ let b () =
   assert (scan (0, 0));
   (* The closest point other than (0, 0) is (6, 5). *)
   assert (scan (6, 5));
-  let y_min =
-    Memo.general (fun x ->
-      naturals ~from:0 |> Sequence.find_exn ~f:(fun y -> scan (x, y)))
+  (* The [y_min] values are monotonically non-decreasing for increasing [x]. *)
+  let rec y_min =
+    let cache = Int.Table.create () in
+    fun x ->
+      Hashtbl.findi_or_add cache x ~default:(fun x ->
+        let from = if x <= 6 then 0 else y_min (x - 1) in
+        naturals ~from |> Sequence.find_exn ~f:(fun y -> scan (x, y)))
   in
   let y_max =
     Memo.general (fun x ->
