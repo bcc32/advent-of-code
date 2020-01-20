@@ -12,7 +12,7 @@ let pattern i j =
   [| 0; 1; 0; -1 |].((j + 1) / repeat_length % 4)
 ;;
 
-let do_phase input =
+let do_phase_naive input =
   Array.mapi input ~f:(fun i _ ->
     let sum = ref 0 in
     Array.iteri input ~f:(fun j x -> sum := !sum + (x * pattern i j));
@@ -21,7 +21,7 @@ let do_phase input =
 
 let a () =
   let%bind input = input () in
-  let output = Fn.apply_n_times ~n:100 do_phase input in
+  let output = Fn.apply_n_times ~n:100 do_phase_naive input in
   Array.sub output ~pos:0 ~len:8
   |> Array.map ~f:Int.to_string
   |> String.concat_array
@@ -46,14 +46,14 @@ let value_at_index_is_correct_despite_incorrect_algorithm array i =
   2 * i >= Array.length array - 1
 ;;
 
-let%test_unit _ =
+let%test_unit "check simplifying assumptions" =
   Base_quickcheck.Test.run_exn
     (module struct
       type t = int list [@@deriving quickcheck, sexp_of]
     end)
     ~f:(fun list ->
       let array = Array.of_list list in
-      let expect = do_phase array in
+      let expect = do_phase_naive array in
       let actual =
         let array = Array.copy array in
         do_phase_fast_only_correct_for_back_half_of_array_inplace array;
