@@ -2,13 +2,13 @@ with import <nixpkgs> { };
 
 let
   inherit (ocamlPackages)
-    buildDunePackage async async_ssl cmdliner core cohttp cohttp-async yojson;
+    buildDunePackage async bignum core expect_test_helpers re topological_sort;
 
 in buildDunePackage {
-  pname = "danbooru-tool";
-  version = "0.4.1";
+  pname = "aoc2015";
+  version = "0.1.0";
   useDune2 = true;
   src = nix-gitignore.gitignoreFilterSource lib.cleanSourceFilter [ ] ./.;
-  buildInputs = [ async async_ssl cmdliner core cohttp cohttp-async yojson ];
-  meta = { homepage = "https://github.com/bcc32/danbooru-tool"; };
+  buildInputs = [ async bignum core expect_test_helpers re topological_sort ];
+  meta = { homepage = "https://github.com/bcc32/advent-of-code-2015"; };
 }
