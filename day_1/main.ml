@@ -31,14 +31,25 @@ let%expect_test "a" =
   return ()
 ;;
 
+let find_three nums =
+  with_return (fun { return } ->
+    List.iteri nums ~f:(fun i1 x ->
+      List.iteri nums ~f:(fun i2 y ->
+        List.iteri nums ~f:(fun i3 z ->
+          if i1 <> i2 && i2 <> i3 && i1 <> i3 && x + y + z = 2020
+          then return (x, y, z))));
+    assert false)
+;;
+
 let b () =
   let%bind input = Lazy_deferred.force_exn input in
-  print_s [%sexp (List.length input : int)];
+  let x, y, z = find_three input in
+  print_s [%sexp (x * y * z : int)];
   return ()
 ;;
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 200 |}] in
+  let%bind () = [%expect {| 42140160 |}] in
   return ()
 ;;
