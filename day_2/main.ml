@@ -47,14 +47,20 @@ let%expect_test "a" =
   return ()
 ;;
 
+let is_valid ~min ~max ~char ~passwd =
+  Bool.( <> ) (Char.equal passwd.[min - 1] char) (Char.equal passwd.[max - 1] char)
+;;
+
 let b () =
   let%bind input = Lazy_deferred.force_exn input in
-  print_s [%sexp (List.length input : int)];
+  List.count input ~f:(fun (min, max, char, passwd) -> is_valid ~min ~max ~char ~passwd)
+  |> [%sexp_of: int]
+  |> print_s;
   return ()
 ;;
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 1000 |}] in
+  let%bind () = [%expect {| 342 |}] in
   return ()
 ;;
