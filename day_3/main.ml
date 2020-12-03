@@ -14,11 +14,14 @@ let input =
 ;;
 
 let count_trees grid ~slope:(r, d) =
-  let pos = ref (0, 0) in
+  let row = ref 0 in
+  let col = ref 0 in
   let trees = ref 0 in
-  while fst !pos < Array.length grid do
-    if Char.equal grid.(fst !pos).(snd !pos % Array.length grid.(0)) '#' then incr trees;
-    pos := fst !pos + d, snd !pos + r
+  let width = Array.length grid.(0) in
+  while !row < Array.length grid do
+    if Char.equal '#' grid.(!row).(!col % width) then incr trees;
+    row := !row + d;
+    col := !col + r
   done;
   !trees
 ;;
