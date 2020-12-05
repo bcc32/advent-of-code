@@ -47,16 +47,14 @@ let%expect_test "a" =
 
 let b () =
   let%bind seats = Lazy_deferred.force_exn Input.t in
-  let ids = List.map seats ~f:seat_id in
+  let ids = List.map seats ~f:seat_id |> Set.of_list (module Int) in
   let missing_id =
-    with_return (fun { return } ->
-      for i = 1 to 100000 do
-        if List.mem ids ~equal:Int.equal (i - 1)
-        && List.mem ids ~equal:Int.equal (i + 1)
-        && not (List.mem ids ~equal:Int.equal i)
-        then return i
-      done;
-      assert false)
+    let rec loop i =
+      if Set.mem ids (i - 1) && Set.mem ids (i + 1) && not (Set.mem ids i)
+      then i
+      else loop (i + 1)
+    in
+    loop 1
   in
   print_s [%sexp (missing_id : int)];
   return ()
