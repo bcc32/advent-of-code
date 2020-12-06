@@ -3,7 +3,20 @@ open! Async
 open! Import
 
 module Input = struct
-  type t = string list list [@@deriving sexp_of]
+  module Person = struct
+    type t = string [@@deriving sexp_of]
+
+    let answers t = String.to_list t |> Set.of_list (module Char)
+  end
+
+  module Group = struct
+    type t = Person.t list [@@deriving sexp_of]
+
+    let union t = List.map t ~f:Person.answers |> Set.union_list (module Char)
+    let inter t = List.map t ~f:Person.answers |> List.reduce_exn ~f:Set.inter
+  end
+
+  type t = Group.t list [@@deriving sexp_of]
 
   let parse input : t =
     input
@@ -17,11 +30,7 @@ module Input = struct
   ;;
 end
 
-let count_answers group =
-  List.concat_map group ~f:(fun line -> String.to_list line)
-  |> Set.of_list (module Char)
-  |> Set.length
-;;
+let count_answers group = Input.Group.union group |> Set.length
 
 let a () =
   let%bind groups = Lazy_deferred.force_exn Input.t in
@@ -35,11 +44,7 @@ let%expect_test "a" =
   return ()
 ;;
 
-let count_answers group =
-  List.map group ~f:(fun line -> String.to_list line |> Set.of_list (module Char))
-  |> List.reduce_exn ~f:Set.inter
-  |> Set.length
-;;
+let count_answers group = Input.Group.inter group |> Set.length
 
 let b () =
   let%bind groups = Lazy_deferred.force_exn Input.t in
