@@ -7,23 +7,12 @@ module Input = struct
 
   let rule_re, contained_re =
     let open Re in
-    let color = seq [ rep1 alpha; str " "; rep1 alpha ] in
-    let bags = alt [ str "bag"; str "bags" ] in
-    let contained = seq [ group (rep1 digit); str " "; group color; str " "; bags ] in
+    let contained = {|(\d+) ([\w ]+) bags?|} in
     ( compile
-        (seq
-           [ group color
-           ; str " "
-           ; bags
-           ; str " contain "
-           ; group
-               (alt
-                  [ str "no other bags"
-                  ; seq [ contained; rep (seq [ str ", "; contained ]) ]
-                  ])
-           ; str "."
-           ])
-    , compile contained )
+        (Perl.re
+           [%string
+             {|([\w ]+) bags contain (no other bags|(%{contained}(, %{contained})*))[.]|}])
+    , compile (Perl.re contained) )
   ;;
 
   let parse input : t =
