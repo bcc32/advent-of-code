@@ -9,13 +9,14 @@ bug-reports: "https://github.com/bcc32/advent-of-code-2020/issues"
 depends: [
   "dune" {>= "2.0"}
   "re" {>= "1.9.0"}
-  "async" {>= "v0.13" & < "v0.14"}
-  "bignum" {>= "v0.13" & < "v0.14"}
-  "core" {>= "v0.13" & < "v0.14"}
-  "expect_test_helpers" {>= "v0.13" & < "v0.14"}
-  "ppx_jane" {>= "v0.13" & < "v0.14"}
-  "notty_async" {>= "v0.13" & < "v0.14"}
-  "topological_sort" {>= "v0.13" & < "v0.14"}
+  "async" {>= "v0.14" & < "v0.15"}
+  "bignum" {>= "v0.14" & < "v0.15"}
+  "core" {>= "v0.14" & < "v0.15"}
+  "expect_test_helpers_async" {>= "v0.14" & < "v0.15"}
+  "expect_test_helpers_core" {>= "v0.14" & < "v0.15"}
+  "ppx_jane" {>= "v0.14" & < "v0.15"}
+  "notty_async" {>= "v0.14" & < "v0.15"}
+  "topological_sort" {>= "v0.14" & < "v0.15"}
 ]
 build: [
   ["dune" "subst"] {pinned}
