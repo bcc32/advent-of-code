@@ -2,14 +2,8 @@ open! Core
 open! Async
 open! Import
 
-module Bag = struct
-  type t = { color : string } [@@deriving compare, equal, hash, sexp_of]
-
-  include (val Comparator.make ~compare ~sexp_of_t)
-end
-
 module Input = struct
-  type t = (Bag.t, (int * Bag.t) list) Hashtbl.t [@@deriving sexp_of]
+  type t = (string, (int * string) list) Hashtbl.t [@@deriving sexp_of]
 
   let rule_re, contained_re =
     let open Re in
@@ -48,10 +42,10 @@ module Input = struct
             let g = Re.exec contained_re contained in
             let count = Re.Group.get g 1 |> Int.of_string in
             let color = Re.Group.get g 2 in
-            count, ({ color } : Bag.t))
+            count, color)
       in
-      ({ color = from_color } : Bag.t), to_colors)
-    |> Hashtbl.of_alist_exn (module Bag)
+      from_color, to_colors)
+    |> Hashtbl.of_alist_exn (module String)
   ;;
 
   let t : t Lazy_deferred.t =
@@ -63,7 +57,7 @@ let rec find_bags_containing rules ~bag =
   let next =
     Hashtbl.to_alist rules
     |> List.filter_map ~f:(fun (from, to_) ->
-      if List.exists to_ ~f:(fun (_, bag') -> Bag.equal bag bag')
+      if List.exists to_ ~f:(fun (_, bag') -> String.equal bag bag')
       then Some from
       else None)
   in
@@ -73,9 +67,9 @@ let rec find_bags_containing rules ~bag =
 let a () =
   let%bind rules = Lazy_deferred.force_exn Input.t in
   let bags =
-    find_bags_containing rules ~bag:{ color = "shiny gold" } |> Set.of_list (module Bag)
+    find_bags_containing rules ~bag:"shiny gold" |> Set.of_list (module String)
   in
-  let bags = Set.remove bags { color = "shiny gold" } in
+  let bags = Set.remove bags "shiny gold" in
   print_s [%sexp (Set.length bags : int)];
   return ()
 ;;
@@ -100,7 +94,7 @@ let rec count_bags rules ~bag =
 
 let b () =
   let%bind rules = Lazy_deferred.force_exn Input.t in
-  count_bags rules ~bag:{ color = "shiny gold" } - 1 |> [%sexp_of: int] |> print_s;
+  count_bags rules ~bag:"shiny gold" - 1 |> [%sexp_of: int] |> print_s;
   return ()
 ;;
 
