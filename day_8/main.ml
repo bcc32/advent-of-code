@@ -62,14 +62,16 @@ let rec run (code : Instruction.t array) pc acc visited =
 let a () =
   let%bind input = Lazy_deferred.force_exn Input.t in
   let visited = Hash_set.create (module Int) in
-  let acc = run input 0 0 visited in
-  print_s [%sexp (acc : Run_result.t)];
-  return ()
+  match run input 0 0 visited with
+  | Normal_end _ -> assert false
+  | Infinite_loop acc ->
+    print_s [%sexp (acc : int)];
+    return ()
 ;;
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| (Infinite_loop 1816) |}] in
+  let%bind () = [%expect {| 1816 |}] in
   return ()
 ;;
 
