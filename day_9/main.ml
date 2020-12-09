@@ -3,46 +3,46 @@ open! Async
 open! Import
 
 module Input = struct
-  type t = int list [@@deriving sexp_of]
+  type t = int list * int list [@@deriving sexp_of]
 
-  let parse input : t = input |> String.split_lines |> List.map ~f:Int.of_string
+  let parse input : t =
+    let inputs = input |> String.split_lines |> List.map ~f:Int.of_string in
+    List.take inputs 25, List.drop inputs 25
+  ;;
 
   let t : t Lazy_deferred.t =
     Lazy_deferred.create (fun () -> Reader.file_contents "input.txt" >>| parse)
   ;;
 end
 
-let can_sum list x =
-  let list = Fqueue.to_list list in
-  List.existsi list ~f:(fun i a ->
-    List.sub list ~pos:(i + 1) ~len:(List.length list - (i + 1))
-    |> List.exists ~f:(fun b -> a <> b && a + b = x))
+let can_sum preamble ~to_ =
+  with_return (fun { return } ->
+    Fqueue.iter preamble ~f:(fun x ->
+      Fqueue.iter preamble ~f:(fun y -> if x <> y && x + y = to_ then return true));
+    false)
 ;;
 
-let rec find_first_not_possible preamble list =
-  match list with
-  | [] -> None
-  | hd :: tl ->
-    if can_sum preamble hd
-    then
-      find_first_not_possible (Fqueue.enqueue (snd (Fqueue.dequeue_exn preamble)) hd) tl
-    else Some hd
+let find_first_not_possible preamble list =
+  List.fold_until
+    list
+    ~init:(Fqueue.of_list preamble)
+    ~f:(fun preamble x ->
+      if can_sum preamble ~to_:x
+      then Continue (Fqueue.enqueue (Fqueue.drop_exn preamble) x)
+      else Stop x)
+    ~finish:(fun _ -> assert false)
 ;;
 
 let a () =
-  let%bind input = Lazy_deferred.force_exn Input.t in
-  let x =
-    find_first_not_possible
-      (Fqueue.of_list (List.sub input ~pos:0 ~len:25))
-      (List.drop input 25)
-  in
-  print_s [%sexp (x : int option)];
+  let%bind preamble, list = Lazy_deferred.force_exn Input.t in
+  let x = find_first_not_possible preamble list in
+  print_s [%sexp (x : int)];
   return ()
 ;;
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| (41682220) |}] in
+  let%bind () = [%expect {| 41682220 |}] in
   return ()
 ;;
 
@@ -66,15 +66,10 @@ let find_contiguous_sum list target =
 ;;
 
 let b () =
-  let%bind input = Lazy_deferred.force_exn Input.t in
-  let x =
-    find_first_not_possible
-      (Fqueue.of_list (List.sub input ~pos:0 ~len:25))
-      (List.drop input 25)
-    |> uw
-  in
-  let pos, len = find_contiguous_sum input x in
-  let sublist = List.sub input ~pos ~len in
+  let%bind preamble, list = Lazy_deferred.force_exn Input.t in
+  let x = find_first_not_possible preamble list in
+  let pos, len = find_contiguous_sum (preamble @ list) x in
+  let sublist = List.sub (preamble @ list) ~pos ~len in
   assert (List.sum (module Int) sublist ~f:Fn.id = x);
   let min = List.min_elt sublist ~compare:Int.compare |> uw in
   let max = List.max_elt sublist ~compare:Int.compare |> uw in
