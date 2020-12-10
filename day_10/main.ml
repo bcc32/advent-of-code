@@ -5,7 +5,12 @@ open! Import
 module Input = struct
   type t = int list [@@deriving sexp_of]
 
-  let parse input : t = input |> String.split_lines |> List.map ~f:Int.of_string
+  let parse input : t =
+    input
+    |> String.split_lines
+    |> List.map ~f:Int.of_string
+    |> List.sort ~compare:Int.compare
+  ;;
 
   let t : t Lazy_deferred.t =
     Lazy_deferred.create (fun () -> Reader.file_contents "input.txt" >>| parse)
@@ -14,20 +19,19 @@ end
 
 let a () =
   let%bind input = Lazy_deferred.force_exn Input.t in
-  let order = 0 :: List.sort input ~compare:Int.compare in
-  List.fold2_exn
-    (List.drop_last_exn order)
-    (List.tl_exn order)
-    ~init:(0, 1) (* for last adapter to device *)
-    ~f:(fun (one, three) prev next ->
-      match next - prev with
-      | 1 -> one + 1, three
-      | 3 -> one, three + 1
-      | 2 -> one, three
-      | _ -> assert false)
-  |> (fun (x, y) -> x * y)
-  |> [%sexp_of: int]
-  |> print_s;
+  let order = (0 :: input) @ [ List.last_exn input + 3 ] |> Array.of_list in
+  let ones = ref 0 in
+  let threes = ref 0 in
+  for i = 0 to Array.length order - 2 do
+    let prev = order.(i) in
+    let next = order.(i + 1) in
+    match next - prev with
+    | 1 -> incr ones
+    | 2 -> ()
+    | 3 -> incr threes
+    | n -> raise_s [%message "invalid diff" (n : int)]
+  done;
+  print_s [%sexp (!ones * !threes : int)];
   return ()
 ;;
 
@@ -62,8 +66,9 @@ let rec count_ways ~start ~end_ ~chain =
 
 let b () =
   let%bind input = Lazy_deferred.force_exn Input.t in
-  let chain = List.sort input ~compare:Int.compare in
-  count_ways ~chain ~start:0 ~end_:(List.last_exn chain + 3) |> [%sexp_of: int] |> print_s;
+  count_ways ~chain:input ~start:0 ~end_:(3 + List.last_exn input)
+  |> [%sexp_of: int]
+  |> print_s;
   return ()
 ;;
 
