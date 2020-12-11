@@ -85,10 +85,6 @@ let%expect_test "a" =
   return ()
 ;;
 
-(*
-   A B C D
-   E F G H
-*)
 let do_round (grid : Input.t) =
   let new_grid = Array.map grid ~f:Array.copy in
   let rows = Array.length grid in
@@ -114,21 +110,17 @@ let do_round (grid : Input.t) =
       loop_incrementing_occupied_count (row + dr) (col + dc) this_seat dr dc)
     else row - dr, col - dc
   in
+  (* Rows *)
   for row = 0 to rows - 1 do
     ignore (loop_incrementing_occupied_count row 0 Floor 0 1);
     ignore (loop_incrementing_occupied_count row (cols - 1) Floor 0 (-1))
   done;
+  (* Columns *)
   for col = 0 to cols - 1 do
     ignore (loop_incrementing_occupied_count 0 col Floor 1 0);
     ignore (loop_incrementing_occupied_count (rows - 1) col Floor (-1) 0)
   done;
-  (* 0 diagonal is NW corner down
-
-     1 2 3 4
-     5 6 7 8
-
-     diag = 1
-  *)
+  (* NW-SE diagonals *)
   for row = rows - 1 downto 0 do
     let r, c = loop_incrementing_occupied_count row 0 Floor 1 1 in
     ignore (loop_incrementing_occupied_count r c Floor (-1) (-1))
@@ -137,13 +129,7 @@ let do_round (grid : Input.t) =
     let r, c = loop_incrementing_occupied_count 0 col Floor 1 1 in
     ignore (loop_incrementing_occupied_count r c Floor (-1) (-1))
   done;
-  (* 0 diagonal is NE corner down
-
-     1 2 3 4
-     5 6 7 8
-
-     diag = 1
-  *)
+  (* NE-SW diagonals *)
   for row = rows - 1 downto 0 do
     let r, c = loop_incrementing_occupied_count row (cols - 1) Floor 1 (-1) in
     ignore (loop_incrementing_occupied_count r c Floor (-1) 1)
@@ -182,7 +168,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {|
-    2285 |}] in
+  let%bind () = [%expect {| 2285 |}] in
   return ()
 ;;
