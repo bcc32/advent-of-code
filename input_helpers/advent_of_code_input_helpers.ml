@@ -2,6 +2,7 @@ open! Core
 open! Async
 open! Import
 
+let stoi = Int.of_string
 let lines = String.split_lines
 
 let paragraphs =
@@ -9,12 +10,15 @@ let paragraphs =
   >> List.map ~f:(List.filter ~f:(not << String.is_empty))
 ;;
 
-let words =
+let words ?sep input =
   let pattern =
     let open Re in
-    compile (rep1 space)
+    compile
+      (match sep with
+       | None -> rep1 space
+       | Some sep -> str sep)
   in
-  Re.split pattern
+  Re.split pattern input
 ;;
 
 let grid ~f =
