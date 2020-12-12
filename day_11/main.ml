@@ -23,13 +23,11 @@ module State = struct
 end
 
 module Input = struct
-  type t = State.t array array [@@deriving sexp_of]
+  open! Advent_of_code_input_helpers
 
-  let parse input : t =
-    input
-    |> String.split_lines
-    |> Array.of_list_map ~f:(fun s -> String.to_array s |> Array.map ~f:State.of_char)
-  ;;
+  type t = State.t Grid.t [@@deriving sexp_of]
+
+  let parse = grid ~f:State.of_char
 
   let t : t Lazy_deferred.t =
     Lazy_deferred.create (fun () -> Reader.file_contents "input.txt" >>| parse)
@@ -37,29 +35,26 @@ module Input = struct
 end
 
 let do_round grid =
-  let new_grid = Array.map grid ~f:Array.copy in
-  let rows = Array.length grid in
-  let cols = Array.length grid.(0) in
-  for row = 0 to rows - 1 do
-    for col = 0 to cols - 1 do
-      let num_occupied = ref 0 in
-      for i = row - 1 to row + 1 do
-        for j = col - 1 to col + 1 do
-          if i >= 0
-          && i < rows
-          && j >= 0
-          && j < cols
-          && (i <> row || j <> col)
-          && State.is_occupied grid.(i).(j)
-          then incr num_occupied
-        done
-      done;
-      match grid.(row).(col) with
-      | Empty -> if !num_occupied = 0 then new_grid.(row).(col) <- Occupied
-      | Occupied -> if !num_occupied >= 4 then new_grid.(row).(col) <- Empty
-      | Floor -> ()
-    done
-  done;
+  let open Grid.O in
+  let new_grid = Grid.copy grid in
+  Grid.Lines.rows grid `Top_to_bottom `Left_to_right
+  |> Sequence.concat
+  |> Sequence.iter ~f:(fun cell ->
+    let row, col = Coord2.RC.to_pair cell in
+    let num_occupied = ref 0 in
+    for i = row - 1 to row + 1 do
+      for j = col - 1 to col + 1 do
+        let neighbor = Coord2.RC.create ~row:i ~col:j in
+        if (not ([%equal: Coord2.RC.t] cell neighbor))
+        && grid.?(neighbor)
+        && State.is_occupied grid.%(neighbor)
+        then incr num_occupied
+      done
+    done;
+    match grid.%(cell) with
+    | Empty -> if !num_occupied = 0 then new_grid.%(cell) <- Occupied
+    | Occupied -> if !num_occupied >= 4 then new_grid.%(cell) <- Empty
+    | Floor -> ());
   new_grid
 ;;
 
@@ -67,15 +62,13 @@ let a () =
   let%bind grid = Lazy_deferred.force_exn Input.t in
   let final_grid =
     let rec loop grid new_grid =
-      if [%equal: State.t array array] grid new_grid
+      if [%equal: State.t Grid.t] grid new_grid
       then grid
       else loop new_grid (do_round new_grid)
     in
     loop grid (do_round grid)
   in
-  Array.sum (module Int) final_grid ~f:(Array.count ~f:State.is_occupied)
-  |> [%sexp_of: int]
-  |> print_s;
+  Grid.Row_major.count final_grid ~f:State.is_occupied |> [%sexp_of: int] |> print_s;
   return ()
 ;;
 
@@ -86,67 +79,46 @@ let%expect_test "a" =
 ;;
 
 let do_round (grid : Input.t) =
-  let new_grid = Array.map grid ~f:Array.copy in
-  let rows = Array.length grid in
-  let cols = Array.length grid.(0) in
-  let count_occupied = Array.init rows ~f:(fun _ -> Array.init cols ~f:(fun _ -> 0)) in
-  let rec loop_incrementing_occupied_count
-            row
-            col
-            (most_recently_seen_seat : State.t)
-            dr
-            dc
-    =
-    if row >= 0 && row < rows && col >= 0 && col < cols
-    then (
-      let this_seat =
-        match grid.(row).(col) with
-        | Floor -> most_recently_seen_seat
-        | seat -> seat
-      in
-      (match most_recently_seen_seat with
+  let open Grid.O in
+  let new_grid = Grid.copy grid in
+  let count_occupied = Grid.map grid ~f:(Fn.const 0) in
+  let loop_incrementing_occupied_count line =
+    let most_recently_seen_seat = ref (Floor : State.t) in
+    Sequence.iter line ~f:(fun cell ->
+      (match !most_recently_seen_seat with
        | Empty | Floor -> ()
-       | Occupied -> count_occupied.(row).(col) <- count_occupied.(row).(col) + 1);
-      loop_incrementing_occupied_count (row + dr) (col + dc) this_seat dr dc)
-    else row - dr, col - dc
-  in
-  (* Rows *)
-  for row = 0 to rows - 1 do
-    ignore (loop_incrementing_occupied_count row 0 Floor 0 1);
-    ignore (loop_incrementing_occupied_count row (cols - 1) Floor 0 (-1))
-  done;
-  (* Columns *)
-  for col = 0 to cols - 1 do
-    ignore (loop_incrementing_occupied_count 0 col Floor 1 0);
-    ignore (loop_incrementing_occupied_count (rows - 1) col Floor (-1) 0)
-  done;
-  (* NW-SE diagonals *)
-  for row = rows - 1 downto 0 do
-    let r, c = loop_incrementing_occupied_count row 0 Floor 1 1 in
-    ignore (loop_incrementing_occupied_count r c Floor (-1) (-1))
-  done;
-  for col = 1 to cols - 1 do
-    let r, c = loop_incrementing_occupied_count 0 col Floor 1 1 in
-    ignore (loop_incrementing_occupied_count r c Floor (-1) (-1))
-  done;
-  (* NE-SW diagonals *)
-  for row = rows - 1 downto 0 do
-    let r, c = loop_incrementing_occupied_count row (cols - 1) Floor 1 (-1) in
-    ignore (loop_incrementing_occupied_count r c Floor (-1) 1)
-  done;
-  for col = 0 to cols - 2 do
-    let r, c = loop_incrementing_occupied_count 0 col Floor 1 (-1) in
-    ignore (loop_incrementing_occupied_count r c Floor (-1) 1)
-  done;
-  for row = 0 to rows - 1 do
-    for col = 0 to cols - 1 do
-      let num_occupied = count_occupied.(row).(col) in
-      match grid.(row).(col) with
-      | Empty -> if num_occupied = 0 then new_grid.(row).(col) <- Occupied
-      | Occupied -> if num_occupied >= 5 then new_grid.(row).(col) <- Empty
+       | Occupied -> count_occupied.%(cell) <- count_occupied.%(cell) + 1);
+      match grid.%(cell) with
       | Floor -> ()
-    done
-  done;
+      | (Empty | Occupied) as seat -> most_recently_seen_seat := seat)
+  in
+  let do_lines f major minors =
+    List.iter minors ~f:(fun minor ->
+      f grid major minor |> Sequence.iter ~f:loop_incrementing_occupied_count)
+  in
+  (* Pick an arbitrary major axis, since it doesn't matter. *)
+  (* Rows *)
+  do_lines Grid.Lines.rows `Top_to_bottom [ `Left_to_right; `Right_to_left ];
+  (* Columns *)
+  do_lines Grid.Lines.cols `Left_to_right [ `Top_to_bottom; `Bottom_to_top ];
+  (* NW-SE diagonals *)
+  do_lines
+    Grid.Lines.backslash_diagonals
+    `Bottom_left_to_top_right
+    [ `Top_left_to_bottom_right; `Bottom_right_to_top_left ];
+  (* NE-SW diagonals *)
+  do_lines
+    Grid.Lines.forward_slash_diagonals
+    `Top_left_to_bottom_right
+    [ `Top_right_to_bottom_left; `Bottom_left_to_top_right ];
+  Grid.Lines.rows grid `Top_to_bottom `Left_to_right
+  |> Sequence.concat
+  |> Sequence.iter ~f:(fun cell ->
+    let num_occupied = count_occupied.%(cell) in
+    match grid.%(cell) with
+    | Empty -> if num_occupied = 0 then new_grid.%(cell) <- Occupied
+    | Occupied -> if num_occupied >= 5 then new_grid.%(cell) <- Empty
+    | Floor -> ());
   new_grid
 ;;
 
@@ -154,15 +126,13 @@ let b () =
   let%bind grid = Lazy_deferred.force_exn Input.t in
   let final_grid =
     let rec loop grid new_grid =
-      if [%equal: State.t array array] grid new_grid
+      if [%equal: State.t Grid.t] grid new_grid
       then grid
       else loop new_grid (do_round new_grid)
     in
     loop grid (do_round grid)
   in
-  Array.sum (module Int) final_grid ~f:(Array.count ~f:State.is_occupied)
-  |> [%sexp_of: int]
-  |> print_s;
+  Grid.Row_major.count final_grid ~f:State.is_occupied |> [%sexp_of: int] |> print_s;
   return ()
 ;;
 

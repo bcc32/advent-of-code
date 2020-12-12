@@ -9,7 +9,7 @@ type t =
   [ `Cartesian of Vec2.t
   | `RC of Vec2.t
   ]
-[@@deriving sexp_of]
+[@@deriving compare, equal, hash, sexp_of]
 
 module Cartesian : sig
   (** Cartesian coordinates (x, y).
@@ -18,7 +18,7 @@ module Cartesian : sig
 
       x increases to the right.
       y increases to the top. *)
-  type t = [ `Cartesian of Vec2.t ] [@@deriving sexp_of]
+  type t = [ `Cartesian of Vec2.t ] [@@deriving compare, equal, hash, sexp_of]
 
   val create : x:int -> y:int -> t
   val update : t -> f:(Vec2.t -> Vec2.t) -> t
@@ -34,7 +34,7 @@ module RC : sig
 
       r increases to the bottom.
       c increases to the right. *)
-  type t = [ `RC of Vec2.t ] [@@deriving sexp_of]
+  type t = [ `RC of Vec2.t ] [@@deriving compare, equal, hash, sexp_of]
 
   val create : row:int -> col:int -> t
   val update : t -> f:(Vec2.t -> Vec2.t) -> t
