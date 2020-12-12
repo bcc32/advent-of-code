@@ -53,3 +53,8 @@ let set_exn t coord value =
   let row, col = get_row_col t coord in
   set_exn t ~row ~col value
 ;;
+
+module O = struct
+  let ( .%() ) = get_exn
+  let ( .%()<- ) = set_exn
+end
