@@ -1,33 +1,35 @@
 open! Core
 open! Async
 open! Import
+module Coord2 = Advent_of_code_lattice_geometry.Coord2
+module Grid = Advent_of_code_lattice_geometry.Grid
 
-let parse_input str =
-  str
-  |> String.split_lines
-  |> List.map ~f:(fun line -> line |> String.to_array)
-  |> Array.of_list
-;;
+module Input = struct
+  open! Advent_of_code_input_helpers
 
-let input =
-  Lazy_deferred.create (fun () -> Reader.file_contents "input.txt" >>| parse_input)
-;;
+  type t = char Grid.t
+
+  let parse = grid ~f:Fn.id
+
+  let t : t Lazy_deferred.t =
+    Lazy_deferred.create (fun () -> Reader.file_contents "input.txt" >>| parse)
+  ;;
+end
 
 let count_trees grid ~slope:(r, d) =
-  let row = ref 0 in
-  let col = ref 0 in
+  let coord = ref (Coord2.RC.create ~row:0 ~col:0) in
   let trees = ref 0 in
-  let width = Array.length grid.(0) in
-  while !row < Array.length grid do
-    if Char.equal '#' grid.(!row).(!col % width) then incr trees;
-    row := !row + d;
-    col := !col + r
+  while Grid.is_in_bounds grid !coord do
+    if Char.equal '#' (Grid.get_exn grid !coord) then incr trees;
+    coord
+    := Coord2.RC.update !coord ~f:(fun { x = row; y = col } ->
+      { x = row + d; y = (col + r) % Grid.width grid })
   done;
   !trees
 ;;
 
 let a () =
-  let%bind grid = Lazy_deferred.force_exn input in
+  let%bind grid = Lazy_deferred.force_exn Input.t in
   let trees = count_trees grid ~slope:(3, 1) in
   print_s [%sexp (trees : int)];
   return ()
@@ -40,7 +42,7 @@ let%expect_test "a" =
 ;;
 
 let b () =
-  let%bind grid = Lazy_deferred.force_exn input in
+  let%bind grid = Lazy_deferred.force_exn Input.t in
   List.map [ 1, 1; 3, 1; 5, 1; 7, 1; 1, 2 ] ~f:(fun slope -> count_trees grid ~slope)
   |> List.reduce_exn ~f:( * )
   |> [%sexp_of: int]

@@ -12,8 +12,11 @@ include Invariant.S1 with type 'a t := 'a t
     length. *)
 val of_matrix_exn : 'a array array -> 'a t
 
-val get_exn : 'a t -> Coord2.t -> 'a
-val set_exn : 'a t -> Coord2.t -> 'a -> unit
+val width : _ t -> int
+val height : _ t -> int
+val is_in_bounds : _ t -> [< Coord2.t ] -> bool
+val get_exn : 'a t -> [< Coord2.t ] -> 'a
+val set_exn : 'a t -> [< Coord2.t ] -> 'a -> unit
 
 (** Convenience function to pass dimensions as labeled arguments to a
     continuation. *)
@@ -21,8 +24,8 @@ val with_dimensions : 'a t -> f:(width:int -> height:int -> 'a) -> 'a
 
 module O : sig
   (** Same as [get_exn]. *)
-  val ( .%() ) : 'a t -> Coord2.t -> 'a
+  val ( .%() ) : 'a t -> [< Coord2.t ] -> 'a
 
   (** Same as [set_exn]. *)
-  val ( .%()<- ) : 'a t -> Coord2.t -> 'a -> unit
+  val ( .%()<- ) : 'a t -> [< Coord2.t ] -> 'a -> unit
 end

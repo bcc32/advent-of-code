@@ -22,7 +22,9 @@ let words ?sep input =
 ;;
 
 let grid ~f =
-  lines >> Array.of_list_map ~f:(String.to_list_rev >> Array.of_list_rev_map ~f)
+  lines
+  >> Array.of_list_map ~f:(String.to_list_rev >> Array.of_list_rev_map ~f)
+  >> Advent_of_code_lattice_geometry.Grid.of_matrix_exn
 ;;
 
 (* Eta-expand to fix labeled argument order. *)

@@ -18,9 +18,10 @@ module Cartesian : sig
 
       x increases to the right.
       y increases to the top. *)
-  type t = private [ `Cartesian of Vec2.t ] [@@deriving sexp_of]
+  type t = [ `Cartesian of Vec2.t ] [@@deriving sexp_of]
 
   val create : x:int -> y:int -> t
+  val update : t -> f:(Vec2.t -> Vec2.t) -> t
   val to_pair : t -> int * int
   val x : t -> int
   val y : t -> int
@@ -33,9 +34,10 @@ module RC : sig
 
       r increases to the bottom.
       c increases to the right. *)
-  type t = private [ `RC of Vec2.t ] [@@deriving sexp_of]
+  type t = [ `RC of Vec2.t ] [@@deriving sexp_of]
 
   val create : row:int -> col:int -> t
+  val update : t -> f:(Vec2.t -> Vec2.t) -> t
   val to_pair : t -> int * int
   val row : t -> int
   val col : t -> int

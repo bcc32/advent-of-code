@@ -42,7 +42,15 @@ end
 include T
 
 let with_dimensions t ~f = f ~width:(width t) ~height:(height t)
-let get_row_col t coord = with_dimensions t ~f:(Coord2.to_rc coord) |> Coord2.RC.to_pair
+
+let get_row_col t coord =
+  with_dimensions t ~f:(Coord2.to_rc (coord :> Coord2.t)) |> Coord2.RC.to_pair
+;;
+
+let is_in_bounds t coord =
+  let row, col = get_row_col t coord in
+  row >= 0 && row < height t && col >= 0 && col < width t
+;;
 
 let get_exn t coord =
   let row, col = get_row_col t coord in
