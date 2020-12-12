@@ -3,6 +3,8 @@ open! Async
 open! Import
 
 module Input = struct
+  open! Advent_of_code_input_helpers
+
   type t = string [@@deriving sexp_of]
 
   let parse input : t = input
