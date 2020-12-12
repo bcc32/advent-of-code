@@ -2,13 +2,18 @@ open! Core
 open! Import
 include Dir_intf
 
-let turn t turn ~turn_left ~turn_right =
+let turn t (turn : Turn.t) ~turn_left ~turn_right =
   match turn with
   | L -> turn_left t
   | R -> turn_right t
 ;;
 
-let turn_clockwise_multi t ~degrees ~turn_right ~single_turn_angle =
+let turn_multi_exn t (turn : Turn.t) ~degrees ~turn_right ~single_turn_angle =
+  let degrees =
+    match turn with
+    | L -> -degrees
+    | R -> degrees
+  in
   let degrees = degrees % 360 in
   if degrees % single_turn_angle <> 0
   then raise_s [%message "Invalid turn angle" (degrees : int) (single_turn_angle : int)]
@@ -19,6 +24,13 @@ let turn_clockwise_multi t ~degrees ~turn_right ~single_turn_angle =
 
 module Four = struct
   type t = nesw [@@deriving sexp_of]
+
+  let unit_vec_cartesian : t -> Vec2.t = function
+    | `N -> { x = 0; y = 1 }
+    | `E -> { x = 1; y = 0 }
+    | `S -> { x = 0; y = -1 }
+    | `W -> { x = -1; y = 0 }
+  ;;
 
   let turn_left = function
     | `N -> `W
@@ -35,7 +47,7 @@ module Four = struct
   ;;
 
   let turn = turn ~turn_left ~turn_right
-  let turn_clockwise_multi = turn_clockwise_multi ~turn_right ~single_turn_angle:90
+  let turn_multi_exn = turn_multi_exn ~turn_right ~single_turn_angle:90
 end
 
 module Eight = struct
@@ -44,6 +56,17 @@ module Eight = struct
     | diag
     ]
   [@@deriving sexp_of]
+
+  let unit_vec_cartesian : t -> Vec2.t = function
+    | `N -> { x = 0; y = 1 }
+    | `NE -> { x = 1; y = 1 }
+    | `E -> { x = 1; y = 0 }
+    | `SE -> { x = 1; y = -1 }
+    | `S -> { x = 0; y = -1 }
+    | `SW -> { x = -1; y = -1 }
+    | `W -> { x = -1; y = 0 }
+    | `NW -> { x = -1; y = 1 }
+  ;;
 
   let turn_left = function
     | `N -> `NW
@@ -68,7 +91,7 @@ module Eight = struct
   ;;
 
   let turn = turn ~turn_left ~turn_right
-  let turn_clockwise_multi = turn_clockwise_multi ~turn_right ~single_turn_angle:45
+  let turn_multi_exn = turn_multi_exn ~turn_right ~single_turn_angle:45
 end
 
 type _ t =
@@ -91,6 +114,11 @@ let dispatch (type a) (t : a t) : (module S0 with type t = a) * a * (a -> a t) =
   | Eight eight -> (module Eight), eight, fun eight -> Eight eight
 ;;
 
+let unit_vec_cartesian (type a) (t : a t) =
+  let (module M), dir, _make = dispatch t in
+  M.unit_vec_cartesian dir
+;;
+
 let turn_left (type a) (t : a t) =
   let (module M), dir, make = dispatch t in
   M.turn_left dir |> make
@@ -106,7 +134,7 @@ let turn (type a) (t : a t) turn =
   M.turn dir turn |> make
 ;;
 
-let turn_clockwise_multi (type a) (t : a t) ~degrees =
+let turn_multi_exn (type a) (t : a t) turn ~degrees =
   let (module M), dir, make = dispatch t in
-  M.turn_clockwise_multi dir ~degrees |> make
+  M.turn_multi_exn dir turn ~degrees |> make
 ;;

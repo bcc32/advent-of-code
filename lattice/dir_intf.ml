@@ -17,28 +17,28 @@ type diag =
   ]
 [@@deriving sexp_of]
 
-type turn =
-  | L
-  | R
-[@@deriving sexp_of]
-
 module type S = sig
   (** Represents a compass direction. *)
   type _ t [@@deriving sexp_of]
 
-  val turn : 'a t -> turn -> 'a t
+  (** Represents a single grid square movement.  Might be diagonal, in which
+      case the distance is actually sqrt(2) but it's still "one square over".*)
+  val unit_vec_cartesian : 'a t -> Vec2.t
+
+  val turn : 'a t -> Turn.t -> 'a t
   val turn_left : 'a t -> 'a t
   val turn_right : 'a t -> 'a t
-  val turn_clockwise_multi : 'a t -> degrees:int -> 'a t
+  val turn_multi_exn : 'a t -> Turn.t -> degrees:int -> 'a t
 end
 
 module type S0 = sig
   type t [@@deriving sexp_of]
 
-  val turn : t -> turn -> t
+  val unit_vec_cartesian : t -> Vec2.t
+  val turn : t -> Turn.t -> t
   val turn_left : t -> t
   val turn_right : t -> t
-  val turn_clockwise_multi : t -> degrees:int -> t
+  val turn_multi_exn : t -> Turn.t -> degrees:int -> t
 end
 
 module type Dir = sig

@@ -1,42 +1,13 @@
 open! Core
 open! Async
 open! Import
+module Dir = Advent_of_code_lattice_geometry.Dir.Four
+module Turn = Advent_of_code_lattice_geometry.Turn
+module Vec2 = Advent_of_code_lattice_geometry.Vec2
 
-module Dir = struct
+module State1 = struct
   type t =
-    | N
-    | E
-    | S
-    | W
-  [@@deriving sexp_of]
-
-  let incr t (x, y) ~n =
-    match t with
-    | N -> x, y + n
-    | E -> x + n, y
-    | S -> x, y - n
-    | W -> x - n, y
-  ;;
-
-  let turn_left = function
-    | N -> W
-    | E -> N
-    | S -> E
-    | W -> S
-  ;;
-
-  let turn_right = function
-    | N -> E
-    | E -> S
-    | S -> W
-    | W -> N
-  ;;
-end
-
-module State = struct
-  type t =
-    { x : int
-    ; y : int
+    { position : Vec2.t
     ; facing : Dir.t
     }
   [@@deriving sexp_of]
@@ -44,12 +15,8 @@ end
 
 module Instruction = struct
   type t =
-    | North of int
-    | South of int
-    | East of int
-    | West of int
-    | Left of int
-    | Right of int
+    | Translate of Dir.t * int
+    | Rotate of Turn.t * int
     | Forward of int
   [@@deriving sexp_of]
 
@@ -62,12 +29,12 @@ module Instruction = struct
       let g = Re.exec pattern input in
       let value = Re.Group.get g 2 |> Int.of_string in
       match (Re.Group.get g 1).[0] with
-      | 'N' -> North value
-      | 'S' -> South value
-      | 'E' -> East value
-      | 'W' -> West value
-      | 'L' -> Left value
-      | 'R' -> Right value
+      | 'N' -> Translate (`N, value)
+      | 'S' -> Translate (`S, value)
+      | 'E' -> Translate (`E, value)
+      | 'W' -> Translate (`W, value)
+      | 'L' -> Rotate (L, value)
+      | 'R' -> Rotate (R, value)
       | 'F' -> Forward value
       | _ -> failwith "invalid direction"
   ;;
@@ -85,34 +52,22 @@ module Input = struct
   ;;
 end
 
-let quarter_turns_of_degrees n = if n % 90 = 0 then n / 90 else failwith "not valid"
-
-let apply_instruction (state : State.t) (instruction : Instruction.t) : State.t =
+let apply_instruction (state : State1.t) (instruction : Instruction.t) : State1.t =
+  let open Vec2.O in
   match instruction with
-  | North d -> { state with y = state.y + d }
-  | South d -> { state with y = state.y - d }
-  | East d -> { state with x = state.x + d }
-  | West d -> { state with x = state.x - d }
-  | Left deg ->
-    { state with
-      facing =
-        Fn.apply_n_times Dir.turn_left ~n:(quarter_turns_of_degrees deg) state.facing
-    }
-  | Right deg ->
-    { state with
-      facing =
-        Fn.apply_n_times Dir.turn_right ~n:(quarter_turns_of_degrees deg) state.facing
-    }
+  | Translate (dir, by) ->
+    { state with position = state.position + (by * Dir.unit_vec_cartesian dir) }
+  | Rotate (turn, degrees) ->
+    { state with facing = Dir.turn_multi_exn state.facing turn ~degrees }
   | Forward n ->
-    let x, y = Dir.incr state.facing ~n (state.x, state.y) in
-    { state with x; y }
+    { state with position = state.position + (n * Dir.unit_vec_cartesian state.facing) }
 ;;
 
 let a () =
   let%bind instructions = Lazy_deferred.force_exn Input.t in
-  let state : State.t = { x = 0; y = 0; facing = E } in
+  let state : State1.t = { position = Vec2.zero; facing = `E } in
   let state = List.fold instructions ~init:state ~f:apply_instruction in
-  print_s [%sexp (Int.abs state.x + Int.abs state.y : int)];
+  print_s [%sexp (Int.abs state.position.x + Int.abs state.position.y : int)];
   return ()
 ;;
 
@@ -124,49 +79,30 @@ let%expect_test "a" =
 
 module State2 = struct
   type t =
-    { x : int
-    ; y : int
-    ; waypoint_x : int
-    ; waypoint_y : int
+    { position : Vec2.t
+    ; waypoint : Vec2.t
     }
   [@@deriving sexp_of]
 end
 
-let rotate_vec_left (x, y) = -y, x
-let rotate_vec_right (x, y) = y, -x
-
 let apply_instruction (state : State2.t) (instruction : Instruction.t) : State2.t =
+  let open Vec2.O in
   match instruction with
-  | North d -> { state with waypoint_y = state.waypoint_y + d }
-  | South d -> { state with waypoint_y = state.waypoint_y - d }
-  | East d -> { state with waypoint_x = state.waypoint_x + d }
-  | West d -> { state with waypoint_x = state.waypoint_x - d }
-  | Left deg ->
-    let waypoint_x, waypoint_y =
-      Fn.apply_n_times
-        rotate_vec_left
-        ~n:(quarter_turns_of_degrees deg)
-        (state.waypoint_x, state.waypoint_y)
-    in
-    { state with waypoint_x; waypoint_y }
-  | Right deg ->
-    let waypoint_x, waypoint_y =
-      Fn.apply_n_times
-        rotate_vec_right
-        ~n:(quarter_turns_of_degrees deg)
-        (state.waypoint_x, state.waypoint_y)
-    in
-    { state with waypoint_x; waypoint_y }
+  | Translate (dir, by) ->
+    { state with waypoint = state.waypoint + (by * Dir.unit_vec_cartesian dir) }
+  | Rotate (turn, degrees) ->
+    let waypoint = Vec2.rotate_wrt_origin_multi_exn state.waypoint turn ~degrees in
+    { state with waypoint }
   | Forward n ->
-    let x, y = state.x + (n * state.waypoint_x), state.y + (n * state.waypoint_y) in
-    { state with x; y }
+    let position = state.position + (n * state.waypoint) in
+    { state with position }
 ;;
 
 let b () =
   let%bind instructions = Lazy_deferred.force_exn Input.t in
-  let state : State2.t = { x = 0; y = 0; waypoint_x = 10; waypoint_y = 1 } in
+  let state : State2.t = { position = Vec2.zero; waypoint = { x = 10; y = 1 } } in
   let state = List.fold instructions ~init:state ~f:apply_instruction in
-  print_s [%sexp (Int.abs state.x + Int.abs state.y : int)];
+  print_s [%sexp (Int.abs state.position.x + Int.abs state.position.y : int)];
   return ()
 ;;
 

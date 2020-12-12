@@ -14,10 +14,15 @@ module O : sig
   val ( + ) : t -> t -> t
   val ( - ) : t -> t -> t
   val ( ~- ) : t -> t
+  val ( * ) : int -> t -> t
   val neg : t -> t
   val zero : t
+
+  include Comparisons.Infix with type t := t
 end
 
 include module type of O
 
 val scale : t -> int -> t
+val rotate_wrt_origin : t -> Turn.t -> t
+val rotate_wrt_origin_multi_exn : t -> Turn.t -> degrees:int -> t
