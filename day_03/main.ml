@@ -1,7 +1,7 @@
 open! Core
 open! Async
 open! Import
-module Coord2 = Advent_of_code_lattice_geometry.Coord2
+module Coord = Advent_of_code_lattice_geometry.Coord
 module Grid = Advent_of_code_lattice_geometry.Grid
 
 module Input = struct
@@ -18,12 +18,12 @@ end
 
 let count_trees grid ~slope:(r, d) =
   let open Grid.O in
-  let coord = ref (Coord2.RC.create ~row:0 ~col:0) in
+  let coord = ref (Coord.RC.create ~row:0 ~col:0) in
   let trees = ref 0 in
   while grid.?(!coord) do
     if Char.equal '#' grid.%(!coord) then incr trees;
     coord
-    := Coord2.RC.update !coord ~f:(fun { x = row; y = col } ->
+    := Coord.RC.update !coord ~f:(fun { x = row; y = col } ->
       { x = row + d; y = (col + r) % Grid.width grid })
   done;
   !trees

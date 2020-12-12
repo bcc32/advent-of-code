@@ -14,9 +14,9 @@ val of_matrix_exn : 'a array array -> 'a t
 
 val width : _ t -> int
 val height : _ t -> int
-val is_in_bounds : _ t -> [< Coord2.t ] -> bool
-val get_exn : 'a t -> [< Coord2.t ] -> 'a
-val set_exn : 'a t -> [< Coord2.t ] -> 'a -> unit
+val is_in_bounds : _ t -> [< Coord.t ] -> bool
+val get_exn : 'a t -> [< Coord.t ] -> 'a
+val set_exn : 'a t -> [< Coord.t ] -> 'a -> unit
 
 (** Convenience function to pass dimensions as labeled arguments to a
     continuation. *)
@@ -27,13 +27,13 @@ val map : 'a t -> f:('a -> 'b) -> 'b t
 
 module O : sig
   (** Same as [get_exn]. *)
-  val ( .%() ) : 'a t -> [< Coord2.t ] -> 'a
+  val ( .%() ) : 'a t -> [< Coord.t ] -> 'a
 
   (** Same as [set_exn]. *)
-  val ( .%()<- ) : 'a t -> [< Coord2.t ] -> 'a -> unit
+  val ( .%()<- ) : 'a t -> [< Coord.t ] -> 'a -> unit
 
   (** Same as [is_in_bounds]. *)
-  val ( .?() ) : _ t -> [< Coord2.t ] -> bool
+  val ( .?() ) : _ t -> [< Coord.t ] -> bool
 end
 
 module Lines : sig
@@ -45,25 +45,25 @@ module Lines : sig
     :  _ t
     -> [ `Top_to_bottom | `Bottom_to_top ]
     -> [ `Left_to_right | `Right_to_left ]
-    -> Coord2.RC.t Sequence.t Sequence.t
+    -> Coord.RC.t Sequence.t Sequence.t
 
   val cols
     :  _ t
     -> [ `Left_to_right | `Right_to_left ]
     -> [ `Top_to_bottom | `Bottom_to_top ]
-    -> Coord2.RC.t Sequence.t Sequence.t
+    -> Coord.RC.t Sequence.t Sequence.t
 
   val backslash_diagonals
     :  _ t
     -> [ `Top_right_to_bottom_left | `Bottom_left_to_top_right ]
     -> [ `Top_left_to_bottom_right | `Bottom_right_to_top_left ]
-    -> Coord2.RC.t Sequence.t Sequence.t
+    -> Coord.RC.t Sequence.t Sequence.t
 
   val forward_slash_diagonals
     :  _ t
     -> [ `Top_left_to_bottom_right | `Bottom_right_to_top_left ]
     -> [ `Top_right_to_bottom_left | `Bottom_left_to_top_right ]
-    -> Coord2.RC.t Sequence.t Sequence.t
+    -> Coord.RC.t Sequence.t Sequence.t
 end
 
 module Row_major : sig

@@ -1,8 +1,8 @@
 open! Core
 open! Import
-module Coord2 = Coord2
+module Coord = Coord
 module Dir = Dir
 module Grid = Grid
 module Ship = Ship
 module Turn = Turn
-module Vec2 = Vec2
+module Vec = Vec

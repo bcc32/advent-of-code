@@ -2,7 +2,7 @@ open! Core
 open! Import
 
 module Cartesian = struct
-  type t = [ `Cartesian of Vec2.t ] [@@deriving compare, equal, hash, sexp_of]
+  type t = [ `Cartesian of Vec.t ] [@@deriving compare, equal, hash, sexp_of]
 
   let create ~x ~y : t = `Cartesian { x; y }
   let update (`Cartesian v) ~f = `Cartesian (f v)
@@ -12,7 +12,7 @@ module Cartesian = struct
 end
 
 module RC = struct
-  type t = [ `RC of Vec2.t ] [@@deriving compare, equal, hash, sexp_of]
+  type t = [ `RC of Vec.t ] [@@deriving compare, equal, hash, sexp_of]
 
   let create ~row ~col : t = `RC { x = row; y = col }
   let update (`RC v) ~f = `RC (f v)

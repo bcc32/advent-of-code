@@ -3,11 +3,11 @@ open! Async
 open! Import
 module Dir = Advent_of_code_lattice_geometry.Dir.Four
 module Turn = Advent_of_code_lattice_geometry.Turn
-module Vec2 = Advent_of_code_lattice_geometry.Vec2
+module Vec = Advent_of_code_lattice_geometry.Vec
 
 module State1 = struct
   type t =
-    { position : Vec2.t
+    { position : Vec.t
     ; facing : Dir.t
     }
   [@@deriving sexp_of]
@@ -53,7 +53,7 @@ module Input = struct
 end
 
 let apply_instruction (state : State1.t) (instruction : Instruction.t) : State1.t =
-  let open Vec2.O in
+  let open Vec.O in
   match instruction with
   | Translate (dir, by) ->
     { state with position = state.position + (by * Dir.unit_vec_cartesian dir) }
@@ -65,7 +65,7 @@ let apply_instruction (state : State1.t) (instruction : Instruction.t) : State1.
 
 let a () =
   let%bind instructions = Lazy_deferred.force_exn Input.t in
-  let state : State1.t = { position = Vec2.zero; facing = `E } in
+  let state : State1.t = { position = Vec.zero; facing = `E } in
   let state = List.fold instructions ~init:state ~f:apply_instruction in
   print_s [%sexp (Int.abs state.position.x + Int.abs state.position.y : int)];
   return ()
@@ -79,19 +79,19 @@ let%expect_test "a" =
 
 module State2 = struct
   type t =
-    { position : Vec2.t
-    ; waypoint : Vec2.t
+    { position : Vec.t
+    ; waypoint : Vec.t
     }
   [@@deriving sexp_of]
 end
 
 let apply_instruction (state : State2.t) (instruction : Instruction.t) : State2.t =
-  let open Vec2.O in
+  let open Vec.O in
   match instruction with
   | Translate (dir, by) ->
     { state with waypoint = state.waypoint + (by * Dir.unit_vec_cartesian dir) }
   | Rotate (turn, degrees) ->
-    let waypoint = Vec2.rotate_wrt_origin_multi_exn state.waypoint turn ~degrees in
+    let waypoint = Vec.rotate_wrt_origin_multi_exn state.waypoint turn ~degrees in
     { state with waypoint }
   | Forward n ->
     let position = state.position + (n * state.waypoint) in
@@ -100,7 +100,7 @@ let apply_instruction (state : State2.t) (instruction : Instruction.t) : State2.
 
 let b () =
   let%bind instructions = Lazy_deferred.force_exn Input.t in
-  let state : State2.t = { position = Vec2.zero; waypoint = { x = 10; y = 1 } } in
+  let state : State2.t = { position = Vec.zero; waypoint = { x = 10; y = 1 } } in
   let state = List.fold instructions ~init:state ~f:apply_instruction in
   print_s [%sexp (Int.abs state.position.x + Int.abs state.position.y : int)];
   return ()

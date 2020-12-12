@@ -6,8 +6,8 @@ open! Core
 open! Import
 
 type t =
-  [ `Cartesian of Vec2.t
-  | `RC of Vec2.t
+  [ `Cartesian of Vec.t
+  | `RC of Vec.t
   ]
 [@@deriving compare, equal, hash, sexp_of]
 
@@ -18,10 +18,10 @@ module Cartesian : sig
 
       x increases to the right.
       y increases to the top. *)
-  type t = [ `Cartesian of Vec2.t ] [@@deriving compare, equal, hash, sexp_of]
+  type t = [ `Cartesian of Vec.t ] [@@deriving compare, equal, hash, sexp_of]
 
   val create : x:int -> y:int -> t
-  val update : t -> f:(Vec2.t -> Vec2.t) -> t
+  val update : t -> f:(Vec.t -> Vec.t) -> t
   val to_pair : t -> int * int
   val x : t -> int
   val y : t -> int
@@ -34,10 +34,10 @@ module RC : sig
 
       r increases to the bottom.
       c increases to the right. *)
-  type t = [ `RC of Vec2.t ] [@@deriving compare, equal, hash, sexp_of]
+  type t = [ `RC of Vec.t ] [@@deriving compare, equal, hash, sexp_of]
 
   val create : row:int -> col:int -> t
-  val update : t -> f:(Vec2.t -> Vec2.t) -> t
+  val update : t -> f:(Vec.t -> Vec.t) -> t
   val to_pair : t -> int * int
   val row : t -> int
   val col : t -> int

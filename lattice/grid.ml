@@ -71,7 +71,7 @@ include T
 let with_dimensions t ~f = f ~width:(width t) ~height:(height t)
 
 let get_row_col t coord =
-  with_dimensions t ~f:(Coord2.to_rc (coord :> Coord2.t)) |> Coord2.RC.to_pair
+  with_dimensions t ~f:(Coord.to_rc (coord :> Coord.t)) |> Coord.RC.to_pair
 ;;
 
 let is_in_bounds t coord =
@@ -121,7 +121,7 @@ module Lines = struct
            | `Left_to_right -> `Ascending
            | `Right_to_left -> `Descending)
     in
-    Coord2.RC.create ~row ~col
+    Coord.RC.create ~row ~col
   ;;
 
   let cols t major minor =
@@ -141,7 +141,7 @@ module Lines = struct
            | `Top_to_bottom -> `Ascending
            | `Bottom_to_top -> `Descending)
     in
-    Coord2.RC.create ~row ~col
+    Coord.RC.create ~row ~col
   ;;
 
   let backslash_diagonals t major minor =
@@ -163,7 +163,7 @@ module Lines = struct
              | `Bottom_right_to_top_left -> `Descending)
       in
       let row, col = starting_row + offset, offset in
-      Coord2.RC.create ~row ~col
+      Coord.RC.create ~row ~col
     in
     let including_top_edge =
       let%map.Sequence starting_col =
@@ -184,7 +184,7 @@ module Lines = struct
              | `Bottom_right_to_top_left -> `Descending)
       in
       let row, col = offset, starting_col + offset in
-      Coord2.RC.create ~row ~col
+      Coord.RC.create ~row ~col
     in
     match major with
     | `Top_right_to_bottom_left ->
@@ -212,7 +212,7 @@ module Lines = struct
              | `Bottom_left_to_top_right -> `Descending)
       in
       let row, col = starting_row + offset, width t - 1 - offset in
-      Coord2.RC.create ~row ~col
+      Coord.RC.create ~row ~col
     in
     let including_top_edge =
       let%map.Sequence starting_col =
@@ -232,7 +232,7 @@ module Lines = struct
              | `Top_right_to_bottom_left -> `Descending)
       in
       let row, col = offset, starting_col - offset in
-      Coord2.RC.create ~row ~col
+      Coord.RC.create ~row ~col
     in
     match major with
     | `Top_left_to_bottom_right ->

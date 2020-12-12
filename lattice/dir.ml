@@ -25,7 +25,7 @@ let turn_multi_exn t (turn : Turn.t) ~degrees ~turn_right ~single_turn_angle =
 module Four = struct
   type t = nesw [@@deriving sexp_of]
 
-  let unit_vec_cartesian : t -> Vec2.t = function
+  let unit_vec_cartesian : t -> Vec.t = function
     | `N -> { x = 0; y = 1 }
     | `E -> { x = 1; y = 0 }
     | `S -> { x = 0; y = -1 }
@@ -57,7 +57,7 @@ module Eight = struct
     ]
   [@@deriving sexp_of]
 
-  let unit_vec_cartesian : t -> Vec2.t = function
+  let unit_vec_cartesian : t -> Vec.t = function
     | `N -> { x = 0; y = 1 }
     | `NE -> { x = 1; y = 1 }
     | `E -> { x = 1; y = 0 }

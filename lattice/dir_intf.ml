@@ -23,7 +23,7 @@ module type S = sig
 
   (** Represents a single grid square movement.  Might be diagonal, in which
       case the distance is actually sqrt(2) but it's still "one square over".*)
-  val unit_vec_cartesian : 'a t -> Vec2.t
+  val unit_vec_cartesian : 'a t -> Vec.t
 
   val turn : 'a t -> Turn.t -> 'a t
   val turn_left : 'a t -> 'a t
@@ -34,7 +34,7 @@ end
 module type S0 = sig
   type t [@@deriving sexp_of]
 
-  val unit_vec_cartesian : t -> Vec2.t
+  val unit_vec_cartesian : t -> Vec.t
   val turn : t -> Turn.t -> t
   val turn_left : t -> t
   val turn_right : t -> t

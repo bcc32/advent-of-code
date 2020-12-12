@@ -40,12 +40,12 @@ let do_round grid =
   Grid.Lines.rows grid `Top_to_bottom `Left_to_right
   |> Sequence.concat
   |> Sequence.iter ~f:(fun cell ->
-    let row, col = Coord2.RC.to_pair cell in
+    let row, col = Coord.RC.to_pair cell in
     let num_occupied = ref 0 in
     for i = row - 1 to row + 1 do
       for j = col - 1 to col + 1 do
-        let neighbor = Coord2.RC.create ~row:i ~col:j in
-        if (not ([%equal: Coord2.RC.t] cell neighbor))
+        let neighbor = Coord.RC.create ~row:i ~col:j in
+        if (not ([%equal: Coord.RC.t] cell neighbor))
         && grid.?(neighbor)
         && State.is_occupied grid.%(neighbor)
         then incr num_occupied
