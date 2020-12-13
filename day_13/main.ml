@@ -89,13 +89,13 @@ let b () =
     |> Array.to_list
   in
   let x, y = chinese_remainder_theorem residues in
-  let open Bigint.O in
-  print_s [%sexp (x : Bigint.t), (y : Bigint.t), (x % y : Bigint.t)];
+  let ans = Bigint.( % ) x y in
+  print_s [%sexp (ans : Bigint.t)];
   return ()
 ;;
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| (110600785009168536379288168327779714849 878977779203641 690123192779524) |}] in
+  let%bind () = [%expect {| 690123192779524 |}] in
   return ()
 ;;
