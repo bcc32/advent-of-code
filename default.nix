@@ -5,6 +5,8 @@ let
     buildDunePackage async bignum core expect_test_helpers_async
     expect_test_helpers_core re topological_sort;
 
+  euler = import ../euler;
+
 in buildDunePackage {
   pname = "aoc2020";
   version = "0.1.0";
@@ -15,6 +17,7 @@ in buildDunePackage {
     async
     bignum
     core
+    euler
     expect_test_helpers_async
     expect_test_helpers_core
     re

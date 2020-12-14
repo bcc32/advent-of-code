@@ -52,30 +52,6 @@ let%expect_test "a" =
   return ()
 ;;
 
-let bezout a b =
-  let open Bigint.O in
-  let one = Bigint.of_int 1 in
-  let rec loop r0 s0 t0 r1 s1 t1 =
-    if r1 = zero
-    then s0, t0, r0
-    else (
-      let q = r0 / r1 in
-      loop r1 s1 t1 (r0 - (q * r1)) (s0 - (q * s1)) (t0 - (q * t1)))
-  in
-  loop a one zero b zero one
-;;
-
-let chinese_remainder_theorem residues =
-  let open Bigint.O in
-  let one = Bigint.of_int 1 in
-  List.reduce_balanced_exn residues ~f:(fun (r1, m1) (r2, m2) ->
-    let s, t, g = bezout m1 m2 in
-    if g <> one
-    then raise_s [%message "moduli not coprime" (m1 : Bigint.t) (m2 : Bigint.t)];
-    let x = (r1 * t * m2) + (r2 * s * m1) in
-    x, m1 * m2)
-;;
-
 let b () =
   let%bind input = Lazy_deferred.force_exn Input.t in
   let id_at_time = input.bus_ids |> Array.of_list in
@@ -88,7 +64,7 @@ let b () =
         Some (Bigint.of_int required_residue, Bigint.of_int id))
     |> Array.to_list
   in
-  let x, y = chinese_remainder_theorem residues in
+  let x, y = Euler.Number_theory.Bigint.chinese_remainder_theorem residues in
   let ans = Bigint.( % ) x y in
   print_s [%sexp (ans : Bigint.t)];
   return ()

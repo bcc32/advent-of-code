@@ -15,6 +15,7 @@
   (async                     (and (>= v0.14) (< v0.15)))
   (bignum                    (and (>= v0.14) (< v0.15)))
   (core                      (and (>= v0.14) (< v0.15)))
+  (euler                     (and (>= 0.5.0) (< 0.6.0)))
   (expect_test_helpers_async (and (>= v0.14) (< v0.15)))
   (expect_test_helpers_core  (and (>= v0.14) (< v0.15)))
   (ppx_jane                  (and (>= v0.14) (< v0.15)))
