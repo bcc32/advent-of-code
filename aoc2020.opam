@@ -34,3 +34,6 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/bcc32/advent-of-code-2020.git"
+pin-depends: [
+  [ "euler.0.5.0" "git+https://github.com/bcc32/projecteuler-ocaml" ]
+]
