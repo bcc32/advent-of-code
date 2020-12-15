@@ -14,20 +14,48 @@ module Input = struct
   ;;
 end
 
+module Hashtbl_with_small_array = struct
+  type 'a t =
+    { array : 'a Option_array.t
+    ; hashtbl : (int, 'a) Hashtbl.t
+    }
+  [@@deriving sexp_of]
+
+  let create () =
+    let array = Option_array.create ~len:3_000_000 in
+    let hashtbl = Hashtbl.create (module Int) in
+    { array; hashtbl }
+  ;;
+
+  let find t i =
+    if i < Option_array.length t.array
+    then Option_array.get t.array i
+    else Hashtbl.find t.hashtbl i
+  ;;
+
+  let set t ~key:i ~data:x =
+    if i < Option_array.length t.array
+    then Option_array.set_some t.array i x
+    else Hashtbl.set t.hashtbl ~key:i ~data:x
+  ;;
+end
+
 let play numbers : int Iter.t =
   fun f ->
-  let most_recent_index = Hashtbl.create (module Int) in
+  let most_recent_index = Hashtbl_with_small_array.create () in
   let most_recent_index_of_last_number = ref None in
   List.iteri numbers ~f:(fun i number ->
     f number;
-    most_recent_index_of_last_number := Hashtbl.find most_recent_index number;
-    Hashtbl.set most_recent_index ~key:number ~data:i);
+    most_recent_index_of_last_number
+    := Hashtbl_with_small_array.find most_recent_index number;
+    Hashtbl_with_small_array.set most_recent_index ~key:number ~data:i);
   let i = ref (List.length numbers) in
   while true do
     let yield n =
       f n;
-      most_recent_index_of_last_number := Hashtbl.find most_recent_index n;
-      Hashtbl.set most_recent_index ~key:n ~data:!i;
+      most_recent_index_of_last_number
+      := Hashtbl_with_small_array.find most_recent_index n;
+      Hashtbl_with_small_array.set most_recent_index ~key:n ~data:!i;
       incr i
     in
     match !most_recent_index_of_last_number with
