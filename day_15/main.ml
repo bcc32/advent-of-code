@@ -14,36 +14,34 @@ module Input = struct
   ;;
 end
 
-let play numbers =
-  Sequence.unfold_with_and_finish
-    (Sequence.of_list numbers)
-    ~init:(0, Map.empty (module Int), None)
-    ~running_step:(fun (i, most_recent_index, _last_number_most_recent_index) number ->
-      Yield
-        ( number
-        , ( i + 1
-          , Map.set most_recent_index ~key:number ~data:i
-          , Map.find most_recent_index number ) ))
-    ~inner_finished:Fn.id
-    ~finishing_step:(fun (i, most_recent_index, last_number_most_recent_index) ->
-      match last_number_most_recent_index with
-      | None ->
-        Yield
-          ( 0
-          , (i + 1, Map.set most_recent_index ~key:0 ~data:i, Map.find most_recent_index 0)
-          )
-      | Some i' ->
-        let diff = i - i' - 1 in
-        Yield
-          ( diff
-          , ( i + 1
-            , Map.set most_recent_index ~key:diff ~data:i
-            , Map.find most_recent_index diff ) ))
+let play numbers : int Iter.t =
+  fun f ->
+  let most_recent_index = Hashtbl.create (module Int) in
+  let most_recent_index_of_last_number = ref None in
+  List.iteri numbers ~f:(fun i number ->
+    f number;
+    most_recent_index_of_last_number := Hashtbl.find most_recent_index number;
+    Hashtbl.set most_recent_index ~key:number ~data:i);
+  let i = ref (List.length numbers) in
+  while true do
+    let yield n =
+      f n;
+      most_recent_index_of_last_number := Hashtbl.find most_recent_index n;
+      Hashtbl.set most_recent_index ~key:n ~data:!i;
+      incr i
+    in
+    match !most_recent_index_of_last_number with
+    | None -> yield 0
+    | Some i' ->
+      (* Subtract one because we're thinking about the previous index of the
+         number at [i - 1]. *)
+      yield (!i - i' - 1)
+  done
 ;;
 
 let a () =
   let%bind input = Lazy_deferred.force_exn Input.t in
-  let ans = play input |> Fn.flip Sequence.nth_exn 2019 in
+  let ans = play input |> Iter.drop 2019 |> Iter.head_exn in
   print_s [%sexp (ans : int)];
   return ()
 ;;
@@ -56,7 +54,7 @@ let%expect_test "a" =
 
 let b () =
   let%bind input = Lazy_deferred.force_exn Input.t in
-  let ans = play input |> Fn.flip Sequence.nth_exn 29999999 in
+  let ans = play input |> Iter.drop 29999999 |> Iter.head_exn in
   print_s [%sexp (ans : int)];
   return ()
 ;;

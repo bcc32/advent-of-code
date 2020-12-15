@@ -13,6 +13,7 @@ depends: [
   "bignum" {>= "v0.14" & < "v0.15"}
   "core" {>= "v0.14" & < "v0.15"}
   "euler" {>= "0.5.0" & < "0.6.0"}
+  "iter" {>= "1.2.0" & < "2.0.0"}
   "expect_test_helpers_async" {>= "v0.14" & < "v0.15"}
   "expect_test_helpers_core" {>= "v0.14" & < "v0.15"}
   "ppx_jane" {>= "v0.14" & < "v0.15"}
