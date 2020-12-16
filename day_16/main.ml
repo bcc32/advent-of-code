@@ -4,6 +4,8 @@ open! Import
 
 module Valid_values = struct
   type t = (int * int) list [@@deriving sexp_of]
+
+  let mem t x = List.exists t ~f:(fun (low, high) -> Int.between ~low ~high x)
 end
 
 module Ticket = struct
@@ -50,9 +52,7 @@ end
 let find_invalid_field_value ticket ~fields =
   List.find ticket ~f:(fun field_value ->
     Map.data fields
-    |> List.for_all ~f:(fun ranges ->
-      List.for_all ranges ~f:(fun (low, high) ->
-        not (Int.between field_value ~low ~high))))
+    |> List.for_all ~f:(fun valid -> not (Valid_values.mem valid field_value)))
 ;;
 
 let a () =
@@ -73,10 +73,9 @@ let%expect_test "a" =
 ;;
 
 let possible_fields_in_position tickets i ~fields =
-  List.filter (Map.to_alist fields) ~f:(fun (_, ranges) ->
+  List.filter (Map.to_alist fields) ~f:(fun (_, valid) ->
     List.for_all tickets ~f:(fun ticket ->
-      let field_value = List.nth_exn ticket i in
-      List.exists ranges ~f:(fun (low, high) -> Int.between ~low ~high field_value)))
+      Valid_values.mem valid (List.nth_exn ticket i)))
   |> List.map ~f:fst
   |> Set.of_list (module String)
 ;;
