@@ -89,35 +89,29 @@ let b () =
       | Some _ -> false)
   in
   let tickets_to_check = input.my_ticket :: valid_nearby_tickets in
+  let correct_permutation = Option_array.create ~len:(List.length input.my_ticket) in
   let possible_fields_in_position =
-    List.init (List.length input.my_ticket) ~f:(fun i ->
+    Array.init (List.length input.my_ticket) ~f:(fun i ->
       possible_fields_in_position tickets_to_check i ~fields:input.fields)
-    |> ref
   in
-  while !possible_fields_in_position |> List.exists ~f:(fun l -> List.length l > 1) do
-    let fixed_in_position =
-      List.filter_map !possible_fields_in_position ~f:(fun fields ->
-        if List.length fields = 1 then Some (List.hd_exn fields) else None)
+  while possible_fields_in_position |> Array.exists ~f:(not << List.is_empty) do
+    let i, fixed_in_position =
+      Array.find_mapi possible_fields_in_position ~f:(fun i fields ->
+        if List.length fields = 1 then Some (i, List.hd_exn fields) else None)
+      |> Option.value_exn
     in
-    possible_fields_in_position
-    := List.map !possible_fields_in_position ~f:(fun list ->
-      if List.length list = 1
-      then list
-      else
-        List.filter list ~f:(fun field ->
-          not (List.mem fixed_in_position field ~equal:String.equal)))
+    Option_array.set_some correct_permutation i fixed_in_position;
+    Array.map_inplace
+      possible_fields_in_position
+      ~f:(List.filter ~f:(String.( <> ) fixed_in_position))
   done;
-  let correct_permutation = List.map !possible_fields_in_position ~f:List.hd_exn in
-  List.fold2_exn
-    ~init:1
-    input.my_ticket
-    correct_permutation
-    ~f:(fun accum field_value field_name ->
-      if String.is_prefix field_name ~prefix:"departure"
-      then accum * field_value
-      else accum)
-  |> [%sexp_of: int]
-  |> print_s;
+  let product = ref 1 in
+  for i = 0 to Option_array.length correct_permutation - 1 do
+    let field_name = Option_array.get_some_exn correct_permutation i in
+    if String.is_prefix field_name ~prefix:"departure"
+    then product := !product * List.nth_exn input.my_ticket i
+  done;
+  print_s [%sexp (!product : int)];
   return ()
 ;;
 
