@@ -78,6 +78,7 @@ let possible_fields_in_position tickets i ~fields =
       let field_value = List.nth_exn ticket i in
       List.exists ranges ~f:(fun (low, high) -> Int.between ~low ~high field_value)))
   |> List.map ~f:fst
+  |> Set.of_list (module String)
 ;;
 
 let b () =
@@ -94,16 +95,16 @@ let b () =
     Array.init (List.length input.my_ticket) ~f:(fun i ->
       possible_fields_in_position tickets_to_check i ~fields:input.fields)
   in
-  while possible_fields_in_position |> Array.exists ~f:(not << List.is_empty) do
+  while possible_fields_in_position |> Array.exists ~f:(not << Set.is_empty) do
     let i, fixed_in_position =
       Array.find_mapi possible_fields_in_position ~f:(fun i fields ->
-        if List.length fields = 1 then Some (i, List.hd_exn fields) else None)
+        if Set.length fields = 1 then Some (i, Set.choose_exn fields) else None)
       |> Option.value_exn
     in
     Option_array.set_some correct_permutation i fixed_in_position;
     Array.map_inplace
       possible_fields_in_position
-      ~f:(List.filter ~f:(String.( <> ) fixed_in_position))
+      ~f:(Fn.flip Set.remove fixed_in_position)
   done;
   let product = ref 1 in
   for i = 0 to Option_array.length correct_permutation - 1 do
