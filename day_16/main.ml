@@ -23,19 +23,23 @@ module Input = struct
   [@@deriving sexp_of]
 
   let parse input : t =
-    let [ field_defs; my_ticket; nearby_tickets ] = paragraphs (lines input) in
-    let fields : Valid_values.t Map.M(String).t =
-      List.map field_defs ~f:(fun str ->
-        let (name :: ranges) = Re.Pcre.split str ~rex:(Re.Pcre.regexp ": | or ") in
-        ( name
-        , List.map ranges ~f:(fun x ->
-            let [ left; right ] = String.split x ~on:'-' in
-            stoi left, stoi right) ))
-      |> Map.of_alist_exn (module String)
-    in
-    let my_ticket = List.nth_exn my_ticket 1 |> Ticket.of_string in
-    let nearby_tickets = List.tl_exn nearby_tickets |> List.map ~f:Ticket.of_string in
-    { fields; my_ticket; nearby_tickets }
+    match paragraphs (lines input) with
+    | [ field_defs; my_ticket; nearby_tickets ] ->
+      let fields : Valid_values.t Map.M(String).t =
+        List.map field_defs ~f:(fun str ->
+          match Re.Pcre.(split str ~rex:(regexp ": | or ")) with
+          | name :: ranges ->
+            ( name
+            , List.map ranges ~f:(fun x ->
+                let left, right = String.lsplit2_exn x ~on:'-' in
+                stoi left, stoi right) )
+          | _ -> assert false)
+        |> Map.of_alist_exn (module String)
+      in
+      let my_ticket = List.nth_exn my_ticket 1 |> Ticket.of_string in
+      let nearby_tickets = List.tl_exn nearby_tickets |> List.map ~f:Ticket.of_string in
+      { fields; my_ticket; nearby_tickets }
+    | _ -> assert false
   ;;
 
   let t : t Lazy_deferred.t =
@@ -68,14 +72,8 @@ let%expect_test "a" =
   return ()
 ;;
 
-let is_valid ticket ~permutation ~fields =
-  List.for_all2_exn ticket permutation ~f:(fun field_value field_name ->
-    let ranges = Map.find_exn fields field_name in
-    List.exists ranges ~f:(fun (low, high) -> Int.between ~low ~high field_value))
-;;
-
 let possible_fields_in_position tickets i ~fields =
-  List.filter (Map.to_alist fields) ~f:(fun (field_name, ranges) ->
+  List.filter (Map.to_alist fields) ~f:(fun (_, ranges) ->
     List.for_all tickets ~f:(fun ticket ->
       let field_value = List.nth_exn ticket i in
       List.exists ranges ~f:(fun (low, high) -> Int.between ~low ~high field_value)))
