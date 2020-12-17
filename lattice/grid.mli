@@ -20,7 +20,7 @@ val set_exn : 'a t -> [< Coord.t ] -> 'a -> unit
 
 (** Convenience function to pass dimensions as labeled arguments to a
     continuation. *)
-val with_dimensions : 'a t -> f:(width:int -> height:int -> 'a) -> 'a
+val with_dimensions : _ t -> f:(width:int -> height:int -> 'a) -> 'a
 
 val copy : 'a t -> 'a t
 val map : 'a t -> f:('a -> 'b) -> 'b t
