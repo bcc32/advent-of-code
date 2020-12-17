@@ -5,20 +5,9 @@ open! Import
 module Input = struct
   open! Advent_of_code_input_helpers
 
-  type t = bool Grid.t
+  type t = bool array array [@@deriving sexp_of]
 
-  let sexp_of_t t =
-    let open Grid.O in
-    let b = Buffer.create 16 in
-    Grid.Lines.rows t `Top_to_bottom `Left_to_right
-    |> Sequence.iter ~f:(fun row ->
-      Sequence.iter row ~f:(fun coord ->
-        if t.%(coord) then Buffer.add_char b '#' else Buffer.add_char b '.');
-      Buffer.add_char b '\n');
-    Sexp.Atom (Buffer.contents b)
-  ;;
-
-  let parse : string -> t = grid ~f:(Char.( = ) '#')
+  let parse input = (grid input ~f:(Char.( = ) '#') :> t)
 
   let t : t Lazy_deferred.t =
     Lazy_deferred.create (fun () -> Reader.file_contents "input.txt" >>| parse)
@@ -38,19 +27,13 @@ module Point = struct
   include (val Comparator.make ~compare ~sexp_of_t)
 end
 
-let simulate layers ~n =
-  let open Grid.O in
+let simulate initial_grid ~n =
   let active_points = Hash_set.create (module Point) in
-  assert (Array.length layers = 1);
-  Array.iter layers ~f:(fun layer ->
-    Grid.Lines.rows layer `Top_to_bottom `Left_to_right
-    |> Sequence.concat
-    |> Sequence.iter ~f:(fun coord ->
-      let x, y =
-        Grid.with_dimensions layer ~f:(Coord.to_cartesian (coord :> Coord.t))
-        |> Coord.Cartesian.to_pair
-      in
-      if layer.%(coord) then Hash_set.add active_points (x, y, 0)));
+  for x = 0 to Array.length initial_grid - 1 do
+    for y = 0 to Array.length initial_grid.(0) - 1 do
+      if initial_grid.(x).(y) then Hash_set.add active_points (x, y, 0)
+    done
+  done;
   let active_points = ref active_points in
   for _ = 1 to n do
     let new_active_points = Hash_set.create (module Point) in
@@ -80,10 +63,8 @@ let simulate layers ~n =
 ;;
 
 let a () =
-  Backtrace.elide := false;
-  let%bind grid = Lazy_deferred.force_exn Input.t in
-  let layers = [| grid |] in
-  let active_points = simulate layers ~n:6 in
+  let%bind initial_grid = Lazy_deferred.force_exn Input.t in
+  let active_points = simulate initial_grid ~n:6 in
   print_s [%sexp (Hash_set.length active_points : int)];
   return ()
 ;;
@@ -104,7 +85,15 @@ let%expect_test "b" =
   let%bind () = b () in
   let%bind () =
     [%expect
-      {| "#.##....\n.#.#.##.\n###.....\n....##.#\n#....###\n.#.#.#..\n.##...##\n#..#.###\n" |}]
+      {|
+        ((true false true true false false false false)
+         (false true false true false true true false)
+         (true true true false false false false false)
+         (false false false false true true false true)
+         (true false false false false true true true)
+         (false true false true false true false false)
+         (false true true false false false true true)
+         (true false false true false true true true)) |}]
   in
   return ()
 ;;
