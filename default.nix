@@ -2,8 +2,8 @@ with import <nixpkgs> { };
 
 let
   inherit (ocamlPackages)
-    buildDunePackage async bignum core expect_test_helpers_async
-    expect_test_helpers_core re topological_sort;
+    buildDunePackage angstrom async bignum core expect_test_helpers_async
+    expect_test_helpers_core iter re topological_sort;
 
   euler = import ../euler;
 
@@ -14,12 +14,14 @@ in buildDunePackage {
   doCheck = true;
   src = nix-gitignore.gitignoreFilterSource lib.cleanSourceFilter [ ] ./.;
   buildInputs = [
+    angstrom
     async
     bignum
     core
     euler
     expect_test_helpers_async
     expect_test_helpers_core
+    iter
     re
     topological_sort
   ];
