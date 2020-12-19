@@ -12,6 +12,7 @@
  (depends
   (dune                      (>=  2.0))
   (re                        (>=  1.9.0))
+  (angstrom                  (and (>= 0.15.0) (< v0.16.0)))
   (async                     (and (>= v0.14) (< v0.15)))
   (bignum                    (and (>= v0.14) (< v0.15)))
   (core                      (and (>= v0.14) (< v0.15)))
