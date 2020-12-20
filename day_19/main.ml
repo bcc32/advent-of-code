@@ -9,18 +9,20 @@ module Rule = struct
   [@@deriving sexp_of]
 
   let of_string line =
-    let [ index; rule ] = line |> Advent_of_code_input_helpers.words ~sep:": " in
-    ( index |> Int.of_string
-    , if String.is_prefix rule ~prefix:{|"|}
-      then Literal (String.sub rule ~pos:1 ~len:(String.length rule - 2))
-      else
-        Alt
-          (rule
-           |> Advent_of_code_input_helpers.words ~sep:" | "
-           |> List.map
-                ~f:
-                  (Advent_of_code_input_helpers.words ~sep:" " >> List.map ~f:Int.of_string)
-          ) )
+    match line |> Advent_of_code_input_helpers.words ~sep:": " with
+    | [ index; rule ] ->
+      ( index |> Int.of_string
+      , if String.is_prefix rule ~prefix:{|"|}
+        then Literal (String.sub rule ~pos:1 ~len:(String.length rule - 2))
+        else
+          Alt
+            (rule
+             |> Advent_of_code_input_helpers.words ~sep:" | "
+             |> List.map
+                  ~f:
+                    (Advent_of_code_input_helpers.words ~sep:" "
+                     >> List.map ~f:Int.of_string)) )
+    | _ -> invalid_arg "Rule.of_string"
   ;;
 
   exception Failed
@@ -70,7 +72,7 @@ module Rule = struct
         | exception Failed -> ()
       in
       loop_try_count 1
-    | rule_index ->
+    | _rule_index ->
       (match t with
        | Literal prefix ->
          if String.is_substring_at message ~pos ~substring:prefix
@@ -133,50 +135,6 @@ module Rule = struct
             |> String.Set.union_list
             |> Ok)
   ;;
-
-  let cache = Hashtbl.create (module Int)
-
-  let rec get_parser_for_rule ~rules ~rule_index : unit Angstrom.t =
-    Hashtbl.findi_or_add cache rule_index ~default:(fun rule_index ->
-      let open Angstrom in
-      match rule_index with
-      | 0 ->
-        let forty_two = get_parser_for_rule ~rules ~rule_index:42 in
-        let thirty_one = get_parser_for_rule ~rules ~rule_index:31 in
-        fix (fun forty_two_then_thirty_one ->
-          forty_two *> forty_two_then_thirty_one
-          <|> forty_two
-              *> fix (fun equal_count ->
-                forty_two *> equal_count *> thirty_one
-                <|> forty_two *> thirty_one))
-      | 8 ->
-        let sub = get_parser_for_rule ~rules ~rule_index:42 in
-        skip_many1 sub <?> "8"
-      | 11 ->
-        let sub1 = get_parser_for_rule ~rules ~rule_index:42 in
-        let sub2 = get_parser_for_rule ~rules ~rule_index:31 in
-        fix (fun eleven ->
-          sub1 *> eleven *> sub2 <?> "11 recur" <|> (sub1 *> sub2 <?> "11 base"))
-        <?> "11"
-      | 42 | 31 ->
-        let strings = all_matching_strings ~rules ~rule_index |> ok_exn in
-        choice
-          (strings
-           |> Set.to_list
-           |> List.map ~f:string
-           |> List.map ~f:(fun a -> a >>| ignore))
-      | rule_index ->
-        (match Map.find_exn rules rule_index with
-         | Literal s -> string s >>| ignore
-         | Alt alternatives ->
-           List.map alternatives ~f:(fun rule_indices ->
-             List.map rule_indices ~f:(fun rule_index ->
-               get_parser_for_rule ~rules ~rule_index)
-             |> list)
-           |> choice ~failure_msg:(sprintf "failed alternative rule %d" rule_index)
-           >>| ignore)
-        <?> Int.to_string rule_index)
-  ;;
 end
 
 module Input = struct
@@ -185,9 +143,11 @@ module Input = struct
   type t = Rule.t Int.Map.t * string list [@@deriving sexp_of]
 
   let parse input : t =
-    let [ rules; messages ] = input |> lines |> paragraphs in
-    let rules = rules |> List.map ~f:Rule.of_string |> Int.Map.of_alist_exn in
-    rules, messages
+    match input |> lines |> paragraphs with
+    | [ rules; messages ] ->
+      let rules = rules |> List.map ~f:Rule.of_string |> Int.Map.of_alist_exn in
+      rules, messages
+    | _ -> invalid_arg "Input.parse"
   ;;
 
   let t : t Lazy_deferred.t =
@@ -196,7 +156,7 @@ module Input = struct
 end
 
 let%expect_test "all_matching_strings_for_42" =
-  let%bind rules, messages = Lazy_deferred.force_exn Input.t in
+  let%bind rules, _messages = Lazy_deferred.force_exn Input.t in
   Rule.all_matching_strings ~rules ~rule_index:42
   |> [%sexp_of: String.Set.t Or_error.t]
   |> print_s;
