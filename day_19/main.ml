@@ -109,9 +109,9 @@ module Rule = struct
       false)
   ;;
 
-  let rec all_matching_strings ~rules =
+  let all_matching_strings ~rules =
     let cache = Hashtbl.create (module Int) in
-    fun ~rule_index : String.Set.t Or_error.t ->
+    let rec all_matching_strings ~rule_index : String.Set.t Or_error.t =
       Hashtbl.findi_or_add cache rule_index ~default:(fun rule_index ->
         match Map.find_exn rules rule_index with
         | Literal s -> Ok (String.Set.singleton s)
@@ -122,7 +122,7 @@ module Rule = struct
           else
             List.map alternatives ~f:(fun rule_indices ->
               List.map rule_indices ~f:(fun rule_index ->
-                all_matching_strings ~rules ~rule_index)
+                all_matching_strings ~rule_index)
               |> List.fold ~init:(String.Set.singleton "") ~f:(fun accum next ->
                 Set.to_list accum
                 |> List.concat_map ~f:(fun so_far ->
@@ -134,6 +134,8 @@ module Rule = struct
                 |> String.Set.of_list))
             |> String.Set.union_list
             |> Ok)
+    in
+    all_matching_strings
   ;;
 end
 
