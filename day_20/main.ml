@@ -29,6 +29,24 @@ module Tile = struct
            t.%(Coord.RC.create ~row:r ~col:c)))
   ;;
 
+  let%expect_test "rotate_ccw" =
+    let g =
+      Grid.init ~width:2 ~height:2 ~f:(fun rc ->
+        let r, c = Coord.RC.to_pair rc in
+        Char.of_int_exn (Char.to_int '0' + ((2 * r) + c)))
+    in
+    let g' = rotate_ccw g in
+    print_s [%message (g : t) (g' : t)];
+    (* 0 1
+       2 3
+
+       1 3
+       0 2 *)
+    [%expect {|
+    ((g  ((0 1) (2 3)))
+     (g' ((1 3) (0 2)))) |}]
+  ;;
+
   let all_rotations t =
     [ Fn.id
     ; flip_horiz
@@ -40,6 +58,26 @@ module Tile = struct
     ; rotate_ccw >> rotate_ccw >> rotate_ccw >> flip_horiz
     ]
     |> List.map ~f:(fun f -> f t)
+  ;;
+
+  let%expect_test "all_rotations" =
+    let g =
+      Grid.init ~width:2 ~height:2 ~f:(fun rc ->
+        let r, c = Coord.RC.to_pair rc in
+        "PWGB".[(2 * r) + c])
+    in
+    all_rotations g |> [%sexp_of: t list] |> print_s;
+    (* http://facstaff.cbu.edu/wschrein/media/M402%20Notes/M402C1.pdf *)
+    [%expect
+      {|
+    (((P W) (G B))
+     ((W P) (B G))
+     ((W B) (P G))
+     ((B W) (G P))
+     ((B G) (W P))
+     ((G B) (P W))
+     ((G P) (B W))
+     ((P G) (W B))) |}]
   ;;
 
   let does_align_horiz ~left ~right =
@@ -68,44 +106,6 @@ module Tile = struct
       true)
   ;;
 end
-
-let%expect_test "rotate_ccw" =
-  let g =
-    Grid.init ~width:2 ~height:2 ~f:(fun rc ->
-      let r, c = Coord.RC.to_pair rc in
-      Char.of_int_exn (Char.to_int '0' + ((2 * r) + c)))
-  in
-  let g' = Tile.rotate_ccw g in
-  print_s [%message (g : Tile.t) (g' : Tile.t)];
-  (* 0 1
-     2 3
-
-     1 3
-     0 2 *)
-  [%expect {|
-    ((g  ((0 1) (2 3)))
-     (g' ((1 3) (0 2)))) |}]
-;;
-
-let%expect_test "all_rotations" =
-  let g =
-    Grid.init ~width:2 ~height:2 ~f:(fun rc ->
-      let r, c = Coord.RC.to_pair rc in
-      "PWGB".[(2 * r) + c])
-  in
-  Tile.all_rotations g |> [%sexp_of: Tile.t list] |> print_s;
-  (* http://facstaff.cbu.edu/wschrein/media/M402%20Notes/M402C1.pdf *)
-  [%expect
-    {|
-    (((P W) (G B))
-     ((W P) (B G))
-     ((W B) (P G))
-     ((B W) (G P))
-     ((B G) (W P))
-     ((G B) (P W))
-     ((G P) (B W))
-     ((P G) (W B))) |}]
-;;
 
 module Input = struct
   open! Advent_of_code_input_helpers
