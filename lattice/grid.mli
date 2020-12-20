@@ -12,6 +12,7 @@ include Invariant.S1 with type 'a t := 'a t
     length. *)
 val of_matrix_exn : 'a array array -> 'a t
 
+val init : width:int -> height:int -> f:(Coord.RC.t -> 'a) -> 'a t
 val width : _ t -> int
 val height : _ t -> int
 val is_in_bounds : _ t -> [< Coord.t ] -> bool

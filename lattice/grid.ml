@@ -68,6 +68,12 @@ end
 
 include T
 
+let init ~width ~height ~f =
+  of_matrix_exn
+    (Array.init height ~f:(fun row ->
+       Array.init width ~f:(fun col -> f (Coord.RC.create ~row ~col))))
+;;
+
 let with_dimensions t ~f = f ~width:(width t) ~height:(height t)
 
 let get_row_col t coord =
