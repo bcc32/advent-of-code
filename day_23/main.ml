@@ -96,12 +96,16 @@ let b () =
       use)
   in
   let cups = Doubly_linked.of_array cups in
-  let elt_of_label = Int.Table.create () in
-  Doubly_linked.iter_elt cups ~f:(fun elt ->
-    Hashtbl.add_exn elt_of_label ~key:(Doubly_linked.Elt.value elt) ~data:elt);
+  let get_elt_of_label =
+    let first_cup_elt = Doubly_linked.first_elt cups |> uw in
+    let array = Array.init 1_000_000 ~f:(fun _ -> first_cup_elt) in
+    Doubly_linked.iter_elt cups ~f:(fun elt ->
+      array.(Doubly_linked.Elt.value elt - 1) <- elt);
+    fun label -> array.(label - 1)
+  in
   let current_cup = ref (Doubly_linked.first cups |> uw) in
   for _ = 1 to 10_000_000 do
-    let elt_of_current_cup = Hashtbl.find_exn elt_of_label !current_cup in
+    let elt_of_current_cup = get_elt_of_label !current_cup in
     let c1 = next cups elt_of_current_cup in
     let c2 = next cups c1 in
     let c3 = next cups c2 in
@@ -116,16 +120,13 @@ let b () =
       in
       loop (!current_cup - 1)
     in
-    let dest_cup_elt = Hashtbl.find_exn elt_of_label dest_cup in
+    let dest_cup_elt = get_elt_of_label dest_cup in
     Doubly_linked.move_after cups ~anchor:dest_cup_elt c3;
     Doubly_linked.move_after cups ~anchor:dest_cup_elt c2;
     Doubly_linked.move_after cups ~anchor:dest_cup_elt c1;
-    current_cup
-    := Hashtbl.find_exn elt_of_label !current_cup
-       |> next cups
-       |> Doubly_linked.Elt.value
+    current_cup := get_elt_of_label !current_cup |> next cups |> Doubly_linked.Elt.value
   done;
-  let one = Hashtbl.find_exn elt_of_label 1 in
+  let one = get_elt_of_label 1 in
   let next1 = next cups one in
   let next2 = next cups next1 in
   print_s [%sexp (Doubly_linked.Elt.value next1 * Doubly_linked.Elt.value next2 : int)];
