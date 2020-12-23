@@ -23,8 +23,9 @@ module Input = struct
   let parse input : t =
     let ps = input |> lines |> paragraphs in
     let decks = ps |> List.map ~f:List.tl_exn in
-    let [ p1; p2 ] = decks |> List.map ~f:Deck.of_lines in
-    { p1; p2 }
+    match decks |> List.map ~f:Deck.of_lines with
+    | [ p1; p2 ] -> { p1; p2 }
+    | _ -> assert false
   ;;
 
   let t : t Lazy_deferred.t =
