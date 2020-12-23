@@ -2,6 +2,8 @@ open! Core
 open! Async
 open! Import
 
+let use_example_input = true
+
 module Input = struct
   open! Advent_of_code_input_helpers
 
@@ -10,7 +12,10 @@ module Input = struct
   let parse input : t = input
 
   let t : t Lazy_deferred.t =
-    Lazy_deferred.create (fun () -> Reader.file_contents "input.txt" >>| parse)
+    Lazy_deferred.create (fun () ->
+      Reader.file_contents
+        (if use_example_input then "input.example.txt" else "input.txt")
+      >>| parse)
   ;;
 end
 
