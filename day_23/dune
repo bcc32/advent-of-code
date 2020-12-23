@@ -1,0 +1,9 @@
+(library
+ (name day_23_solution)
+ (libraries advent_of_code_input_helpers advent_of_code_lattice_geometry
+   async bignum core expect_test_helpers_async expect_test_helpers_core re
+   topological_sort)
+ (inline_tests
+  (deps input.example.txt input.txt))
+ (preprocess
+  (pps ppx_jane -allow-unannotated-ignores)))
