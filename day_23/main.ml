@@ -128,16 +128,12 @@ let b () =
   let one = Hashtbl.find_exn elt_of_label 1 in
   let next1 = next cups one in
   let next2 = next cups next1 in
-  Debug.eprint_s
-    [%message (next1 : int Doubly_linked.Elt.t) (next2 : int Doubly_linked.Elt.t)];
   print_s [%sexp (Doubly_linked.Elt.value next1 * Doubly_linked.Elt.value next2 : int)];
   return ()
 ;;
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {|
-    ((next1 723850) (next2 655865))
-    474747880250 |}] in
+  let%bind () = [%expect {| 474747880250 |}] in
   return ()
 ;;
