@@ -75,14 +75,20 @@ let find_point_from_origin (dirs : Dir.t list) =
   List.fold dirs ~init:Coord.origin ~f:(fun cur dir -> Coord.incr cur dir)
 ;;
 
+let set_hash_set_membership hs x bool =
+  if bool then Hash_set.add hs x else Hash_set.remove hs x
+;;
+
+let setup_board input black =
+  List.iter input ~f:(fun dirs ->
+    let point = find_point_from_origin dirs in
+    set_hash_set_membership black point (not (Hash_set.mem black point)))
+;;
+
 let a () =
   let%bind input = Lazy_deferred.force_exn Input.t in
   let black = Hash_set.create (module Coord) in
-  List.iter input ~f:(fun dirs ->
-    let point = find_point_from_origin dirs in
-    if Hash_set.mem black point
-    then Hash_set.remove black point
-    else Hash_set.add black point);
+  setup_board input black;
   print_s [%sexp (Hash_set.length black : int)];
   return ()
 ;;
@@ -110,17 +116,13 @@ let do_flip black =
     in
     t, black_in_next_iter)
   |> List.iter ~f:(fun (t, black_in_next_iter) ->
-    if black_in_next_iter then Hash_set.add black t else Hash_set.remove black t)
+    set_hash_set_membership black t black_in_next_iter)
 ;;
 
 let b () =
   let%bind input = Lazy_deferred.force_exn Input.t in
   let black = Hash_set.create (module Coord) in
-  List.iter input ~f:(fun dirs ->
-    let point = find_point_from_origin dirs in
-    if Hash_set.mem black point
-    then Hash_set.remove black point
-    else Hash_set.add black point);
+  setup_board input black;
   for _ = 1 to 100 do
     do_flip black
   done;
