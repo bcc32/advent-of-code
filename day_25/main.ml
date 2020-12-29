@@ -4,6 +4,7 @@ open! Import
 
 let use_example_input = false
 let g = 7
+let modulus = 20201227
 
 module Input = struct
   open! Advent_of_code_input_helpers
@@ -28,11 +29,8 @@ module Input = struct
   ;;
 end
 
-let modulus = 20201227
-
-let discrete_log g x modulus =
-  Sequence.repeat ()
-  |> Sequence.folding_map ~init:1 ~f:(fun product () -> product * g % modulus, product)
+let discrete_log x =
+  Sequence.unfold_step ~init:1 ~f:(fun product -> Yield (product, product * g % modulus))
   |> Sequence.findi ~f:(fun _ x' -> x = x')
   |> uw
   |> fst
@@ -42,7 +40,7 @@ let powmod = Euler.Number_theory.Int.powmod ~modulus
 
 let a () =
   let%bind ({ pk1; pk2 } : Input.t) = Lazy_deferred.force_exn Input.t in
-  let enc_key = powmod pk1 (discrete_log g pk2 modulus) in
+  let enc_key = powmod pk1 (discrete_log pk2) in
   print_s [%sexp (enc_key : int)];
   return ()
 ;;
@@ -50,19 +48,5 @@ let a () =
 let%expect_test "a" =
   let%bind () = a () in
   let%bind () = [%expect {| 18329280 |}] in
-  return ()
-;;
-
-let b () =
-  let%bind input = Lazy_deferred.force_exn Input.t in
-  print_s [%sexp (input : Input.t)];
-  return ()
-;;
-
-let%expect_test "b" =
-  let%bind () = b () in
-  let%bind () = [%expect {|
-    ((pk1 12092626)
-     (pk2 4707356)) |}] in
   return ()
 ;;
