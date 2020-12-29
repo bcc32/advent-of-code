@@ -59,31 +59,35 @@ let deduce foods =
   let deduced_ingredients_to_allergens = String.Table.create () in
   while
     Hashtbl.existsi all_allergens ~f:(fun ~key:allergen ~data:ingredients_lists ->
-      match Hashtbl.find deduced_allergens_to_ingredients allergen with
-      | Some _ -> false
-      | None ->
-        let ingredients_lists =
-          List.map
-            ingredients_lists
-            ~f:(Set.filter ~f:(not << Hashtbl.mem deduced_ingredients_to_allergens))
-        in
-        let set_of_ingredients_in_common =
-          List.reduce_exn ingredients_lists ~f:Set.inter
-        in
-        if Set.length set_of_ingredients_in_common = 1
-        then (
-          let ingredient = Set.choose_exn set_of_ingredients_in_common in
-          Debug.eprint_s [%sexp (allergen : string), (ingredient : string)];
-          Hashtbl.add_exn
-            deduced_allergens_to_ingredients
-            ~key:allergen
-            ~data:ingredient;
-          Hashtbl.add_exn
-            deduced_ingredients_to_allergens
-            ~key:ingredient
-            ~data:allergen;
-          true)
-        else false)
+      let result =
+        if Hashtbl.mem deduced_allergens_to_ingredients allergen
+        then `No_op
+        else (
+          let ingredients_lists =
+            List.map
+              ingredients_lists
+              ~f:(Set.filter ~f:(not << Hashtbl.mem deduced_ingredients_to_allergens))
+          in
+          let set_of_ingredients_in_common =
+            List.reduce_exn ingredients_lists ~f:Set.inter
+          in
+          if Set.length set_of_ingredients_in_common = 1
+          then (
+            let ingredient = Set.choose_exn set_of_ingredients_in_common in
+            Hashtbl.add_exn
+              deduced_allergens_to_ingredients
+              ~key:allergen
+              ~data:ingredient;
+            Hashtbl.add_exn
+              deduced_ingredients_to_allergens
+              ~key:ingredient
+              ~data:allergen;
+            `Made_deduction)
+          else `No_op)
+      in
+      match result with
+      | `Made_deduction -> true
+      | `No_op -> false)
   do
     ()
   done;
@@ -116,25 +120,12 @@ let a () =
       List.count foods ~f:(fun food -> List.mem food.ingredients ing ~equal:String.equal))
   |> [%sexp_of: int]
   |> print_s;
-  (* print_s [%sexp (ingredients_definitely_not_containing_allergens : String.Set.t)]; *)
   return ()
 ;;
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () =
-    [%expect
-      {|
-    (peanuts sjcvsr)
-    (fish dgsdtj)
-    (shellfish kmmqmv)
-    (sesame bstzgn)
-    (nuts kpksf)
-    (eggs hn)
-    (wheat bsfqgb)
-    (soy vkdxfj)
-    2627 |}]
-  in
+  let%bind () = [%expect {| 2627 |}] in
   return ()
 ;;
 
@@ -155,18 +146,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () =
-    [%expect
-      {|
-      (peanuts sjcvsr)
-      (fish dgsdtj)
-      (shellfish kmmqmv)
-      (sesame bstzgn)
-      (nuts kpksf)
-      (eggs hn)
-      (wheat bsfqgb)
-      (soy vkdxfj)
-      hn,dgsdtj,kpksf,sjcvsr,bstzgn,kmmqmv,vkdxfj,bsfqgb |}]
-  in
+  let%bind () = [%expect {| hn,dgsdtj,kpksf,sjcvsr,bstzgn,kmmqmv,vkdxfj,bsfqgb |}] in
   return ()
 ;;
