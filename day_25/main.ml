@@ -15,8 +15,9 @@ module Input = struct
   [@@deriving sexp_of]
 
   let parse input : t =
-    let [ pk1; pk2 ] = input |> lines |> List.map ~f:Int.of_string in
-    { pk1; pk2 }
+    match input |> lines |> List.map ~f:Int.of_string with
+    | [ pk1; pk2 ] -> { pk1; pk2 }
+    | _ -> failwith "parse"
   ;;
 
   let t : t Lazy_deferred.t =

@@ -142,7 +142,7 @@ let b () =
   let%bind foods = Lazy_deferred.force_exn Input.t in
   let ( _ingredients_definitely_not_containing_allergens
       , allergen_to_ingredient
-      , ingredient_to_allergen )
+      , _ingredient_to_allergen )
     =
     deduce foods
   in
