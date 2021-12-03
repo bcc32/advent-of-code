@@ -18,13 +18,7 @@ let parse_line =
     |> ok_exn
 ;;
 
-let make_data dists =
-  let t = String.Table.create () in
-  List.iter dists ~f:(fun (l, r, d) ->
-    Hashtbl.add_multi t ~key:l ~data:(r, d);
-    Hashtbl.add_multi t ~key:r ~data:(l, d));
-  t
-;;
+let make_data dists = dists @ List.map dists ~f:(fun (l, r, d) -> r, l, d)
 
 let next_permutation array ~compare =
   let rec find_first_sorted_from_end pos =
@@ -58,16 +52,19 @@ let count_cost places data =
   for i = 0 to Array.length places - 2 do
     let a = places.(i) in
     let b = places.(i + 1) in
-    let dist_from_a = Hashtbl.find_exn data a in
-    let dist = List.Assoc.find_exn dist_from_a b ~equal:String.equal in
+    let dist =
+      List.find_map_exn data ~f:(fun (a', b', d) ->
+        if String.equal a a' && String.equal b b' then Some d else None)
+    in
     c := !c + dist
   done;
   !c
 ;;
 
 let find_shortest t =
-  let places = Hashtbl.keys t |> Array.of_list in
-  Array.sort places ~compare:String.compare;
+  let places =
+    List.map t ~f:fst3 |> List.dedup_and_sort ~compare:String.compare |> Array.of_list
+  in
   let min_cost = ref Int.max_value in
   let rec loop () =
     let cost = count_cost places t in
@@ -98,8 +95,9 @@ let%expect_test "a" =
 ;;
 
 let find_longest t =
-  let places = Hashtbl.keys t |> Array.of_list in
-  Array.sort places ~compare:String.compare;
+  let places =
+    List.map t ~f:fst3 |> List.dedup_and_sort ~compare:String.compare |> Array.of_list
+  in
   let max_cost = ref Int.min_value in
   let rec loop () =
     let cost = count_cost places t in
