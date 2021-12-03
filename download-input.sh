@@ -9,4 +9,4 @@ printf -v dir "%02d" "$day"
 mkdir -p "$dir"
 
 cp -nR template/* -t "$dir"
-curl --cookie cookies.txt "https://adventofcode.com/$year/day/$day/input" -o "$dir/input"
+curl -fsSL --cookie cookies.txt "https://adventofcode.com/$year/day/$day/input" -o "$dir/input"
