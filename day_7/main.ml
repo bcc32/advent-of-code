@@ -7,75 +7,53 @@ module Def = struct
     | Alias of string
     | Const of int
 
-  and t =
+  type t =
     | Prim of prim
     | AND of prim * prim
     | OR of prim * prim
     | NOT of prim
     | LSHIFT of prim * prim
     | RSHIFT of prim * prim
+  [@@deriving variants]
 
   let of_string =
-    let re =
-      let open Re in
-      compile
-        (let id = rep1 wordc in
-         let lhs =
-           alt
-             [ seq [ str "NOT"; str " "; group id ]
-             ; seq
-                 [ group id
-                 ; str " "
-                 ; group (alt [ str "AND"; str "OR" ])
-                 ; str " "
-                 ; group id
-                 ]
-             ; seq
-                 [ group id
-                 ; str " "
-                 ; group (alt [ str "LSHIFT"; str "RSHIFT" ])
-                 ; str " "
-                 ; group id
-                 ]
-             ; group id
-             ]
-         in
-         seq [ bol; lhs; str " -> "; group id; eol ])
+    let parser =
+      let open Angstrom in
+      let prim_parser =
+        (let+ digits = take_while1 Char.is_digit in
+         Const (Int.of_string digits))
+        <|> let+ name = take_while1 Char.is_alpha in
+        Alias name
+      in
+      let unop =
+        let+ prim = string "NOT " *> prim_parser in
+        NOT prim
+      in
+      let binop_name =
+        string "AND" *> return and_
+        <|> string "OR" *> return or_
+        <|> string "LSHIFT" *> return lshift
+        <|> string "RSHIFT" *> return rshift
+      in
+      let binop =
+        map3
+          prim_parser
+          (char ' ' *> binop_name <* char ' ')
+          prim_parser
+          ~f:(fun lhs op_name rhs -> op_name lhs rhs)
+      in
+      let def = binop <|> unop <|> (prim_parser >>| prim) in
+      map2
+        def
+        (string " -> "
+         *> let+ name = take_while1 Char.is_alpha in
+         name)
+        ~f:(fun def name -> name, def)
     in
     fun string ->
-      match Re.exec_opt re string with
-      | None -> raise_s [%message "no match" (string : string)]
-      | Some g ->
-        let prim x =
-          match Int.of_string x with
-          | i -> Const i
-          | exception _ -> Alias x
-        in
-        let def =
-          if Re.Group.test g 1
-          then NOT (prim (Re.Group.get g 1))
-          else if Re.Group.test g 3
-          then (
-            let lhs = Re.Group.get g 2 in
-            let op = Re.Group.get g 3 in
-            let rhs = Re.Group.get g 4 in
-            match op with
-            | "AND" -> AND (prim lhs, prim rhs)
-            | "OR" -> OR (prim lhs, prim rhs)
-            | _ -> assert false)
-          else if Re.Group.test g 5
-          then (
-            let lhs = Re.Group.get g 5 in
-            let op = Re.Group.get g 6 in
-            let rhs = Re.Group.get g 7 in
-            match op with
-            | "LSHIFT" -> LSHIFT (prim lhs, prim rhs)
-            | "RSHIFT" -> RSHIFT (prim lhs, prim rhs)
-            | _ -> assert false)
-          else Prim (prim (Re.Group.get g 8))
-        in
-        let name = Re.Group.get g 9 in
-        name, def
+      Angstrom.parse_string ~consume:All parser string
+      |> Result.map_error ~f:Error.of_string
+      |> ok_exn
   ;;
 
   let rec deps t =
@@ -133,8 +111,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {|
-    3176 |}] in
+  let%bind () = [%expect {| 3176 |}] in
   return ()
 ;;
 
