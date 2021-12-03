@@ -3,21 +3,24 @@ open! Async
 open! Import
 
 let rle seq ~equal =
-  let rec start seq accum =
+  let open Sequence.Generator.Let_syntax in
+  let rec start seq =
     match Sequence.next seq with
-    | None -> accum
-    | Some (hd, tl) -> keep tl accum hd 1
-  and keep seq accum x count =
+    | None -> return ()
+    | Some (hd, tl) -> keep tl hd 1
+  and keep seq x count =
     match Sequence.next seq with
-    | Some (hd, tl) when equal x hd -> keep tl accum x (count + 1)
-    | None | Some _ -> start seq ((x, count) :: accum)
+    | Some (hd, tl) when equal x hd -> keep tl x (count + 1)
+    | None | Some _ ->
+      let%bind () = Sequence.Generator.yield (x, count) in
+      start seq
   in
-  List.rev (start seq [])
+  Sequence.Generator.run (start seq)
 ;;
 
 let look_and_say s =
   let buf = Buffer.create 16 in
-  List.iter
+  Sequence.iter
     (rle (Sequence.of_seq (Caml.String.to_seq s)) ~equal:Char.equal)
     ~f:(fun (char, count) -> bprintf buf "%d%c" count char);
   Buffer.contents buf
