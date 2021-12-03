@@ -1,6 +1,6 @@
 (library
  (name day_4_solution)
- (libraries async bignum core expect_test_helpers re topological_sort)
+ (libraries async bignum core expect_test_helpers_async re topological_sort)
  (inline_tests
   (deps input.txt))
  (preprocess
