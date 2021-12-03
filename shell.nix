@@ -1,13 +1,15 @@
 { pkgs ? import <nixpkgs> { } }:
 
 with pkgs;
-mkShell {
-  buildInputs = [
-    # For opam
-    m4
-    opam
-    pkgconfig
-    # For this project
-    gmp
+let pkg = ocamlPackages.callPackage ./. { };
+in mkShell {
+  inputsFrom = [ pkg ];
+  buildInputs = pkg.checkInputs ++ [
+    ocamlPackages.dune-release
+    inotify-tools
+    ocamlPackages.merlin
+    ocamlformat
+    ocamlPackages.ocp-indent
+    ocamlPackages.utop
   ];
 }
