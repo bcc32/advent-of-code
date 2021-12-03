@@ -3,9 +3,7 @@ input = File.open('input') do |f|
 end
 
 def mode(arr)
-  h = Hash.new(0)
-  arr.each { |x| h[x] += 1 }
-  h.keys.max_by(&h)
+  arr.group_by { |x| x }.max_by { |_, y| y.size }.first
 end
 
 gamma = input[0].size.times.map { |i| mode(input.map { |r| r[i] }) }.join.to_i(2)

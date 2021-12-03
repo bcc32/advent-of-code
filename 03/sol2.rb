@@ -3,12 +3,7 @@ input = File.open('input') do |f|
 end
 
 def mode(arr)
-  h = Hash.new(0)
-  arr.each { |x| h[x] += 1 }
-  if h[0] == h[1]
-    return 1
-  end
-  h.keys.max_by(&h)
+  arr.group_by { |x| x }.max_by { |x, y| [y.size, x] }.first
 end
 
 oxygen = input.dup
