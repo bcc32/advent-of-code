@@ -93,18 +93,32 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect{| 141 |}] in
+  let%bind () = [%expect {| 141 |}] in
   return ()
 ;;
 
-(* let b () = *)
-(*   let%bind input = Lazy_deferred.force_exn input in *)
-(*   print_s [%sexp (String.length input : int)]; *)
-(*   return () *)
-(* ;; *)
+let find_longest t =
+  let places = Hashtbl.keys t |> Array.of_list in
+  Array.sort places ~compare:String.compare;
+  let max_cost = ref Int.min_value in
+  let rec loop () =
+    let cost = count_cost places t in
+    max_cost := Int.max cost !max_cost;
+    if next_permutation places ~compare:String.compare then loop ()
+  in
+  loop ();
+  !max_cost
+;;
 
-(* let%expect_test "b" = *)
-(*   let%bind () = b () in *)
-(*   let%bind () = [%expect {| 8 |}] in *)
-(*   return () *)
-(* ;; *)
+let b () =
+  let%bind input = Lazy_deferred.force_exn input in
+  let cost = find_longest input in
+  print_s [%sexp (cost : int)];
+  return ()
+;;
+
+let%expect_test "b" =
+  let%bind () = b () in
+  let%bind () = [%expect {| 736 |}] in
+  return ()
+;;
