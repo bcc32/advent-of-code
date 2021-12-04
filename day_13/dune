@@ -1,5 +1,5 @@
 (library
- (name day_n_template)
+ (name day_13_solution)
  (libraries angstrom async bignum core core_kernel.composition_infix expect_test_helpers_async re
    topological_sort yojson)
  (inline_tests
