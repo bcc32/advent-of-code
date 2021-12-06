@@ -7,13 +7,26 @@ let parse lines =
   grid |> Array.map ~f:(Array.map ~f:(Char.( = ) '#'))
 ;;
 
-let tick ~part grid =
+let get ~part grid i j =
   if part <> 1
-  then (
-    grid.(0).(0) <- true;
-    grid.(0).(Array.length grid.(0) - 1) <- true;
-    grid.(Array.length grid - 1).(0) <- true;
-    grid.(Array.length grid - 1).(Array.length grid.(0) - 1) <- true);
+  then
+    ((i = 0 || i = Array.length grid - 1) && (j = 0 || j = Array.length grid.(0) - 1))
+    || grid.(i).(j)
+  else grid.(i).(j)
+;;
+
+let count ~part grid =
+  let c = ref 0 in
+  for i = 0 to Array.length grid - 1 do
+    for j = 0 to Array.length grid.(0) - 1 do
+      if get ~part grid i j then incr c
+    done
+  done;
+  !c
+;;
+
+let tick ~part grid =
+  let get = get grid ~part in
   let grid' = Array.map grid ~f:Array.copy in
   for i = 0 to Array.length grid - 1 do
     for j = 0 to Array.length grid.(0) - 1 do
@@ -24,14 +37,10 @@ let tick ~part grid =
           then
             if Int.between (i + di) ~low:0 ~high:(Array.length grid - 1)
             && Int.between (j + dj) ~low:0 ~high:(Array.length grid.(0) - 1)
-            then if grid.(i + di).(j + dj) then incr count
+            then if get (i + di) (j + dj) then incr count
         done
       done;
-      grid'.(i).(j) <- (if grid.(i).(j) then !count = 2 || !count = 3 else !count = 3);
-      if part <> 1
-      then
-        if (i = 0 || i = Array.length grid - 1) && (j = 0 || j = Array.length grid.(0) - 1)
-        then grid'.(i).(j) <- true
+      grid'.(i).(j) <- (if get i j then !count = 2 || !count = 3 else !count = 3)
     done
   done;
   grid'
@@ -48,7 +57,7 @@ let a () =
   for _ = 1 to 100 do
     input := tick !input ~part:1
   done;
-  let count = Array.sum (module Int) !input ~f:(Array.count ~f:Fn.id) in
+  let count = count !input ~part:1 in
   print_s [%sexp (count : int)];
   return ()
 ;;
@@ -65,7 +74,7 @@ let b () =
   for _ = 1 to 100 do
     input := tick !input ~part:2
   done;
-  let count = Array.sum (module Int) !input ~f:(Array.count ~f:Fn.id) in
+  let count = count !input ~part:2 in
   print_s [%sexp (count : int)];
   return ()
 ;;
