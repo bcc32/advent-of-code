@@ -7,26 +7,28 @@ let parse lines =
   grid |> Array.map ~f:(Array.map ~f:(Char.( = ) '#'))
 ;;
 
-let get ~part grid i j =
-  if part <> 1
+let part = ref 1
+
+let get grid i j =
+  if !part <> 1
   then
     ((i = 0 || i = Array.length grid - 1) && (j = 0 || j = Array.length grid.(0) - 1))
     || grid.(i).(j)
   else grid.(i).(j)
 ;;
 
-let count ~part grid =
+let count grid =
   let c = ref 0 in
   for i = 0 to Array.length grid - 1 do
     for j = 0 to Array.length grid.(0) - 1 do
-      if get ~part grid i j then incr c
+      if get grid i j then incr c
     done
   done;
   !c
 ;;
 
-let tick ~part grid =
-  let get = get grid ~part in
+let tick grid =
+  let get = get grid in
   let grid' = Array.map grid ~f:Array.copy in
   for i = 0 to Array.length grid - 1 do
     for j = 0 to Array.length grid.(0) - 1 do
@@ -55,9 +57,9 @@ let a () =
   let%bind input = Lazy_deferred.force_exn input in
   let input = ref input in
   for _ = 1 to 100 do
-    input := tick !input ~part:1
+    input := tick !input
   done;
-  let count = count !input ~part:1 in
+  let count = count !input in
   print_s [%sexp (count : int)];
   return ()
 ;;
@@ -70,11 +72,12 @@ let%expect_test "a" =
 
 let b () =
   let%bind input = Lazy_deferred.force_exn input in
+  part := 2;
   let input = ref input in
   for _ = 1 to 100 do
-    input := tick !input ~part:2
+    input := tick !input
   done;
-  let count = count !input ~part:2 in
+  let count = count !input in
   print_s [%sexp (count : int)];
   return ()
 ;;
