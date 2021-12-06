@@ -36,10 +36,9 @@ let tick grid =
       for di = -1 to 1 do
         for dj = -1 to 1 do
           if di <> 0 || dj <> 0
-          then
-            if Int.between (i + di) ~low:0 ~high:(Array.length grid - 1)
-            && Int.between (j + dj) ~low:0 ~high:(Array.length grid.(0) - 1)
-            then if get (i + di) (j + dj) then incr count
+          then (
+            try if get (i + di) (j + dj) then incr count with
+            | _ -> ())
         done
       done;
       grid'.(i).(j) <- (if get i j then !count = 2 || !count = 3 else !count = 3)
