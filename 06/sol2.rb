@@ -16,6 +16,6 @@ fish = fish.group_by(&:itself).transform_values(&:size)
   }
 
   fish = new_fish
-  p fish
-  p fish.values.sum
 end
+
+p fish.values.sum
