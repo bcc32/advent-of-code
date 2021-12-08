@@ -21,9 +21,8 @@ def find_assignment(before)
       eg.permutation do |e, g|
         if before.count { |x| x.include?(e) } == 4
           assn = [a,b,c,d,e,f,g].join
-          if DIGITS.map { |dig|
-               dig.tr('abcdefg', assn).chars.sort
-               }.sort == before.map { |x| x.chars.sort }.sort
+          if DIGITS.map { |dig| dig.tr('abcdefg', assn).chars.sort }.sort \
+             == before.map { |x| x.chars.sort }.sort
             return assn
           end
         end
@@ -34,7 +33,6 @@ end
 
 p (input.map do |before, after|
      assn = find_assignment(before)
-     # p assn
      after.map do |num|
        DIGITS.index(num.tr(assn, 'abcdefg').chars.sort.join)
      end.join.to_i
