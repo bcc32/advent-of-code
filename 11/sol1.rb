@@ -5,9 +5,9 @@ grid = File.open('input') do |f|
 end
 
 $flashes = 0
-
+shes
 def tick(grid)
-  grid.each { |row| row.each_with_index { |_, i| row[i] += 1 } }
+  grid.each { |row| row.map!(&:succ) }
   flashes_this_tick = Set.new
   loop do
     new_flashes = false
@@ -28,17 +28,14 @@ def tick(grid)
         end
       end
     end
-    unless new_flashes
-      break
-    end
+    break unless new_flashes
   end
 
   grid.each { |row| row.map! { |x| x > 9 ? 0 : x } }
 end
 
-
 100.times do
-  tick(grid)
+  tick grid
 end
 
 p $flashes

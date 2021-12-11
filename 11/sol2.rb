@@ -7,7 +7,7 @@ end
 $flashes = 0
 
 def tick(grid)
-  grid.each { |row| row.each_with_index { |_, i| row[i] += 1 } }
+  grid.each { |row| row.map!(&:succ) }
   desired_size = grid.map(&:size).sum
   flashes_this_tick = Set.new
   loop do
@@ -29,9 +29,7 @@ def tick(grid)
         end
       end
     end
-    unless new_flashes
-      break
-    end
+    break unless new_flashes
   end
 
   grid.each { |row| row.map! { |x| x > 9 ? 0 : x } }
@@ -39,11 +37,6 @@ def tick(grid)
   flashes_this_tick.size == desired_size
 end
 
-i = 1
-loop do
-  if tick(grid)
-    p i
-    exit
-  end
-  i += 1
-end
+p ((1..Float::INFINITY).find do |i|
+  tick grid
+end)
