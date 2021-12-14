@@ -1,3 +1,5 @@
+require './common'
+
 mol, rules = File.open('input') do |f|
   mol = f.readline.chomp
 
@@ -11,17 +13,11 @@ mol, rules = File.open('input') do |f|
 end
 
 rules = rules.to_h
- mol
+mol = CompressedString.new(mol)
 
 10.times do
-  mol = (mol.chars.each_cons(2).map do |l, r|
-           if rhs = rules[[l, r].join]
-             l + rhs
-           else l
-           end
-         end + [mol.chars.last]).join
+  mol.iterate(rules)
 end
 
-c = mol.chars.group_by(&:itself)
-a, b = c.values.minmax_by(&:size).map(&:size)
+a, b = mol.char_count.values.minmax
 p (b - a)
