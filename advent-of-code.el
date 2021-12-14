@@ -2,7 +2,7 @@
 ;;
 ;; Version: 0.1.0
 ;; Homepage: https://github.com/bcc32/advent-of-code.el
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "24.3") (request "0.3.0"))
 ;;
 ;;; Commentary:
 ;;
