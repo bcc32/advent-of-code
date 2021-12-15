@@ -59,71 +59,44 @@ let%expect_test "a" =
   return ()
 ;;
 
-(* FIXME: too slow  *)
+let b () =
+  let%bind input = Lazy_deferred.force_exn input in
+  let replacements, start = input in
+  let replacements =
+    List.sort
+      replacements
+      ~compare:(Comparable.lift ~f:snd (Comparable.lift ~f:String.length Int.descending))
+    |> List.map ~f:(Tuple2.map_snd ~f:(fun rhs -> String.Search_pattern.create rhs))
+  in
+  let queue =
+    Pairing_heap.create
+      ~cmp:(Comparable.lift ~f:fst (Comparable.lift ~f:String.length Int.compare))
+      ()
+  in
+  Pairing_heap.add queue (start, 0);
+  let ans =
+    with_return (fun { return } ->
+      while not (Pairing_heap.is_empty queue) do
+        let start, dist = Pairing_heap.pop_exn queue in
+        if String.equal start "e" then return dist;
+        List.iter replacements ~f:(fun (lhs, rhs) ->
+          Option.iter (String.Search_pattern.index rhs ~in_:start) ~f:(fun index ->
+            let rhs_len = String.length (String.Search_pattern.pattern rhs) in
+            let str =
+              String.sub start ~pos:0 ~len:index
+              ^ lhs
+              ^ String.drop_prefix start (index + rhs_len)
+            in
+            Pairing_heap.add queue (str, dist + 1)))
+      done;
+      assert false)
+  in
+  print_s [%sexp (ans : int)];
+  return ()
+;;
 
-(* let count_occurrences string ~inner = *)
-(*   Re.Seq.matches inner string |> Sequence.of_seq |> Sequence.length *)
-(* ;; *)
-
-(* let bfs ~get_neighbors ~start ~goal ~terminal_elements = *)
-(*   let terminal_elements = *)
-(*     Set.to_list terminal_elements |> List.map ~f:(fun s -> Re.compile (Re.str s)) *)
-(*   in *)
-(*   let should_abandon string = *)
-(*     String.length string > String.length goal *)
-(*     || List.exists terminal_elements ~f:(fun inner -> *)
-(*       count_occurrences string ~inner > count_occurrences goal ~inner) *)
-(*   in *)
-(*   let queue = Queue.of_list [ start ] in *)
-(*   let dist = String.Table.of_alist_exn [ start, 0 ] in *)
-(*   with_return (fun { return } -> *)
-(*     while not (Queue.is_empty queue) do *)
-(*       let x = Queue.dequeue_exn queue in *)
-(*       let d = Hashtbl.find_exn dist x in *)
-(*       if String.equal x goal then return d; *)
-(*       get_neighbors x *)
-(*       |> List.iter ~f:(fun y -> *)
-(*         if (not (Hashtbl.mem dist y)) && not (should_abandon y) *)
-(*         then ( *)
-(*           Queue.enqueue queue y; *)
-(*           Hashtbl.set dist ~key:y ~data:(d + 1))) *)
-(*     done; *)
-(*     failwith "can't find goal") *)
-(* ;; *)
-
-(* let b () = *)
-(*   let%bind input = Lazy_deferred.force_exn input in *)
-(*   let replacements, goal = input in *)
-(*   let terminal_elements = *)
-(*     let lhs_elements = *)
-(*       List.map replacements ~f:(fun (lhs, _) -> lhs) |> String.Set.of_list *)
-(*     in *)
-(*     let rhs_elements = *)
-(*       let pat = *)
-(*         let open Re in *)
-(*         compile (seq [ upper; opt lower ]) *)
-(*       in *)
-(*       List.concat_map replacements ~f:(fun (_, rhs) -> Re.matches pat rhs) *)
-(*       |> String.Set.of_list *)
-(*     in *)
-(*     Set.diff rhs_elements lhs_elements *)
-(*   in *)
-(*   Debug.eprint_s [%message (terminal_elements : String.Set.t)]; *)
-(*   let do_all_replacements init = *)
-(*     do_all_replacements replacements init |> Hash_set.to_list *)
-(*   in *)
-(*   let _ = goal in *)
-(*   let dist = *)
-(*     bfs ~get_neighbors:do_all_replacements ~start:"e" ~goal:"NAl" ~terminal_elements *)
-(*   in *)
-(*   print_s [%sexp (dist : int)]; *)
-(*   return () *)
-(* ;; *)
-
-(* let%expect_test "b" = *)
-(*   let%bind () = b () in *)
-(*   let%bind () = [%expect {| *)
-     (*     (terminal_elements (Ar C Rn Y)) *)
-     (*     1 |}] in *)
-(*   return () *)
-(* ;; *)
+let%expect_test "b" =
+  let%bind () = b () in
+  let%bind () = [%expect {| 195 |}] in
+  return ()
+;;
