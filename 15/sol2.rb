@@ -1,4 +1,4 @@
-require './min_heap'
+require '../util/min_heap'
 
 grid = File.open('aoc.in') do |f|
   f.readlines.map(&:chomp).map(&:chars).map { |line| line.map(&:to_i) }
