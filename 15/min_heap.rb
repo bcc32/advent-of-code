@@ -1,3 +1,5 @@
+# TODO: Linear implementation with the same interface
+
 class MinHeap
 
   def initialize(elements=nil, &block)
