@@ -2,7 +2,7 @@
 ;;
 ;; Version: 0.1.0
 ;; Homepage: https://github.com/bcc32/advent-of-code.el
-;; Package-Requires: ((emacs "24.3") (request "0.3.0"))
+;; Package-Requires: ((emacs "25.1") (request "0.3.0"))
 ;;
 ;;; Commentary:
 ;;
@@ -19,6 +19,7 @@
 ;;; Code:
 
 (require 'request)
+(require 'seq)
 
 (defgroup advent-of-code nil
   "Customization group for advent-of-code."
@@ -97,6 +98,56 @@ Pass REST to `request'."
 (defun advent-of-code-copy-buffer-contents-to-clipboard ()
   "Copy the contents of the current buffer to the clipboard or kill ring."
   (kill-new (buffer-substring-no-properties (point-min) (point-max))))
+
+(defun advent-of-code--html-print-inner-text (tree)
+  "Print the inner text for an HTML parse tree, TREE."
+  (pcase tree
+    ((pred stringp) (princ tree))
+    (`(,(or 'comment 'script) . ,_))
+    (`(,tag ,_ . ,children)
+     (seq-doseq (child children)
+       (advent-of-code--html-print-inner-text child)))))
+
+(defun advent-of-code--html-find-first-article-inner-text (tree)
+  "Find the first <article> tag in TREE and return its inner text."
+  (pcase tree
+    ((pred stringp))
+    (`(,(or 'comment 'script) . ,_))
+    (`(article . ,_)
+     (with-output-to-string (advent-of-code--html-print-inner-text tree)))
+    (`(,_ ,_ . ,children)
+     (seq-some (lambda (child)
+                 (advent-of-code--html-find-first-article-inner-text child))
+               children))))
+
+(defun advent-of-code-output-submit ()
+  "Revert and then submit the contents of the output buffer.
+
+Prompt for the level number (1 or 2)."
+  (interactive)
+  (advent-of-code--check-cookie-jar-set-and-exists-p)
+  (unless advent-of-code--problem-number
+    (setq advent-of-code--problem-number
+          (string-to-number
+           (completing-read "Problem number: " nil nil nil nil nil
+                            (number-to-string (nth 3 (decode-time)))))))
+  (revert-buffer :ignore-auto :noconfirm :preserve-modes)
+  (let ((level (string-to-number
+                (completing-read "Level number: " '("1" "2") nil :require-match))))
+    (if (yes-or-no-p (format "Submit buffer contents for level %d? " level))
+        (let ((answer (buffer-string)))
+          (advent-of-code--request
+           advent-of-code--problem-number "answer"
+           :type "POST"
+           :data `(("level" . ,level)
+                   ("answer" . ,answer))
+           :parser (lambda ()
+                     (message "buffer-string %S" (buffer-string))
+                     (advent-of-code--html-find-first-article-inner-text
+                      (libxml-parse-html-region (point-min) (point-max))))
+           :complete (cl-function (lambda (&key data &allow-other-keys)
+                                    (display-message-or-buffer data)))))
+      (user-error "Aborted"))))
 
 (provide 'advent-of-code)
 ;;; advent-of-code.el ends here
