@@ -52,8 +52,8 @@ Pass REST to `request'."
 
 (define-key advent-of-code-input-mode-map (kbd "C-c C-c") 'advent-of-code-input-revert-to-real)
 
-(defvar advent-of-code--input-problem-number)
-(make-variable-buffer-local 'advent-of-code--input-problem-number)
+(defvar advent-of-code--problem-number)
+(make-variable-buffer-local 'advent-of-code--problem-number)
 
 (defun advent-of-code--check-cookie-jar-set-and-exists-p ()
   "Check that `advent-of-code-cookie-jar' is non-nil and points to an existing file."
@@ -64,13 +64,13 @@ Pass REST to `request'."
   "Revert the current input buffer to the real input for this problem."
   (interactive)
   (advent-of-code--check-cookie-jar-set-and-exists-p)
-  (unless advent-of-code--input-problem-number
-    (setq advent-of-code--input-problem-number
+  (unless advent-of-code--problem-number
+    (setq advent-of-code--problem-number
           (string-to-number
            (completing-read "Problem number: " nil nil nil nil nil
                             (number-to-string (nth 3 (decode-time)))))))
   (advent-of-code--request
-   advent-of-code--input-problem-number "input"
+   advent-of-code--problem-number "input"
    :type "GET"
    :parser (lambda () (buffer-substring-no-properties (point-min) (point-max)))
    :success (cl-function (lambda (&key data &allow-other-keys)
