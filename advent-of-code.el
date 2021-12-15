@@ -145,7 +145,6 @@ Prompt for the level number (1 or 2)."
            :data `(("level" . ,level)
                    ("answer" . ,answer))
            :parser (lambda ()
-                     (message "buffer-string %S" (buffer-string))
                      (advent-of-code--html-find-first-article-inner-text
                       (libxml-parse-html-region (point-min) (point-max))))
            :complete (cl-function (lambda (&key data &allow-other-keys)
