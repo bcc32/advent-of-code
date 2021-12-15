@@ -57,7 +57,8 @@ Pass REST to `request'."
 
 (define-key advent-of-code-input-mode-map (kbd "C-c C-c") 'advent-of-code-input-revert-to-real)
 
-(defvar advent-of-code--problem-number)
+(defvar advent-of-code--problem-number nil
+  "The problem number associated with this buffer.")
 (make-variable-buffer-local 'advent-of-code--problem-number)
 
 (defun advent-of-code--problem-number ()
