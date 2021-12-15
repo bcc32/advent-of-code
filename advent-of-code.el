@@ -16,6 +16,10 @@
 ;; its contents are automatically copied into the kill ring (and the X
 ;; clipboard, if supported).
 ;;
+;; Alternatively, pressing C-c C-c in an output buffer will revert the buffer
+;; and submit the contents automatically, prompting for the level number (1 or
+;; 2) and confirmation.
+;;
 ;;; Code:
 
 (require 'request)
@@ -148,6 +152,8 @@ Prompt for the level number (1 or 2)."
            :complete (cl-function (lambda (&key data &allow-other-keys)
                                     (display-message-or-buffer data)))))
       (user-error "Aborted"))))
+
+(define-key advent-of-code-output-mode-map (kbd "C-c C-c") 'advent-of-code-output-submit)
 
 (provide 'advent-of-code)
 ;;; advent-of-code.el ends here
