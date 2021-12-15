@@ -1,3 +1,3 @@
-input = File.open('input') do |f|
+input = File.open('aoc.in') do |f|
   # parse input
 end
