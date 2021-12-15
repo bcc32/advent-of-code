@@ -108,31 +108,20 @@ class MinHeap
 
   def heapify_down! index
     loop do
-      if 2 * index + 2 < size
-        left = heap[2 * index + 1]
-        right = heap[2 * index + 2]
-        if cmp.call(left, right) <= 0
-          if cmp.call(heap[index], left) > 0
-            swap_at! index, (2 * index + 1)
-            index = 2 * index + 1
-            next
-          end
-        else
-          if cmp.call(heap[index], right) > 0
-            swap_at! index, (2 * index + 2)
-            index = 2 * index + 2
-            next
-          end
-        end
-      elsif 2 * index + 1 < size
-        if cmp.call(heap[index], heap[2 * index + 1]) > 0
-          swap_at! index, (2 * index + 1)
-          index = 2 * index + 1
-          next
-        end
+      next_index = index
+
+      if 2 * index + 1 < size && cmp.call(heap[next_index], heap[2 * index + 1]) > 0
+        next_index = 2 * index + 1
       end
 
-      break
+      if 2 * index + 2 < size && cmp.call(heap[next_index], heap[2 * index + 2]) > 0
+        next_index = 2 * index + 2
+      end
+
+      break if next_index == index
+
+      swap_at! index, next_index
+      index = next_index
     end
 
     self
