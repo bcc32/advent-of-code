@@ -34,6 +34,15 @@
 Used to download input for the authenticated user."
   :type '(choice file (const nil)))
 
+(defun advent-of-code--request (day endpoint &rest rest)
+  "Make an HTTP request to adventofcode.com for day DAY, endpoint ENDPOINT.
+
+Pass REST to `request'."
+  (let ((url (format "https://adventofcode.com/%d/day/%d/%s"
+                     advent-of-code-year day endpoint))
+        (request--curl-cookie-jar advent-of-code-cookie-jar))
+    (apply #'request url rest)))
+
 ;;;###autoload
 (define-derived-mode advent-of-code-input-mode text-mode
   "AoC Input"
@@ -54,21 +63,20 @@ Used to download input for the authenticated user."
 (defun advent-of-code-input-revert-to-real ()
   "Revert the current input buffer to the real input for this problem."
   (interactive)
+  (advent-of-code--check-cookie-jar-set-and-exists-p)
   (unless advent-of-code--input-problem-number
     (setq advent-of-code--input-problem-number
           (string-to-number
            (completing-read "Problem number: " nil nil nil nil nil
                             (number-to-string (nth 3 (decode-time)))))))
-  (advent-of-code--check-cookie-jar-set-and-exists-p)
-  (let ((url (format "https://adventofcode.com/2021/day/%d/input" advent-of-code--input-problem-number))
-        (request--curl-cookie-jar advent-of-code-cookie-jar))
-    (request url
-      :type "GET"
-      :parser (lambda () (buffer-substring-no-properties (point-min) (point-max)))
-      :success (cl-function (lambda (&key data &allow-other-keys)
-                              (delete-region (point-min) (point-max))
-                              (insert data)
-                              (save-buffer))))))
+  (advent-of-code--request
+   advent-of-code--input-problem-number "input"
+   :type "GET"
+   :parser (lambda () (buffer-substring-no-properties (point-min) (point-max)))
+   :success (cl-function (lambda (&key data &allow-other-keys)
+                           (delete-region (point-min) (point-max))
+                           (insert data)
+                           (save-buffer)))))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist
