@@ -1,4 +1,5 @@
-require './pqueue'
+require './min_heap'
+
 grid = File.open('aoc.in') do |f|
   f.readlines.map(&:chomp).map(&:chars).map { |line| line.map(&:to_i) }
 end
@@ -17,7 +18,7 @@ end
 def dijk(grid, xmax, ymax, start, end_)
   dist = {}
   dist[start] = 0
-  pqueue = PQueue.new { |x, y|
+  pqueue = MinHeap.new { |x, y|
     dist[x] <=> dist[y]
   }
   pqueue.push(start)
