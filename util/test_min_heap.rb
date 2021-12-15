@@ -1,5 +1,5 @@
 require 'minitest/autorun'
-require './min_heap'
+require_relative './min_heap'
 
 class TestMinHeap < Minitest::Test
   def setup
