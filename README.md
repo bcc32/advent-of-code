@@ -10,3 +10,7 @@ debugging purposes.
 After the output buffer (`aoc.out`) is written to and auto-reverted by
 Emacs, its contents are automatically copied into the kill ring (and
 the X clipboard, if supported).
+
+Alternatively, pressing C-c C-c in an output buffer will revert the
+buffer and submit the contents automatically, prompting for the level
+number (1 or 2) and confirmation.
