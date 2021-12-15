@@ -63,11 +63,11 @@ Pass REST to `request'."
 
 (defun advent-of-code--problem-number ()
   "Return the value of `advent-of-code--problem-number', prompting if nil."
-  (unless advent-of-code--problem-number
-    (setq advent-of-code--problem-number
-          (string-to-number
-           (completing-read "Problem number: " nil nil nil nil nil
-                            (number-to-string (nth 3 (decode-time))))))))
+  (or advent-of-code--problem-number
+      (setq advent-of-code--problem-number
+            (string-to-number
+             (completing-read "Problem number: " nil nil nil nil nil
+                              (number-to-string (nth 3 (decode-time))))))))
 
 (defun advent-of-code--check-cookie-jar-set-and-exists-p ()
   "Check that `advent-of-code-cookie-jar' is non-nil and points to an existing file."
