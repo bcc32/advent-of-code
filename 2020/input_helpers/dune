@@ -1,0 +1,5 @@
+(library
+ (name advent_of_code_input_helpers)
+ (libraries advent_of_code_lattice_geometry async core re)
+ (preprocess
+  (pps ppx_jane)))
