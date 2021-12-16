@@ -4,9 +4,14 @@ set -eu
 
 day=$1
 year=${year-$(date +'%Y')}
+lang=ruby
 
 printf -v dir "$year/%02d" "$day"
 mkdir -p "$dir"
 
-cp -nR templates/ruby/* -t "$dir"
+cp -nR templates/$lang/* -t "$dir"
+if [ "$lang" = ocaml ] && [ -f "$dir/dune" ]; then
+  sed -i "s/\<year_n_day_n_template\>/year_${year}_day_${day}_solution/" "$dir/dune"
+fi
+
 curl -fsSL --cookie cookies.txt "https://adventofcode.com/$year/day/$day/input" -o "$dir/aoc.in"
