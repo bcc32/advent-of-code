@@ -8,10 +8,15 @@ homepage: "https://github.com/bcc32/advent-of-code"
 bug-reports: "https://github.com/bcc32/advent-of-code/issues"
 depends: [
   "dune" {>= "2.0"}
+  "angstrom" {>= "0.15.0"}
+  "cmdliner" {>= "1.0.0" & < "2.0.0"}
   "re" {>= "1.9.0"}
+  "yojson" {>= "1.7.0"}
   "async" {>= "v0.14" & < "v0.15"}
   "bignum" {>= "v0.14" & < "v0.15"}
   "core" {>= "v0.14" & < "v0.15"}
+  "core_bench" {>= "v0.14" & < "v0.15"}
+  "delimited_parsing" {>= "v0.14" & < "v0.15"}
   "expect_test_helpers_async" {>= "v0.14" & < "v0.15"}
   "ppx_jane" {>= "v0.14" & < "v0.15"}
   "notty_async" {>= "v0.14" & < "v0.15"}
