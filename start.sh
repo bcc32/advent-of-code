@@ -3,7 +3,7 @@
 set -eu
 
 day=$1
-year=2021
+year=${year-$(date +'%Y')}
 
 printf -v dir "$year/%02d" "$day"
 mkdir -p "$dir"
