@@ -3,7 +3,7 @@
 , topological_sort, yojson }:
 
 buildDunePackage rec {
-  pname = "aoc2015";
+  pname = "aoc";
   version = "0.1.0";
   useDune2 = true;
   src = nix-gitignore.gitignoreFilterSource lib.cleanSourceFilter [ ] ./.;
@@ -22,6 +22,6 @@ buildDunePackage rec {
     topological_sort
     yojson
   ];
-  meta = { homepage = "https://github.com/bcc32/advent-of-code-2015"; };
+  meta = { homepage = "https://github.com/bcc32/advent-of-code"; };
   passthru.checkInputs = checkInputs;
 }
