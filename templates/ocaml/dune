@@ -3,6 +3,6 @@
  (libraries angstrom async bignum core core_kernel.composition_infix
    expect_test_helpers_async re topological_sort yojson)
  (inline_tests
-  (deps input.txt))
+  (deps aoc.in))
  (preprocess
   (pps ppx_jane)))
