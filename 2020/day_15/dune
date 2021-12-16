@@ -1,8 +1,8 @@
 (library
  (name year2020_day_15_solution)
  (libraries advent_of_code_input_helpers advent_of_code_lattice_geometry
-   async bignum core expect_test_helpers_async expect_test_helpers_core iter
-   re topological_sort)
+   async bignum core expect_test_helpers_async expect_test_helpers_core re
+   topological_sort)
  (inline_tests
   (deps input.txt))
  (preprocess
