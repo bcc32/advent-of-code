@@ -11,5 +11,7 @@ in mkShell {
     ocamlformat
     ocamlPackages.ocp-indent
     ocamlPackages.utop
+    ruby
+    rubyPackages.minitest
   ];
 }
