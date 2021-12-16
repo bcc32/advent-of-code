@@ -2,7 +2,7 @@ open! Core
 open! Async
 open! Import
 
-let input = Lazy_deferred.create (fun () -> Reader.file_contents "input.txt")
+let input = Lazy_deferred.create (fun () -> Reader.file_contents "aoc.in")
 
 let a () =
   let%bind input = Lazy_deferred.force_exn input in
@@ -12,7 +12,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 8 |}] in
+  let%bind () = [%expect {| 0 |}] in
   return ()
 ;;
 
@@ -24,6 +24,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 8 |}] in
+  let%bind () = [%expect {| 0 |}] in
   return ()
 ;;
