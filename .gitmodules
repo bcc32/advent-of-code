@@ -1,0 +1,3 @@
+[submodule "euler"]
+	path = euler
+	url = git@github.com:bcc32/projecteuler-ocaml.git

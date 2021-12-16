@@ -1,6 +1,6 @@
 (library
  (name graph_test)
- (libraries core expect_test_helpers)
+ (libraries core expect_test_helpers_core)
  (preprocess
   (pps ppx_jane))
  (inline_tests))

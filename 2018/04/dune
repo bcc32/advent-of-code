@@ -1,6 +1,7 @@
 (library
- (name p04)
- (libraries core async expect_test_helpers re bignum)
+ (name year2018_p04)
+ (libraries core async expect_test_helpers_async expect_test_helpers_core re
+   bignum)
  (preprocess
   (pps ppx_jane))
  (inline_tests

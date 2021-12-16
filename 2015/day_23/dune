@@ -1,7 +1,7 @@
 (library
- (name day_23_solution)
- (libraries angstrom async bignum core core_kernel.composition_infix core_kernel.total_map
-   expect_test_helpers_async re topological_sort yojson)
+ (name year2015_day_23_solution)
+ (libraries angstrom async bignum core core_kernel.composition_infix
+   core_kernel.total_map expect_test_helpers_async re topological_sort yojson)
  (inline_tests
   (deps input.txt))
  (preprocess

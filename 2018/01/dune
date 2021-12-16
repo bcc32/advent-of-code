@@ -1,6 +1,6 @@
 (library
- (name p01)
- (libraries core async expect_test_helpers)
+ (name year2018_p01)
+ (libraries core async expect_test_helpers_core expect_test_helpers_async)
  (preprocess
   (pps ppx_jane))
  (inline_tests

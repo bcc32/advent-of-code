@@ -1,5 +1,5 @@
 (library
- (name day_7_solution)
+ (name year2015_day_7_solution)
  (libraries angstrom async bignum core expect_test_helpers_async re
    topological_sort)
  (inline_tests
