@@ -1,0 +1,8 @@
+(library
+ (name day_16_solution)
+ (libraries angstrom async bignum core core_kernel.composition_infix
+   expect_test_helpers_async re topological_sort yojson)
+ (inline_tests
+  (deps input.txt))
+ (preprocess
+  (pps ppx_jane)))
