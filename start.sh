@@ -3,6 +3,10 @@
 set -eu
 
 day=$1
-cp -R template "day_$day"
-sed -i "s/day_n_template/day_${day}_solution/" "day_$day/dune"
-curl --cookie cookies.txt "https://adventofcode.com/2015/day/$day/input" -o "day_$day/input.txt"
+year=2021
+
+printf -v dir "$year/%02d" "$day"
+mkdir -p "$dir"
+
+cp -nR templates/ruby/* -t "$dir"
+curl -fsSL --cookie cookies.txt "https://adventofcode.com/$year/day/$day/input" -o "$dir/input"
