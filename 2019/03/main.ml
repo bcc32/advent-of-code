@@ -35,8 +35,7 @@ let points =
 
 let a () =
   let%bind first, second = Lazy_deferred.force_exn points in
-  Hashtbl.merge first second ~f:(fun ~key:point ->
-    function
+  Hashtbl.merge first second ~f:(fun ~key:point -> function
     | `Both _ -> Some point
     | `Left _ | `Right _ -> None)
   |> Hashtbl.keys
@@ -55,8 +54,7 @@ let%expect_test "a" =
 let b () =
   let%bind first, second = Lazy_deferred.force_exn points in
   let n =
-    Hashtbl.merge first second ~f:(fun ~key:_ ->
-      function
+    Hashtbl.merge first second ~f:(fun ~key:_ -> function
       | `Both (c1, c2) -> Some (c1 + c2)
       | `Left _ | `Right _ -> None)
     |> Hashtbl.data

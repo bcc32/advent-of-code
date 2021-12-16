@@ -1,5 +1,5 @@
 (library
- (name day_9_solution)
+ (name year2020_day_9_solution)
  (libraries async bignum core expect_test_helpers_async
    expect_test_helpers_core re topological_sort)
  (inline_tests

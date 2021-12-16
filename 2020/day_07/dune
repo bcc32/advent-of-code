@@ -1,5 +1,5 @@
 (library
- (name day_7_solution)
+ (name year2020_day_7_solution)
  (libraries async bignum core expect_test_helpers_core re topological_sort)
  (inline_tests
   (deps input.txt))

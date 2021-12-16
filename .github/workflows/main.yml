@@ -22,8 +22,8 @@ jobs:
     - uses: avsm/setup-ocaml@v1
       with:
         ocaml-version: ${{ matrix.ocaml-version }}
-    - run: opam pin add aoc2020.dev . --no-action
-    - run: opam depext -y aoc2020 --with-doc --with-test
+    - run: opam pin add aoc.dev . --no-action
+    - run: opam depext -y aoc --with-doc --with-test
     - run: opam install . --deps-only --with-doc --with-test
     - run: opam exec -- dune build
     - run: opam exec -- dune runtest

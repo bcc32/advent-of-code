@@ -1,0 +1,21 @@
+(lang dune 2.0)
+(name aoc)
+(generate_opam_files true)
+(license MIT)
+(authors "Aaron L. Zeng <me@bcc32.com>")
+(maintainers "Aaron L. Zeng <me@bcc32.com>")
+(source (github bcc32/advent-of-code))
+
+(package
+ (name aoc)
+ (synopsis "Advent of Code solutions")
+ (depends
+  (dune                (>=  2.0))
+  (re                  (>=  1.9.0))
+  (async               (and (>= v0.14) (< v0.15)))
+  (bignum              (and (>= v0.14) (< v0.15)))
+  (core                (and (>= v0.14) (< v0.15)))
+  (expect_test_helpers_async (and (>= v0.14) (< v0.15)))
+  (ppx_jane            (and (>= v0.14) (< v0.15)))
+  (notty_async         (and (>= v0.14) (< v0.15)))
+  (topological_sort    (and (>= v0.14) (< v0.15)))))

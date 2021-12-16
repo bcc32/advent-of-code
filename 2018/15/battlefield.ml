@@ -40,8 +40,7 @@ let create ?(elf_attack_power = 3) lines =
   let grid =
     Array.of_list_mapi lines ~f:(fun x row ->
       String.to_array row
-      |> Array.mapi ~f:(fun y ->
-        function
+      |> Array.mapi ~f:(fun y -> function
         | '.' -> Square.Open
         | '#' -> Wall
         | 'E' ->

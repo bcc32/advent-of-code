@@ -1,4 +1,4 @@
 open! Core
 open! Async
 
-let () = Command.run P25.Main.command
+let () = Command.run Year2019_p25.Main.command

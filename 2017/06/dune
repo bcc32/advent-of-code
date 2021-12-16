@@ -4,8 +4,8 @@
  (preprocess
   (pps ppx_jane)))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (deps input)
  (action
   (progn

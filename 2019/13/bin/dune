@@ -1,5 +1,6 @@
-(executables
- (names main)
- (libraries core async p13)
- (preprocess
-  (pps ppx_jane)))
+; FIXME: Uncomment when p13 is fixed.
+; (executables
+;  (names main)
+;  (libraries core async p13)
+;  (preprocess
+;   (pps ppx_jane)))

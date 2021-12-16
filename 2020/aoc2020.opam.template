@@ -1,3 +1,0 @@
-pin-depends: [
-  [ "euler.0.5.0" "git+https://github.com/bcc32/projecteuler-ocaml" ]
-]
