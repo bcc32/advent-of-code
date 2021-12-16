@@ -1,0 +1,10 @@
+(library
+ (name day_9_solution)
+ (libraries angstrom async bignum core core_kernel.composition_infix
+   expect_test_helpers_async re topological_sort)
+ (flags
+  (:standard -warn-error -A))
+ (inline_tests
+  (deps input.txt))
+ (preprocess
+  (pps ppx_jane)))

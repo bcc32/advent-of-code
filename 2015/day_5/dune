@@ -1,0 +1,7 @@
+(library
+ (name day_5_solution)
+ (libraries async bignum core expect_test_helpers_async re topological_sort)
+ (inline_tests
+  (deps input.txt))
+ (preprocess
+  (pps ppx_jane)))
