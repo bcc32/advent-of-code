@@ -1,0 +1,8 @@
+(library
+ (name p13)
+ (libraries core async expect_test_helpers re bignum graph intcode robot
+   notty_async)
+ (preprocess
+  (pps ppx_jane))
+ (inline_tests
+  (deps input)))
