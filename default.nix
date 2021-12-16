@@ -1,5 +1,5 @@
 { lib, nix-gitignore, buildDunePackage, angstrom, async, bignum, cmdliner, core
-, core_bench, delimited_parsing, expect_test_helpers_async, iter, re
+, core_bench, delimited_parsing, expect_test_helpers_async, re
 , topological_sort, yojson }:
 
 buildDunePackage rec {
@@ -17,7 +17,6 @@ buildDunePackage rec {
     core_bench
     delimited_parsing
     expect_test_helpers_async
-    iter
     re
     topological_sort
     yojson
