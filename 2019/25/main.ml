@@ -81,8 +81,7 @@ let a () =
     |> List.map ~f:(fun s -> s ^ "\n")
     |> String.concat
   in
-  (* FIXME: Use Pipe.empty when available. *)
-  let%bind () = main ~init ~extra_input:(Pipe.of_list []) in
+  let%bind () = main ~init ~extra_input:(Pipe.empty ()) in
   return ()
 ;;
 
