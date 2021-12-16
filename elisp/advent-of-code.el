@@ -61,6 +61,7 @@ Pass REST to `request'."
   "The problem number associated with this buffer.")
 (make-variable-buffer-local 'advent-of-code--problem-number)
 
+;; FIXME: call this first
 (defun advent-of-code--problem-number ()
   "Return the value of `advent-of-code--problem-number', prompting if nil."
   (or advent-of-code--problem-number
@@ -81,11 +82,16 @@ Pass REST to `request'."
   (advent-of-code--request
    (advent-of-code--problem-number) "input"
    :type "GET"
-   :parser (lambda () (buffer-substring-no-properties (point-min) (point-max)))
-   :success (cl-function (lambda (&key data &allow-other-keys)
-                           (delete-region (point-min) (point-max))
-                           (insert data)
-                           (save-buffer)))))
+   :parser #'buffer-string
+   :success (cl-function
+             (lambda (&key data &allow-other-keys)
+               (delete-region (point-min) (point-max))
+               (insert data)
+               (save-buffer)))
+   :error (cl-function
+           (lambda (&key data &allow-other-keys)
+             (display-message-or-buffer
+              (format-message "Failed to fetch input: %s" data))))))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist
