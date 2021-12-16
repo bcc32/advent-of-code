@@ -1,0 +1,8 @@
+(library
+ (name p20)
+ (libraries core async expect_test_helpers re bignum graph intcode robot
+   topological_sort core_kernel.hash_heap)
+ (preprocess
+  (pps ppx_jane))
+ (inline_tests
+  (deps input)))

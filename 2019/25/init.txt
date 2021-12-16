@@ -1,0 +1,42 @@
+east
+south
+south
+take hologram
+north
+north
+west
+south
+take mouse
+east
+take shell
+west
+west
+take whirled peas
+east
+north
+west
+north
+west
+south
+take hypercube
+north
+east
+north
+west
+take semiconductor
+east
+south
+south
+west
+take antenna
+south
+take spool of cat6
+north
+west
+south
+south
+drop hologram
+drop shell
+drop spool of cat6
+drop whirled peas
+south
