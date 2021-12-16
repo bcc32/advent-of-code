@@ -11,19 +11,25 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-        ocaml-version:
-          - 4.11.0
-          - 4.10.1
+        ocaml-compiler:
+          - 4.13.x
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: avsm/setup-ocaml@v1
+
+    - name: Checkout code
+      uses: actions/checkout@v2
       with:
-        ocaml-version: ${{ matrix.ocaml-version }}
-    - run: opam pin add aoc.dev . --no-action
-    - run: opam depext -y aoc --with-doc --with-test
+        submodules: true
+
+    - name: Use OCaml ${{ matrix.ocaml-compiler }}
+      uses: ocaml/setup-ocaml@v2
+      with:
+        ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
     - run: opam install . --deps-only --with-doc --with-test
+
     - run: opam exec -- dune build
+
     - run: opam exec -- dune runtest
