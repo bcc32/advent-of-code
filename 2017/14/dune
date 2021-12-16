@@ -1,6 +1,6 @@
 (executables
  (names a b)
- (libraries core re2)
+ (libraries core)
  (preprocess
   (pps ppx_jane)))
 

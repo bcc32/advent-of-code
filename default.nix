@@ -1,5 +1,5 @@
 { lib, nix-gitignore, buildDunePackage, angstrom, async, bignum, cmdliner, core
-, core_bench, delimited_parsing, expect_test_helpers_async, iter, re, re2
+, core_bench, delimited_parsing, expect_test_helpers_async, iter, re
 , topological_sort, yojson }:
 
 buildDunePackage rec {
@@ -19,8 +19,6 @@ buildDunePackage rec {
     expect_test_helpers_async
     iter
     re
-    re2
-    # TODO: Standardize on one regular expression library
     topological_sort
     yojson
   ];
