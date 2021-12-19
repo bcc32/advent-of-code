@@ -22,8 +22,8 @@ max_y_for_success = -Float::INFINITY
 max_vy.downto(ymin).find do |vy|
   (min_vx..max_vx).any? do |vx|
     best = [-Float::INFINITY]
-    if simulate(vx, vy, xmin, xmax, ymin, ymax, best)
-      max_y_for_success = [max_y_for_success, best[0]].max
+    if max_y = simulate(vx, vy, xmin, xmax, ymin, ymax)
+      max_y_for_success = max_y if max_y > max_y_for_success
     end
   end
 end
