@@ -22,7 +22,7 @@ count = 0
 max_vy.downto(ymin).each do |vy|
   (min_vx..max_vx).each do |vx|
     best = [-Float::INFINITY]
-    if simulate(vx, vy, xmin, xmax, ymin, ymax, best)
+    if simulate(vx, vy, xmin, xmax, ymin, ymax)
       count += 1
     end
   end

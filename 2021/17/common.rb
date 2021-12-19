@@ -1,12 +1,13 @@
-def simulate(vx, vy, xmin, xmax, ymin, ymax, highest_y)
+def simulate(vx, vy, xmin, xmax, ymin, ymax)
   x, y = 0, 0
+  max_y_value = y
   while x <= xmax && y >= ymin
-    return true if (xmin..xmax) === x && (ymin..ymax) === y
+    return max_y_value if (xmin..xmax) === x && (ymin..ymax) === y
 
     x += vx
     y += vy
 
-    highest_y[0] = [highest_y[0], y].max
+    max_y_value = y if y > max_y_value
 
     if vx > 0
       vx -= 1
@@ -19,5 +20,5 @@ def simulate(vx, vy, xmin, xmax, ymin, ymax, highest_y)
     vy -= 1
   end
 
-  false
+  nil
 end
