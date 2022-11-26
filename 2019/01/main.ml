@@ -15,7 +15,8 @@ let main () =
 
 let%expect_test "a" =
   let%bind () = main () in
-  [%expect {| 3394032 |}]
+  [%expect {| 3394032 |}];
+  return ()
 ;;
 
 let rec fuel ~mass =
@@ -34,5 +35,6 @@ let main () =
 
 let%expect_test "b" =
   let%bind () = main () in
-  [%expect {| 5088176 |}]
+  [%expect {| 5088176 |}];
+  return ()
 ;;

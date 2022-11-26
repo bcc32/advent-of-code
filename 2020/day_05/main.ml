@@ -33,7 +33,7 @@ let a () =
   let%bind input = Lazy_deferred.force_exn Input.t in
   List.map input ~f:seat_id
   |> List.max_elt ~compare:Int.compare
-  |> uw
+  |> Option.value_exn
   |> [%sexp_of: int]
   |> print_s;
   return ()
@@ -41,7 +41,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 919 |}] in
+  [%expect {| 919 |}];
   return ()
 ;;
 
@@ -62,6 +62,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 642 |}] in
+  [%expect {| 642 |}];
   return ()
 ;;

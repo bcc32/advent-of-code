@@ -11,8 +11,7 @@ let orbits pairs =
     fun inner ->
       Hashtbl.findi_or_add cache inner ~default:(fun inner ->
         Graph.outgoing_edges graph inner
-        |> List.concat_map ~f:(fun next ->
-          next :: indirectly_and_directly_orbiting next)
+        |> List.concat_map ~f:(fun next -> next :: indirectly_and_directly_orbiting next)
         |> List.dedup_and_sort ~compare:[%compare: string])
   in
   List.sum
@@ -29,7 +28,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 314247 |}]
+  [%expect {| 314247 |}];
+  return ()
 ;;
 
 let orbits pairs =
@@ -48,5 +48,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 514 |}]
+  [%expect {| 514 |}];
+  return ()
 ;;

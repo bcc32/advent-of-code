@@ -46,7 +46,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 1747 |}]
+  [%expect {| 1747 |}];
+  return ()
 ;;
 
 let min xs = List.min_elt xs ~compare:[%compare: int] |> Option.value_exn
@@ -81,5 +82,6 @@ let%expect_test "b" =
       #  #    #    #  # #### ##   #    ###
      #   #    # ## ###  #  # # #  #    #  #
     #    #  # #  # # #  #  # # #  #    #  #
-    ####  ##   ### #  # #  # #  # #### ### |}]
+    ####  ##   ### #  # #  # #  # #### ### |}];
+  return ()
 ;;

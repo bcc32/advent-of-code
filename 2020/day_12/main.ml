@@ -73,7 +73,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 1482 |}] in
+  [%expect {| 1482 |}];
   return ()
 ;;
 
@@ -108,6 +108,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 48739 |}] in
+  [%expect {| 48739 |}];
   return ()
 ;;

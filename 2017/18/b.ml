@@ -80,8 +80,8 @@ let () =
     |> List.map ~f:command_of_string
     |> List.to_array
   in
-  let _t0 = Thread.create (fun () -> run input 0) () in
-  let _t1 = Thread.create (fun () -> run input 1) () in
-  Thread.delay 2.0;
+  let _t0 = Core_thread.create (fun () -> run input 0) () in
+  let _t1 = Core_thread.create (fun () -> run input 1) () in
+  Core_thread.delay 2.0;
   printf "%d\n" !num_sends
 ;;

@@ -105,7 +105,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 298 |}]
+  [%expect {| 298 |}];
+  return ()
 ;;
 
 let spread_oxygen grid start =
@@ -134,5 +135,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 346 |}]
+  [%expect {| 346 |}];
+  return ()
 ;;

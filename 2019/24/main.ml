@@ -146,44 +146,44 @@ let find_cycle_length init ~equal ~step =
 let%expect_test "step" =
   let%bind bitmap = input () >>| Bitmap.of_grid in
   printf !"%{Bitmap#hum}\n" bitmap;
-  let%bind () = [%expect {|
+  [%expect {|
     ..##.
     #....
     .....
     #.#.#
-    #..#. |}] in
+    #..#. |}];
   let bitmap = Bitmap.step bitmap in
   printf !"%{Bitmap#hum}\n" bitmap;
-  let%bind () = [%expect {|
+  [%expect {|
     #####
     .###.
     #.#.#
     ##...
-    ###.# |}] in
+    ###.# |}];
   let bitmap = Bitmap.step bitmap in
   printf !"%{Bitmap#hum}\n" bitmap;
-  let%bind () = [%expect {|
+  [%expect {|
     #...#
     .....
     #.#..
     ....#
-    ..##. |}] in
+    ..##. |}];
   let bitmap = Bitmap.step bitmap in
   printf !"%{Bitmap#hum}\n" bitmap;
-  let%bind () = [%expect {|
+  [%expect {|
     .#.#.
     #.#.#
     .#.##
     #.##.
-    .#### |}] in
+    .#### |}];
   let bitmap = Bitmap.step bitmap in
   printf !"%{Bitmap#hum}\n" bitmap;
-  let%bind () = [%expect {|
+  [%expect {|
     #...#
     ....#
     .....
     .....
-    ##..# |}] in
+    ##..# |}];
   return ()
 ;;
 
@@ -210,7 +210,8 @@ let%expect_test "a" =
     .....
     .....
     ##..#
-    19923473 |}]
+    19923473 |}];
+  return ()
 ;;
 
 module Position = struct
@@ -340,33 +341,32 @@ let step bugs =
 let%expect_test "adjacent" =
   let test pos = print_s [%sexp (Position.adjacent pos : Position.t list)] in
   test (0, S);
-  let%bind () = [%expect {|
+  [%expect {|
     ((0 N)
      (0 T)
      (0 X)
-     (0 R)) |}] in
+     (0 R)) |}];
   test (1, G);
-  let%bind () = [%expect {|
+  [%expect {|
     ((1 B)
      (1 H)
      (1 L)
-     (1 F)) |}] in
+     (1 F)) |}];
   test (1, D);
-  let%bind () = [%expect {|
+  [%expect {|
     ((1 C)
      (1 I)
      (1 E)
-     (0 H)) |}] in
+     (0 H)) |}];
   test (1, E);
-  let%bind () = [%expect {|
+  [%expect {|
     ((1 D)
      (1 J)
      (0 H)
-     (0 N)) |}] in
+     (0 N)) |}];
   test (0, N);
-  let%bind () =
-    [%expect
-      {|
+  [%expect
+    {|
     ((0 I)
      (0 O)
      (0 S)
@@ -374,12 +374,10 @@ let%expect_test "adjacent" =
      (1 J)
      (1 O)
      (1 T)
-     (1 Y)) |}]
-  in
+     (1 Y)) |}];
   test (1, N);
-  let%bind () =
-    [%expect
-      {|
+  [%expect
+    {|
     ((1 I)
      (1 O)
      (1 S)
@@ -387,8 +385,7 @@ let%expect_test "adjacent" =
      (2 J)
      (2 O)
      (2 T)
-     (2 Y)) |}]
-  in
+     (2 Y)) |}];
   return ()
 ;;
 
@@ -411,5 +408,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 1902 |}]
+  [%expect {| 1902 |}];
+  return ()
 ;;

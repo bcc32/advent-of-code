@@ -15,7 +15,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 12490719 |}]
+  [%expect {| 12490719 |}];
+  return ()
 ;;
 
 let try_ (program : Program.t) ~noun ~verb =
@@ -41,5 +42,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 2003 |}]
+  [%expect {| 2003 |}];
+  return ()
 ;;

@@ -35,5 +35,6 @@ let main () =
 
 let%expect_test "b" =
   let%bind () = main () in
-  [%expect {| mxhwoglxgeauywfkztndcvjqr |}]
+  [%expect {| mxhwoglxgeauywfkztndcvjqr |}];
+  return ()
 ;;

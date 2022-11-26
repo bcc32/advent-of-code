@@ -33,13 +33,15 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 1606483 |}] in
+  [%expect {| 1606483 |}];
   return ()
 ;;
 
 let ribbon { l; w; h } =
   let perimeters = [ (2 * l) + (2 * w); (2 * w) + (2 * h); (2 * l) + (2 * h) ] in
-  let smallest_perimeter = List.min_elt perimeters ~compare:Int.compare |> uw in
+  let smallest_perimeter =
+    List.min_elt perimeters ~compare:Int.compare |> Option.value_exn
+  in
   let bow = l * w * h in
   smallest_perimeter + bow
 ;;
@@ -52,6 +54,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 3842356 |}] in
+  [%expect {| 3842356 |}];
   return ()
 ;;

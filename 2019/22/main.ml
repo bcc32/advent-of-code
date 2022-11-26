@@ -57,7 +57,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 4684 |}]
+  [%expect {| 4684 |}];
+  return ()
 ;;
 
 (* Each shuffle technique is a linear mapping of positions (modulo card_count).
@@ -130,7 +131,8 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 452290953297 |}]
+  [%expect {| 452290953297 |}];
+  return ()
 ;;
 
 let b' () =
@@ -148,5 +150,6 @@ let b' () =
 
 let%expect_test "b'" =
   let%bind () = b' () in
-  [%expect {| 2019 |}]
+  [%expect {| 2019 |}];
+  return ()
 ;;

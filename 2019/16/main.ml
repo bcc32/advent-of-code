@@ -31,7 +31,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 40921727 |}]
+  [%expect {| 40921727 |}];
+  return ()
 ;;
 
 let do_phase_fast_only_correct_for_back_half_of_array_inplace array =
@@ -90,5 +91,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 89950138 |}]
+  [%expect {| 89950138 |}];
+  return ()
 ;;

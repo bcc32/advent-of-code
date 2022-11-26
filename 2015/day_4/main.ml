@@ -21,19 +21,19 @@ let mine secret_key =
 
 let%expect_test "abcdef609043" =
   print_s [%sexp (hash ~secret_key:"abcdef" ~number:609043 : string)];
-  let%bind () = [%expect {| 000001dbbfa3a5c83a2d506429c7b00e |}] in
+  [%expect {| 000001dbbfa3a5c83a2d506429c7b00e |}];
   return ()
 ;;
 
 let%expect_test "mine(abcdef)" =
   print_s [%sexp (mine "abcdef" : int)];
-  let%bind () = [%expect {| 609043 |}] in
+  [%expect {| 609043 |}];
   return ()
 ;;
 
 let%expect_test "mine(pqrstuv)" =
   print_s [%sexp (mine "pqrstuv" : int)];
-  let%bind () = [%expect {| 1048970 |}] in
+  [%expect {| 1048970 |}];
   return ()
 ;;
 
@@ -46,7 +46,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 117946 |}] in
+  [%expect {| 117946 |}];
   return ()
 ;;
 
@@ -68,6 +68,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 3938038 |}] in
+  [%expect {| 3938038 |}];
   return ()
 ;;

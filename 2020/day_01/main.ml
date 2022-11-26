@@ -4,9 +4,7 @@ open! Import
 
 let input =
   Lazy_deferred.create (fun () ->
-    Reader.file_contents "input.txt"
-    >>| String.split_lines
-    >>| List.map ~f:Int.of_string)
+    Reader.file_contents "input.txt" >>| String.split_lines >>| List.map ~f:Int.of_string)
 ;;
 
 let find_two nums =
@@ -27,7 +25,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 1010299 |}] in
+  [%expect {| 1010299 |}];
   return ()
 ;;
 
@@ -36,8 +34,7 @@ let find_three nums =
     List.iteri nums ~f:(fun i1 x ->
       List.iteri nums ~f:(fun i2 y ->
         List.iteri nums ~f:(fun i3 z ->
-          if i1 <> i2 && i2 <> i3 && i1 <> i3 && x + y + z = 2020
-          then return (x, y, z))));
+          if i1 <> i2 && i2 <> i3 && i1 <> i3 && x + y + z = 2020 then return (x, y, z))));
     assert false)
 ;;
 
@@ -50,6 +47,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 42140160 |}] in
+  [%expect {| 42140160 |}];
   return ()
 ;;

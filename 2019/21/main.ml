@@ -34,7 +34,8 @@ let%expect_test "a" =
 
     Walking...
 
-    19348840 |}]
+    19348840 |}];
+  return ()
 ;;
 
 (* Can reach and make progress from:
@@ -107,5 +108,6 @@ let%expect_test "b" =
 
     Running...
 
-    1141857182 |}]
+    1141857182 |}];
+  return ()
 ;;

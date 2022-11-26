@@ -28,7 +28,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 2318 |}]
+  [%expect {| 2318 |}];
+  return ()
 ;;
 
 let empty_image () = Array.make_matrix ~dimx:height ~dimy:width 2
@@ -61,5 +62,6 @@ let%expect_test "b" =
     #  # #### ###  #    ###
     #### #  # #    #    #  #
     #  # #  # #    #  # #  #
-    #  # #  # #     ##  ### |}]
+    #  # #  # #     ##  ### |}];
+  return ()
 ;;

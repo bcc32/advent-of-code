@@ -43,8 +43,9 @@ module Tile = struct
        1 3
        0 2 *)
     [%expect {|
-    ((g  ((0 1) (2 3)))
-     (g' ((1 3) (0 2)))) |}]
+      ((g  ((0 1) (2 3)))
+       (g' ((1 3) (0 2)))) |}];
+    return ()
   ;;
 
   let all_rotations t =
@@ -70,14 +71,15 @@ module Tile = struct
     (* http://facstaff.cbu.edu/wschrein/media/M402%20Notes/M402C1.pdf *)
     [%expect
       {|
-    (((P W) (G B))
-     ((W P) (B G))
-     ((W B) (P G))
-     ((B W) (G P))
-     ((B G) (W P))
-     ((G B) (P W))
-     ((G P) (B W))
-     ((P G) (W B))) |}]
+      (((P W) (G B))
+       ((W P) (B G))
+       ((W B) (P G))
+       ((B W) (G P))
+       ((B G) (W P))
+       ((G B) (P W))
+       ((G P) (B W))
+       ((P G) (W B))) |}];
+    return ()
   ;;
 
   let does_align_horiz ~left ~right =
@@ -213,7 +215,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 17712468069479 |}] in
+  [%expect {| 17712468069479 |}];
   return ()
 ;;
 
@@ -298,6 +300,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 2173 |}] in
+  [%expect {| 2173 |}];
   return ()
 ;;

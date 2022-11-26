@@ -68,14 +68,13 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 23954 |}] in
+  [%expect {| 23954 |}];
   return ()
 ;;
 
 let possible_fields_in_position tickets i ~fields =
   List.filter (Map.to_alist fields) ~f:(fun (_, valid) ->
-    List.for_all tickets ~f:(fun ticket ->
-      Valid_values.mem valid (List.nth_exn ticket i)))
+    List.for_all tickets ~f:(fun ticket -> Valid_values.mem valid (List.nth_exn ticket i)))
   |> List.map ~f:fst
   |> Set.of_list (module String)
 ;;
@@ -117,6 +116,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 453459307723 |}] in
+  [%expect {| 453459307723 |}];
   return ()
 ;;

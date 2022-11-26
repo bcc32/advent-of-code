@@ -11,6 +11,6 @@ let () =
              let nums = String.split row ~on:'\t' |> List.map ~f:Int.of_string in
              let compare = Int.compare in
              let min, max = List.min_elt ~compare nums, List.max_elt ~compare nums in
-             uw max - uw min)
+             Option.value_exn max - Option.value_exn min)
       |> printf "%d\n")
 ;;

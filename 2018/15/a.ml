@@ -61,7 +61,8 @@ let%expect_test "a" =
     #############...################
     ###############.################
     ################################
-    70 rounds, 2713 hit points |}]
+    70 rounds, 2713 hit points |}];
+  return ()
 ;;
 
 let%test_module "examples" =
@@ -87,7 +88,8 @@ let%test_module "examples" =
         #...#.#
         #....G#
         #######
-        47 rounds, 590 hit points |}]
+        47 rounds, 590 hit points |}];
+      return ()
     ;;
 
     let%expect_test _ =
@@ -111,7 +113,8 @@ let%test_module "examples" =
         #E..#E#
         #.....#
         #######
-        37 rounds, 982 hit points |}]
+        37 rounds, 982 hit points |}];
+      return ()
     ;;
 
     let%expect_test _ =
@@ -135,7 +138,8 @@ let%test_module "examples" =
         #.E.#.#
         #...#.#
         #######
-        46 rounds, 859 hit points |}]
+        46 rounds, 859 hit points |}];
+      return ()
     ;;
 
     let%expect_test _ =
@@ -159,7 +163,8 @@ let%test_module "examples" =
         #...#G#
         #...G.#
         #######
-        35 rounds, 793 hit points |}]
+        35 rounds, 793 hit points |}];
+      return ()
     ;;
 
     let%expect_test _ =
@@ -183,7 +188,8 @@ let%test_module "examples" =
         #.#.#.#
         #G.G#G#
         #######
-        54 rounds, 536 hit points |}]
+        54 rounds, 536 hit points |}];
+      return ()
     ;;
 
     let%expect_test _ =
@@ -213,7 +219,8 @@ let%test_module "examples" =
         #.......#
         #.......#
         #########
-        20 rounds, 937 hit points |}]
+        20 rounds, 937 hit points |}];
+      return ()
     ;;
   end)
 ;;

@@ -95,8 +95,7 @@ let deduce foods =
     List.map foods ~f:(fun food ->
       if List.for_all food.known_allergens ~f:(fun allergen ->
         match Hashtbl.find deduced_allergens_to_ingredients allergen with
-        | Some ingredient ->
-          List.mem food.ingredients ingredient ~equal:String.equal
+        | Some ingredient -> List.mem food.ingredients ingredient ~equal:String.equal
         | None -> false)
       then
         Set.diff
@@ -125,7 +124,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 2627 |}] in
+  [%expect {| 2627 |}];
   return ()
 ;;
 
@@ -146,6 +145,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| hn,dgsdtj,kpksf,sjcvsr,bstzgn,kmmqmv,vkdxfj,bsfqgb |}] in
+  [%expect {| hn,dgsdtj,kpksf,sjcvsr,bstzgn,kmmqmv,vkdxfj,bsfqgb |}];
   return ()
 ;;

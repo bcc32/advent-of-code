@@ -45,7 +45,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 2660 |}]
+  [%expect {| 2660 |}];
+  return ()
 ;;
 
 let show_map () =
@@ -95,7 +96,8 @@ let%expect_test "map" =
     #.....#...#.#........................................
     #.....#######........................................
     #.........#..........................................
-    ###########.......................................... |}]
+    ###########.......................................... |}];
+  return ()
 ;;
 
 let dir_of_char : char -> Robot.Dir.t = function
@@ -200,7 +202,8 @@ let%expect_test "find_route" =
     L,8,R,8,R,8,L,6,
     L,10,L,10,L,8,L,8,
     R,8,R,8,L,6,L,10,
-    L,10,L,8,L,8,R,8, |}]
+    L,10,L,8,L,8,R,8, |}];
+  return ()
 ;;
 
 module Which_program = struct
@@ -319,7 +322,8 @@ let%expect_test "compress" =
          ((first_turn Left)  (then_go 6))
          ((first_turn Left)  (then_go 10))
          ((first_turn Left)  (then_go 10))))))
-     (programs_called (A B A C A B C B C B))) |}]
+     (programs_called (A B A C A B C B C B))) |}];
+  return ()
 ;;
 
 (* Manually computed solution:
@@ -362,5 +366,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 790595 |}]
+  [%expect {| 790595 |}];
+  return ()
 ;;

@@ -7,7 +7,7 @@ let redistribute blocks =
       match Int.descending x y with
       | 0 -> Int.ascending i j
       | n -> n)
-    |> uw
+    |> Option.value_exn
     |> fst
   in
   let blocks = Array.of_list blocks in

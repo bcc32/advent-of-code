@@ -4,9 +4,7 @@ open! Import
 
 let input =
   Lazy_deferred.create (fun () ->
-    Reader.file_contents "input.txt"
-    >>| String.split_lines
-    >>| List.map ~f:Int.of_string)
+    Reader.file_contents "input.txt" >>| String.split_lines >>| List.map ~f:Int.of_string)
 ;;
 
 let rec iter_combinations list ~f =
@@ -29,7 +27,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 654 |}] in
+  [%expect {| 654 |}];
   return ()
 ;;
 
@@ -52,6 +50,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 57 |}] in
+  [%expect {| 57 |}];
   return ()
 ;;

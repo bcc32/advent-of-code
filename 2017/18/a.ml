@@ -57,7 +57,7 @@ let () =
           last_sound := Some (get_value x);
           loop (pc + 1)
         | Rcv x ->
-          if get_value x <> 0 then return (uw !last_sound);
+          if get_value x <> 0 then return (Option.value_exn !last_sound);
           loop (pc + 1)
         | Set (r, y) ->
           Hashtbl.set state ~key:r ~data:(get_value y);
@@ -71,8 +71,7 @@ let () =
         | Mod (r, y) ->
           Hashtbl.update state r ~f:(fun x -> get_or_zero x % get_value y);
           loop (pc + 1)
-        | Jgz (x, y) ->
-          if get_value x > 0 then loop (pc + get_value y) else loop (pc + 1))
+        | Jgz (x, y) -> if get_value x > 0 then loop (pc + get_value y) else loop (pc + 1))
     in
     loop 0;
     assert false)

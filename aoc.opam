@@ -12,15 +12,15 @@ depends: [
   "cmdliner" {>= "1.0.0" & < "2.0.0"}
   "re" {>= "1.9.0"}
   "yojson" {>= "1.7.0"}
-  "async" {>= "v0.14" & < "v0.15"}
-  "bignum" {>= "v0.14" & < "v0.15"}
-  "core" {>= "v0.14" & < "v0.15"}
-  "core_bench" {>= "v0.14" & < "v0.15"}
-  "delimited_parsing" {>= "v0.14" & < "v0.15"}
-  "expect_test_helpers_async" {>= "v0.14" & < "v0.15"}
-  "ppx_jane" {>= "v0.14" & < "v0.15"}
-  "notty_async" {>= "v0.14" & < "v0.15"}
-  "topological_sort" {>= "v0.14" & < "v0.15"}
+  "async" {>= "v0.15" & < "v0.16"}
+  "bignum" {>= "v0.15" & < "v0.16"}
+  "core" {>= "v0.15" & < "v0.16"}
+  "core_bench" {>= "v0.15" & < "v0.16"}
+  "delimited_parsing" {>= "v0.15" & < "v0.16"}
+  "expect_test_helpers_async" {>= "v0.15" & < "v0.16"}
+  "ppx_jane" {>= "v0.15" & < "v0.16"}
+  "notty_async" {>= "v0.15" & < "v0.16"}
+  "topological_sort" {>= "v0.15" & < "v0.16"}
 ]
 build: [
   ["dune" "subst"] {pinned}

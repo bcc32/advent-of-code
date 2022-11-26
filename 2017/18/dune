@@ -1,6 +1,6 @@
 (executables
  (names a b)
- (libraries core core.squeue)
+ (libraries core core_unix.core_thread core_unix.squeue)
  (preprocess
   (pps ppx_jane)))
 

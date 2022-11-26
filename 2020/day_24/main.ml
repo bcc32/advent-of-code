@@ -95,7 +95,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 394 |}] in
+  [%expect {| 394 |}];
   return ()
 ;;
 
@@ -106,9 +106,7 @@ let do_flip black =
     |> Set.stable_dedup_list (module Coord)
   in
   List.map tiles_to_consider ~f:(fun t ->
-    let count_black_neighbors =
-      List.count (Coord.neighbors t) ~f:(Hash_set.mem black)
-    in
+    let count_black_neighbors = List.count (Coord.neighbors t) ~f:(Hash_set.mem black) in
     let black_in_next_iter =
       match Hash_set.mem black t with
       | true -> not (count_black_neighbors = 0 || count_black_neighbors > 2)
@@ -132,6 +130,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 4036 |}] in
+  [%expect {| 4036 |}];
   return ()
 ;;

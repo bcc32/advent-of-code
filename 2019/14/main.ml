@@ -49,11 +49,13 @@ let ore_cost ~how_much_fuel ~(how_to_make : Reaction.t String.Table.t) =
   let nodes =
     Topological_sort.sort
       (module String)
-      (Hashtbl.keys how_to_make)
-      (Hashtbl.data how_to_make
-       |> List.concat_map ~f:(fun reaction ->
-         List.map reaction.inputs ~f:(fun r ->
-           { Topological_sort.Edge.from = reaction.output.name; to_ = r.name })))
+      ~what:Nodes
+      ~nodes:(Hashtbl.keys how_to_make)
+      ~edges:
+        (Hashtbl.data how_to_make
+         |> List.concat_map ~f:(fun reaction ->
+           List.map reaction.inputs ~f:(fun r ->
+             { Topological_sort.Edge.from = reaction.output.name; to_ = r.name })))
     |> ok_exn
   in
   let want_to_make = String.Table.of_alist_exn [ "FUEL", how_much_fuel ] in
@@ -63,7 +65,7 @@ let ore_cost ~how_much_fuel ~(how_to_make : Reaction.t String.Table.t) =
        | _ -> true))
     ~f:(fun need ->
       if debug then Debug.eprint_s [%message (want_to_make : (string, int) Hashtbl.t)];
-      let need_amt = Hashtbl.find_and_remove want_to_make need |> uw in
+      let need_amt = Hashtbl.find_and_remove want_to_make need |> Option.value_exn in
       let rxn = Hashtbl.find_exn how_to_make need in
       let how_many_rxn =
         Int.round_up need_amt ~to_multiple_of:rxn.output.amt / rxn.output.amt
@@ -82,7 +84,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 654909 |}]
+  [%expect {| 654909 |}];
+  return ()
 ;;
 
 let how_much_fuel_can_we_make ~max_ore ~how_to_make =
@@ -114,5 +117,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 2876992 |}]
+  [%expect {| 2876992 |}];
+  return ()
 ;;

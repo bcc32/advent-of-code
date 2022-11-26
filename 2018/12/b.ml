@@ -625,7 +625,8 @@ let%expect_test "b demo" =
       (plants 81))
     (loop
       (sum    14775)
-      (plants 81)) |}]
+      (plants 81)) |}];
+  return ()
 ;;
 
 let main () =
@@ -635,5 +636,6 @@ let main () =
 
 let%expect_test "b" =
   let%bind () = main () in
-  [%expect {| 4049999998575 |}]
+  [%expect {| 4049999998575 |}];
+  return ()
 ;;

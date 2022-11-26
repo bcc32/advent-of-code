@@ -172,7 +172,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 602 |}]
+  [%expect {| 602 |}];
+  return ()
 ;;
 
 module State = struct
@@ -206,9 +207,8 @@ let b () =
            match distance with
            | None -> None
            | Some distance ->
-             Some
-               ( { State.labeled_point_index = next_point_index; level = 0 }
-               , distance ))))
+             Some ({ State.labeled_point_index = next_point_index; level = 0 }, distance))
+        ))
   in
   let the_one_and_only_exn label =
     Array.find_mapi_exn all_labeled_points ~f:(fun i x ->
@@ -239,5 +239,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 6986 |}]
+  [%expect {| 6986 |}];
+  return ()
 ;;

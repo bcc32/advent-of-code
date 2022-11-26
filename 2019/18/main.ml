@@ -144,7 +144,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 4700 |}]
+  [%expect {| 4700 |}];
+  return ()
 ;;
 
 let input () =
@@ -254,12 +255,13 @@ let b () =
     Bitset.equal state.collected_keys all_keys)
   |> Hashtbl.data
   |> List.min_elt ~compare:[%compare: int]
-  |> uw
+  |> Option.value_exn
   |> printf "%d\n";
   return ()
 ;;
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 72 |}]
+  [%expect {| 72 |}];
+  return ()
 ;;

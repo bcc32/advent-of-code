@@ -34,7 +34,7 @@ let find_first_bus earliest_timestamp bus_ids =
     let wait = -earliest_timestamp % id in
     id, wait)
   |> List.min_elt ~compare:(Comparable.lift Int.compare ~f:snd)
-  |> uw
+  |> Option.value_exn
 ;;
 
 let a () =
@@ -48,7 +48,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 333 |}] in
+  [%expect {| 333 |}];
   return ()
 ;;
 
@@ -72,6 +72,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 690123192779524 |}] in
+  [%expect {| 690123192779524 |}];
   return ()
 ;;

@@ -42,7 +42,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 41682220 |}] in
+  [%expect {| 41682220 |}];
   return ()
 ;;
 
@@ -58,8 +58,7 @@ let find_contiguous_sum list target =
   with_return (fun { return } ->
     for i = 0 to Array.length prefix_sums - 1 do
       for j = i to Array.length prefix_sums - 1 do
-        if get_prefix_sum ~upto:j - get_prefix_sum ~upto:i = target
-        then return (i, j - i)
+        if get_prefix_sum ~upto:j - get_prefix_sum ~upto:i = target then return (i, j - i)
       done
     done;
     assert false)
@@ -71,8 +70,8 @@ let b () =
   let pos, len = find_contiguous_sum (preamble @ list) x in
   let sublist = List.sub (preamble @ list) ~pos ~len in
   assert (List.sum (module Int) sublist ~f:Fn.id = x);
-  let min = List.min_elt sublist ~compare:Int.compare |> uw in
-  let max = List.max_elt sublist ~compare:Int.compare |> uw in
+  let min = List.min_elt sublist ~compare:Int.compare |> Option.value_exn in
+  let max = List.max_elt sublist ~compare:Int.compare |> Option.value_exn in
   let ans = min + max in
   print_s [%sexp (ans : int)];
   return ()
@@ -80,6 +79,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 5388976 |}] in
+  [%expect {| 5388976 |}];
   return ()
 ;;

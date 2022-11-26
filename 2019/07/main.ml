@@ -54,15 +54,16 @@ let a () =
     |> Sequence.map ~f:(fun (a, b, c, d, e) -> try_setting snapshot a b c d e)
     |> Deferred.Sequence.all
     >>| Sequence.max_elt ~compare:[%compare: int]
-    >>| uw
   in
+  let best = Option.value_exn best in
   printf "%d\n" best;
   return ()
 ;;
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 34852 |}]
+  [%expect {| 34852 |}];
+  return ()
 ;;
 
 let try_setting snapshot a_setting b_setting c_setting d_setting e_setting =
@@ -100,13 +101,14 @@ let b () =
     |> Sequence.map ~f:(fun (a, b, c, d, e) -> try_setting snapshot a b c d e)
     |> Deferred.Sequence.all
     >>| Sequence.max_elt ~compare:[%compare: int]
-    >>| uw
   in
+  let best = Option.value_exn best in
   printf "%d\n" best;
   return ()
 ;;
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 44282086 |}]
+  [%expect {| 44282086 |}];
+  return ()
 ;;

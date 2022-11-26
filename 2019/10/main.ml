@@ -118,7 +118,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 227 |}]
+  [%expect {| 227 |}];
+  return ()
 ;;
 
 let all_asteroids grid =
@@ -148,5 +149,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 604 |}]
+  [%expect {| 604 |}];
+  return ()
 ;;

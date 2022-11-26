@@ -116,8 +116,7 @@ module Rule = struct
         match Map.find_exn rules rule_index with
         | Literal s -> Ok (String.Set.singleton s)
         | Alt alternatives ->
-          if List.exists alternatives ~f:(fun a ->
-            List.mem a rule_index ~equal:Int.equal)
+          if List.exists alternatives ~f:(fun a -> List.mem a rule_index ~equal:Int.equal)
           then error_s [%message "recursive rule"]
           else
             List.map alternatives ~f:(fun rule_indices ->
@@ -129,8 +128,7 @@ module Rule = struct
                   match next with
                   | Error _ -> []
                   | Ok next ->
-                    Set.to_list next
-                    |> List.map ~f:(fun next -> so_far ^ next))
+                    Set.to_list next |> List.map ~f:(fun next -> so_far ^ next))
                 |> String.Set.of_list))
             |> String.Set.union_list
             |> Ok)
@@ -292,7 +290,8 @@ let%expect_test "all_matching_strings_for_42" =
       bbbbabbb
       bbbbbabb
       bbbbbbaa
-      bbbbbbab)) |}]
+      bbbbbbab)) |}];
+  return ()
 ;;
 
 let a () =
@@ -305,7 +304,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 272 |}] in
+  [%expect {| 272 |}];
   return ()
 ;;
 
@@ -371,7 +370,7 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 374 |}] in
+  [%expect {| 374 |}];
   return ()
 ;;
 
@@ -383,5 +382,6 @@ let%expect_test "testing my understanding" =
   Angstrom.parse_string ~consume:All parser "AAAAC"
   |> [%sexp_of: (string, string) Result.t]
   |> print_s;
-  [%expect {| (Error ": not enough input") |}]
+  [%expect {| (Error ": not enough input") |}];
+  return ()
 ;;

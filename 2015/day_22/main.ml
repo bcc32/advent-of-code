@@ -194,13 +194,11 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () =
-    [%expect
-      {|
+  [%expect
+    {|
     (900
      (Poison Recharge Magic_missile Poison Magic_missile Shield Magic_missile
-      Magic_missile)) |}]
-  in
+      Magic_missile)) |}];
   return ()
 ;;
 
@@ -216,9 +214,7 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () =
-    [%expect
-      {| (1216 (Poison Recharge Shield Poison Recharge Drain Poison Magic_missile)) |}]
-  in
+  [%expect
+    {| (1216 (Poison Recharge Shield Poison Recharge Drain Poison Magic_missile)) |}];
   return ()
 ;;

@@ -32,7 +32,7 @@ end
 let discrete_log x =
   Sequence.unfold_step ~init:1 ~f:(fun product -> Yield (product, product * g % modulus))
   |> Sequence.findi ~f:(fun _ x' -> x = x')
-  |> uw
+  |> Option.value_exn
   |> fst
 ;;
 
@@ -47,6 +47,6 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 18329280 |}] in
+  [%expect {| 18329280 |}];
   return ()
 ;;

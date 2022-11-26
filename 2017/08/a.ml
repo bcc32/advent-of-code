@@ -32,5 +32,8 @@ let () =
     let other = Hashtbl.find_or_add registers other ~default:(fun () -> 0) in
     let reg_cur = Hashtbl.find_or_add registers reg ~default:(fun () -> 0) in
     if f other lit then Hashtbl.set registers ~key:reg ~data:((factor * amt) + reg_cur));
-  Hashtbl.data registers |> List.max_elt ~compare:Int.compare |> uw |> printf "%d\n"
+  Hashtbl.data registers
+  |> List.max_elt ~compare:Int.compare
+  |> Option.value_exn
+  |> printf "%d\n"
 ;;

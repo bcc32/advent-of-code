@@ -6,4 +6,4 @@
  (inline_tests
   (deps input.txt input.example.txt))
  (preprocess
-  (pps ppx_jane -allow-unannotated-ignores)))
+  (pps ppx_jane)))

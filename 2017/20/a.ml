@@ -36,7 +36,7 @@ let () =
     |> List.min_elt
          ~compare:(fun (_, ((px, py, pz), _, _)) (_, ((px', py', pz'), _, _)) ->
            Int.compare (abs px + abs py + abs pz) (abs px' + abs py' + abs pz'))
-    |> uw
+    |> Option.value_exn
     |> fst
   in
   printf "%d\n" closest

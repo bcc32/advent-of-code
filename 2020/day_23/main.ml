@@ -26,20 +26,20 @@ end
 
 let next list elt =
   match Doubly_linked.next list elt with
-  | None -> Doubly_linked.first_elt list |> uw
+  | None -> Doubly_linked.first_elt list |> Option.value_exn
   | Some next -> next
 ;;
 
 let move cups ~turns =
-  let max_elt = Doubly_linked.max_elt cups ~compare:Int.compare |> uw in
+  let max_elt = Doubly_linked.max_elt cups ~compare:Int.compare |> Option.value_exn in
   let get_elt_of_label =
-    let first_cup_elt = Doubly_linked.first_elt cups |> uw in
+    let first_cup_elt = Doubly_linked.first_elt cups |> Option.value_exn in
     let array = Array.init max_elt ~f:(fun _ -> first_cup_elt) in
     Doubly_linked.iter_elt cups ~f:(fun elt ->
       array.(Doubly_linked.Elt.value elt - 1) <- elt);
     fun label -> array.(label - 1)
   in
-  let current_cup_elt = ref (Doubly_linked.first_elt cups |> uw) in
+  let current_cup_elt = ref (Doubly_linked.first_elt cups |> Option.value_exn) in
   for _ = 1 to turns do
     let c1 = next cups !current_cup_elt in
     let c2 = next cups c1 in
@@ -81,7 +81,7 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  let%bind () = [%expect {| 25468379 |}] in
+  [%expect {| 25468379 |}];
   return ()
 ;;
 
@@ -106,6 +106,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  let%bind () = [%expect {| 474747880250 |}] in
+  [%expect {| 474747880250 |}];
   return ()
 ;;

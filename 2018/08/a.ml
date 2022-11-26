@@ -15,5 +15,6 @@ let main () =
 
 let%expect_test "a" =
   let%bind () = main () in
-  [%expect {| 43351 |}]
+  [%expect {| 43351 |}];
+  return ()
 ;;

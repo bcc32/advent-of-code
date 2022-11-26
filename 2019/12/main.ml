@@ -72,7 +72,8 @@ let a () =
 
 let%expect_test "a" =
   let%bind () = a () in
-  [%expect {| 12644 |}]
+  [%expect {| 12644 |}];
+  return ()
 ;;
 
 type cycle =
@@ -154,5 +155,6 @@ let b () =
 
 let%expect_test "b" =
   let%bind () = b () in
-  [%expect {| 290314621566528 |}]
+  [%expect {| 290314621566528 |}];
+  return ()
 ;;
