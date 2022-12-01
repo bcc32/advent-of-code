@@ -143,19 +143,19 @@ Prompt for the level number (1 or 2)."
   (revert-buffer :ignore-auto :noconfirm :preserve-modes)
   (let ((level (string-to-number
                 (completing-read "Level number: " '("1" "2") nil :require-match))))
-    (if (yes-or-no-p (format "Submit buffer contents for level %d? " level))
-        (let ((answer (buffer-string)))
-          (advent-of-code--request
-           (advent-of-code--problem-number) "answer"
-           :type "POST"
-           :data `(("level" . ,level)
-                   ("answer" . ,answer))
-           :parser (lambda ()
-                     (advent-of-code--html-find-first-article-inner-text
-                      (libxml-parse-html-region (point-min) (point-max))))
-           :complete (cl-function (lambda (&key data &allow-other-keys)
-                                    (display-message-or-buffer data)))))
-      (user-error "Aborted"))))
+    (unless (yes-or-no-p (format "Submit buffer contents for level %d? " level))
+      (user-error "Aborted"))
+    (let ((answer (buffer-string)))
+      (advent-of-code--request
+       (advent-of-code--problem-number) "answer"
+       :type "POST"
+       :data `(("level" . ,level)
+               ("answer" . ,answer))
+       :parser (lambda ()
+                 (advent-of-code--html-find-first-article-inner-text
+                  (libxml-parse-html-region (point-min) (point-max))))
+       :complete (cl-function (lambda (&key data &allow-other-keys)
+                                (display-message-or-buffer data)))))))
 
 (define-key advent-of-code-output-mode-map (kbd "C-c C-c") 'advent-of-code-output-submit)
 
