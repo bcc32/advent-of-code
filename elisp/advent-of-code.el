@@ -111,7 +111,7 @@ Pass REST to `request'."
 
 (defun advent-of-code-copy-buffer-contents-to-clipboard ()
   "Copy the contents of the current buffer to the clipboard or kill ring."
-  (kill-new (buffer-substring-no-properties (point-min) (point-max))))
+  (kill-new (string-trim (buffer-substring-no-properties (point-min) (point-max)))))
 
 (defun advent-of-code--html-print-inner-text (tree)
   "Print the inner text for an HTML parse tree, TREE."
