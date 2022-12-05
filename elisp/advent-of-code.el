@@ -46,7 +46,8 @@ Used to download input for the authenticated user."
   "Email address to send with User-Agent header string.
 
 The Advent of Code team requests[0] that the User-Agent string
-include your contact information.
+include your contact information.  This value will also be sent
+as the HTTP From header.
 
 [0]: https://www.reddit.com/r/adventofcode/comments/z9dhtd/please_include_your_contact_info_in_the_useragent/
 "
@@ -64,7 +65,8 @@ Pass REST to `request'."
     (apply #'request url
            :headers '(("User-Agent"
                        . (format "github.com/bcc32/advent-of-code by bcc32, used by %s"
-                                 advent-of-code-email)))
+                                 advent-of-code-email))
+                      ("From" . advent-of-code-email))
            rest)))
 
 ;;;###autoload
