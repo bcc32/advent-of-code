@@ -46,7 +46,9 @@ Pass REST to `request'."
   (let ((url (format "https://adventofcode.com/%d/day/%d/%s"
                      advent-of-code-year day endpoint))
         (request--curl-cookie-jar advent-of-code-cookie-jar))
-    (apply #'request url rest)))
+    (apply #'request url
+           :headers '(("User-Agent" . "github.com/bcc32/advent-of-code by bcc32"))
+           rest)))
 
 ;;;###autoload
 (define-derived-mode advent-of-code-input-mode text-mode
