@@ -20,6 +20,9 @@
 ;; and submit the contents automatically, prompting for the level number (1 or
 ;; 2) and confirmation.
 ;;
+;; Before using this package, you must customize `advent-of-code-cookie-jar' and
+;; `advent-of-code-email'.
+;;
 ;;; Code:
 
 (require 'request)
@@ -39,15 +42,29 @@
 Used to download input for the authenticated user."
   :type '(choice file (const nil)))
 
+(defcustom advent-of-code-email nil
+  "Email address to send with User-Agent header string.
+
+The Advent of Code team requests[0] that the User-Agent string
+include your contact information.
+
+[0]: https://www.reddit.com/r/adventofcode/comments/z9dhtd/please_include_your_contact_info_in_the_useragent/
+"
+  :type 'string)
+
 (defun advent-of-code--request (day endpoint &rest rest)
   "Make an HTTP request to adventofcode.com for day DAY, endpoint ENDPOINT.
 
 Pass REST to `request'."
+  (unless advent-of-code-email
+    (user-error "`advent-of-code-email' is unset; refusing to send automated requests."))
   (let ((url (format "https://adventofcode.com/%d/day/%d/%s"
                      advent-of-code-year day endpoint))
         (request--curl-cookie-jar advent-of-code-cookie-jar))
     (apply #'request url
-           :headers '(("User-Agent" . "github.com/bcc32/advent-of-code by bcc32"))
+           :headers '(("User-Agent"
+                       . (format "github.com/bcc32/advent-of-code by bcc32, used by %s"
+                                 advent-of-code-email)))
            rest)))
 
 ;;;###autoload
