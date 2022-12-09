@@ -14,7 +14,7 @@ end
 
 $head = [0, 0]
 $tail = [0, 0]
-tail_visited << $tail
+tail_visited << $tail.dup
 
 def sign(x)
   return 0 if x.zero?
@@ -48,7 +48,7 @@ input.each do |dir, count|
 
     update_tail!
 
-    tail_visited << $tail
+    tail_visited << $tail.dup
   end
 end
 
