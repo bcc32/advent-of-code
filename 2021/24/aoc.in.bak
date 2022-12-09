@@ -1,0 +1,175 @@
+inp w
+x = z % 26
+z /= 1
+x += 14
+x = (x != w)
+z *= (25 * x) + 1
+z += (w + 0) * x
+inp w
+x = z % 26
+z /= 1
+x += 13
+x = (x != w)
+z *= (25 * x) + 1
+z += (w + 12) * x
+inp w
+x = z % 26
+z /= 1
+x += 15
+x = (x != w)
+z *= (25 * x) + 1
+z += (w + 14) * x
+inp w
+x = z % 26
+z /= 1
+x += 13
+x = (x != w)
+z *= (25 * x) + 1
+z += (w + 0) * x
+inp w
+x = z % 26
+z /= 26
+x += -2
+x = (x != w)
+z *= (25 * x) + 1
+z += (w + 3) * x
+inp w
+x = z % 26
+z /= 1
+x += 10
+x = (x != w)
+z *= (25 * x) + 1
+z += (w + 15) * x
+inp w
+x = z % 26
+z /= 1
+x += 13
+x = (x != w)
+z *= (25 * x) + 1
+z += (w + 1) * x
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -15
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 12
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 1
+add x 11
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 1
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -9
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 12
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -9
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 3
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -7
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 10
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -4
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 14
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -6
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 12
+mul y x
+add z y
