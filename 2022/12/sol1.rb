@@ -41,7 +41,7 @@ def bfs(start)
 
     [[-1, 0], [1, 0], [0, -1], [0, 1]].each do |di, dj|
       begin
-        if can_get_to?($grid[di + i][dj + j], $grid[i][j]) && !cost.include?([di + i, dj + j])
+        if i + di >= 0 && j + dj >= 0 && can_get_to?($grid[di + i][dj + j], $grid[i][j]) && !cost.include?([di + i, dj + j])
           q << [i + di, j + dj]
           cost[[di + i, dj + j]] = my_cost + 1
         end
