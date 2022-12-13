@@ -4,7 +4,7 @@ set -eu
 
 day=$1
 year=${year-$(date +'%Y')}
-lang=ruby
+lang=${lang-ruby}
 
 printf -v dir "$year/%02d" "$day"
 mkdir -p "$dir"
