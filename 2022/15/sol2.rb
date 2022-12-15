@@ -49,6 +49,16 @@ class IntervalSet
     i = @intervals.find { |start2, end2| start1 >= start2 }
     i && i[1] < end1 && i[1] + 1
   end
+
+  def each
+    @intervals.each do |start, end_|
+      (start..end_).each do |x|
+        yield x
+      end
+    end
+  end
+
+  include Enumerable
 end
 
 def dist(x1, y1, x2, y2)
@@ -71,11 +81,7 @@ min_y, max_y = input.map { |_, y, _, _, _| y }.minmax
 
 K = 4000000
 
-ans = (0..K).lazy.map do |y|
-  if y % 10000 == 0
-    p y
-  end
-
+ans = (0..K).lazy.filter_map do |y|
   bad = IntervalSet.new
   input.each do |x1, y1, x2, y2, d|
     dist_on_line = d - (y1 - y).abs
@@ -83,13 +89,11 @@ ans = (0..K).lazy.map do |y|
       bad << [x1 - dist_on_line, x1 + dist_on_line]
     end
     bad << [x2, x2] if y2 == y
-    # p bad
   end
 
-  # p bad
   x = bad.find_first_gap(0, K)
   x && [x, y]
-end.find { |x| x }
+end.first
 
 x, y = ans
 p (4000000 * x + y)
