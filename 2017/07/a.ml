@@ -10,8 +10,8 @@ let () =
           let word = String.split line ~on:' ' |> List.hd_exn in
           ( word
           , match String.split line ~on:'>' with
-          | [ _; rhs ] -> rhs |> String.split ~on:',' |> List.map ~f:String.strip
-          | _ -> [] )))
+            | [ _; rhs ] -> rhs |> String.split ~on:',' |> List.map ~f:String.strip
+            | _ -> [] )))
   in
   let found = String.Hash_set.create () in
   List.iter lines ~f:(fun (w, _) -> Hash_set.add found w);

@@ -60,8 +60,8 @@ let rec scan_down x y ~clay ~max_y ~(visited : (int * int, Scan_result.t) Hashtb
            | Filled_space, Filled_space -> Filled_space
            | Fall_forever, _ | _, Fall_forever ->
              (* Either left or right might be incorrectly considered filled space,
-               but we need to mark it as falling because it is not bounded on the
-               other side. *)
+                but we need to mark it as falling because it is not bounded on the
+                other side. *)
              for x = min_x to max_x do
                Hashtbl.set visited ~key:(x, y) ~data:Fall_forever
              done;

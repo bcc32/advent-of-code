@@ -92,11 +92,11 @@ let label_to_label_distance grid (all_labeled_points : Labeled_point.t array) =
 ;;
 
 let dijkstra
-      (type node)
-      (module Key : Hashtbl.Key_plain with type t = node)
-      ~outgoing_edges
-      ~start
-      ~is_end
+  (type node)
+  (module Key : Hashtbl.Key_plain with type t = node)
+  ~outgoing_edges
+  ~start
+  ~is_end
   =
   let module HH = Hash_heap.Make (Key) in
   let distance = Hashtbl.create (module Key) in

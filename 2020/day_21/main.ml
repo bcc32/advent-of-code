@@ -94,9 +94,9 @@ let deduce foods =
   let ingredients_definitely_not_containing_allergens =
     List.map foods ~f:(fun food ->
       if List.for_all food.known_allergens ~f:(fun allergen ->
-        match Hashtbl.find deduced_allergens_to_ingredients allergen with
-        | Some ingredient -> List.mem food.ingredients ingredient ~equal:String.equal
-        | None -> false)
+           match Hashtbl.find deduced_allergens_to_ingredients allergen with
+           | Some ingredient -> List.mem food.ingredients ingredient ~equal:String.equal
+           | None -> false)
       then
         Set.diff
           (String.Set.of_list food.ingredients)

@@ -30,9 +30,7 @@ module Input = struct
     input
     |> lines
     |> List.map ~f:(fun line ->
-      Re.all re line
-      |> List.map ~f:(Fn.flip Re.Group.get 0)
-      |> List.map ~f:Dir.of_string)
+      Re.all re line |> List.map ~f:(Fn.flip Re.Group.get 0) |> List.map ~f:Dir.of_string)
   ;;
 
   let t : t Lazy_deferred.t =
@@ -56,7 +54,7 @@ module Coord = struct
       A B
      C D E
       F G
-        v} *)
+     v} *)
   let incr { x; ne } (dir : Dir.t) =
     match dir with
     | E -> { x = x + 1; ne }

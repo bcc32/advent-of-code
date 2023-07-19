@@ -23,7 +23,7 @@ module Def = struct
         (let+ digits = take_while1 Char.is_digit in
          Const (Int.of_string digits))
         <|> let+ name = take_while1 Char.is_alpha in
-        Alias name
+            Alias name
       in
       let unop =
         let+ prim = string "NOT " *> prim_parser in
@@ -47,7 +47,7 @@ module Def = struct
         def
         (string " -> "
          *> let+ name = take_while1 Char.is_alpha in
-         name)
+            name)
         ~f:(fun def name -> name, def)
     in
     fun string ->

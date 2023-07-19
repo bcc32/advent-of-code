@@ -127,8 +127,7 @@ module Rule = struct
                 |> List.concat_map ~f:(fun so_far ->
                   match next with
                   | Error _ -> []
-                  | Ok next ->
-                    Set.to_list next |> List.map ~f:(fun next -> so_far ^ next))
+                  | Ok next -> Set.to_list next |> List.map ~f:(fun next -> so_far ^ next))
                 |> String.Set.of_list))
             |> String.Set.union_list
             |> Ok)

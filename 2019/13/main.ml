@@ -120,9 +120,7 @@ let term_image ~tiles ~score =
       in
       Notty.I.tabulate (maxx + 1) (maxy + 1) (fun x y ->
         let char =
-          Hashtbl.find tiles { x; y }
-          |> Option.value ~default:Tile.Empty
-          |> Tile.to_char
+          Hashtbl.find tiles { x; y } |> Option.value ~default:Tile.Empty |> Tile.to_char
         in
         Notty.I.char Notty.A.empty char 1 1))
   in

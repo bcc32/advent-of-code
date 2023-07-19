@@ -46,8 +46,8 @@ let do_round grid =
       for j = col - 1 to col + 1 do
         let neighbor = Coord.RC.create ~row:i ~col:j in
         if (not ([%equal: Coord.RC.t] cell neighbor))
-        && grid.?(neighbor)
-        && State.is_occupied grid.%(neighbor)
+           && grid.?(neighbor)
+           && State.is_occupied grid.%(neighbor)
         then incr num_occupied
       done
     done;

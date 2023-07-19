@@ -25,14 +25,14 @@ let parse_line =
       *> let* num =
            let+ digits = take_while1 Char.is_digit in
            Int.of_string digits
-      in
-      return (name, num)
+         in
+         return (name, num)
     in
     string "Sue "
     *> let* index = take_while1 Char.is_digit >>| Int.of_string in
-    string ": "
-    *> let* things = sep_by1 (string ", ") thing in
-    return (index, things)
+       string ": "
+       *> let* things = sep_by1 (string ", ") thing in
+          return (index, things)
   in
   fun line ->
     Angstrom.parse_string parser line ~consume:All

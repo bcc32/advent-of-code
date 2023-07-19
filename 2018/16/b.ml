@@ -43,8 +43,8 @@ let main () =
         [%equal: int array] memory after)
     in
     opint_to_opcode.(insn.opcode)
-    <- List.filter opint_to_opcode.(insn.opcode) ~f:(fun opcode ->
-      List.mem could_be_these_opcodes opcode ~equal:[%compare.equal: Insn.Opcode.t]));
+      <- List.filter opint_to_opcode.(insn.opcode) ~f:(fun opcode ->
+           List.mem could_be_these_opcodes opcode ~equal:[%compare.equal: Insn.Opcode.t]));
   while
     Array.exists opint_to_opcode ~f:(function
       | [] | [ _ ] -> false

@@ -30,7 +30,8 @@ module Input = struct
 end
 
 let discrete_log x =
-  Sequence.unfold_step ~init:1 ~f:(fun product -> Yield (product, product * g % modulus))
+  Sequence.unfold_step ~init:1 ~f:(fun product ->
+    Yield { value = product; state = product * g % modulus })
   |> Sequence.findi ~f:(fun _ x' -> x = x')
   |> Option.value_exn
   |> fst

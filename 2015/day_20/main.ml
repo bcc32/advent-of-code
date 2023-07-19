@@ -8,7 +8,9 @@ let input =
 ;;
 
 let whole_numbers_with_divisors =
-  let whole = Sequence.unfold_step ~init:1 ~f:(fun n -> Yield (n, n + 1)) in
+  let whole =
+    Sequence.unfold_step ~init:1 ~f:(fun n -> Yield { value = n; state = n + 1 })
+  in
   whole
   |> Sequence.map ~f:(fun n ->
     ( n

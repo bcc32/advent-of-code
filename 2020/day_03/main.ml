@@ -23,8 +23,8 @@ let count_trees grid ~slope:(r, d) =
   while grid.?(!coord) do
     if Char.equal '#' grid.%(!coord) then incr trees;
     coord
-    := Coord.RC.update !coord ~f:(fun { x = row; y = col } ->
-      { x = row + d; y = (col + r) % Grid.width grid })
+      := Coord.RC.update !coord ~f:(fun { x = row; y = col } ->
+           { x = row + d; y = (col + r) % Grid.width grid })
   done;
   !trees
 ;;

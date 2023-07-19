@@ -63,7 +63,8 @@ let analyze events =
   and perform_shift events shifts ~guard_id =
     match events with
     | { event = Sleep; minute = sleep_minute }
-      :: { event = Wake; minute = wake_minute } :: events ->
+      :: { event = Wake; minute = wake_minute }
+      :: events ->
       let minutes_asleep = sleep_minute, wake_minute in
       perform_shift events ((guard_id, minutes_asleep) :: shifts) ~guard_id
     | { event = Begin_shift _; minute = _ } :: _ as events -> begin_shift events shifts

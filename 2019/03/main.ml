@@ -11,8 +11,7 @@ let follow path =
     for _ = 1 to n do
       incr c;
       Robot.step_dir robot ~dir;
-      ignore
-        (Hashtbl.add points ~key:(Robot.loc robot) ~data:!c : [ `Duplicate | `Ok ])
+      ignore (Hashtbl.add points ~key:(Robot.loc robot) ~data:!c : [ `Duplicate | `Ok ])
     done);
   points
 ;;

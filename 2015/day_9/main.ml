@@ -35,7 +35,7 @@ let next_permutation array ~compare =
       if pos >= Array.length array
       then arg
       else if compare array.(pos) current_min < 0
-           && compare array.(pos) array.(to_increase) > 0
+              && compare array.(pos) array.(to_increase) > 0
       then find_next_largest (pos + 1) array.(pos) pos
       else find_next_largest (pos + 1) current_min arg
     in

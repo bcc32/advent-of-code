@@ -93,14 +93,14 @@ let maybe_turn tracks (cart : Cart.t) =
     cart.turn <- Turn.succ cart.turn
   | '\\' ->
     cart.dir
-    <- (match cart.dir with
-      | Up | Down -> Dir.anticlockwise cart.dir
-      | Left | Right -> Dir.clockwise cart.dir)
+      <- (match cart.dir with
+          | Up | Down -> Dir.anticlockwise cart.dir
+          | Left | Right -> Dir.clockwise cart.dir)
   | '/' ->
     cart.dir
-    <- (match cart.dir with
-      | Up | Down -> Dir.clockwise cart.dir
-      | Left | Right -> Dir.anticlockwise cart.dir)
+      <- (match cart.dir with
+          | Up | Down -> Dir.clockwise cart.dir
+          | Left | Right -> Dir.anticlockwise cart.dir)
   | _ -> assert false
 ;;
 

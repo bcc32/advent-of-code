@@ -48,8 +48,8 @@ let move cups ~turns =
       let rec loop candidate =
         let candidate = if candidate < 1 then max_elt else candidate in
         if candidate = Doubly_linked.Elt.value c1
-        || candidate = Doubly_linked.Elt.value c2
-        || candidate = Doubly_linked.Elt.value c3
+           || candidate = Doubly_linked.Elt.value c2
+           || candidate = Doubly_linked.Elt.value c3
         then loop (candidate - 1)
         else candidate
       in

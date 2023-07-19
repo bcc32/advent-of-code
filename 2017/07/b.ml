@@ -32,8 +32,8 @@ let () =
           ( word
           , weight
           , match String.split line ~on:'>' with
-          | [ _; rhs ] -> rhs |> String.split ~on:',' |> List.map ~f:String.strip
-          | _ -> [] )))
+            | [ _; rhs ] -> rhs |> String.split ~on:',' |> List.map ~f:String.strip
+            | _ -> [] )))
   in
   List.iter lines ~f:(fun (_, _, words) ->
     let weights = List.map words ~f:(fun w -> weight w lines) in

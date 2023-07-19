@@ -24,20 +24,20 @@ let () =
   in
   In_channel.read_lines "aoc.in"
   |> List.iteri ~f:(fun i line ->
-       let g = Re.exec re line in
-       let from = Re.Group.get g 1 in
-       let flow = Re.Group.get g 2 |> Int.of_string in
-       let to_ = Re.Group.get g 3 |> Re.split commas in
-       Hashtbl.add_exn tunnels ~key:from ~data:to_;
-       Hashtbl.add_exn flows ~key:from ~data:flow;
-       Hashtbl.add_exn node_indexes ~key:from ~data:i)
+    let g = Re.exec re line in
+    let from = Re.Group.get g 1 in
+    let flow = Re.Group.get g 2 |> Int.of_string in
+    let to_ = Re.Group.get g 3 |> Re.split commas in
+    Hashtbl.add_exn tunnels ~key:from ~data:to_;
+    Hashtbl.add_exn flows ~key:from ~data:flow;
+    Hashtbl.add_exn node_indexes ~key:from ~data:i)
 ;;
 
 let tunnels =
   tunnels
   |> Hashtbl.to_alist
   |> List.map ~f:(fun (k, d) ->
-       Hashtbl.find_exn node_indexes k, List.map d ~f:(Hashtbl.find_exn node_indexes))
+    Hashtbl.find_exn node_indexes k, List.map d ~f:(Hashtbl.find_exn node_indexes))
   |> Int.Table.of_alist_exn
 ;;
 
@@ -104,11 +104,11 @@ let dijkstra start =
       Hashtbl.iteri scores ~f:(fun ~key:state ~data:score ->
         State.neighbors state ~minutes_left_after_step
         |> List.iter ~f:(fun (added_score, neighbor) ->
-             match Hashtbl.find new_scores neighbor with
-             | None -> Hashtbl.set new_scores ~key:neighbor ~data:(added_score + score)
-             | Some s when added_score + score > s ->
-               Hashtbl.set new_scores ~key:neighbor ~data:(added_score + score)
-             | _ -> ()));
+          match Hashtbl.find new_scores neighbor with
+          | None -> Hashtbl.set new_scores ~key:neighbor ~data:(added_score + score)
+          | Some s when added_score + score > s ->
+            Hashtbl.set new_scores ~key:neighbor ~data:(added_score + score)
+          | _ -> ()));
       loop (minutes_left_after_step - 1) new_scores)
   in
   loop 25 (Hashtbl.of_alist_exn (module State) [ start, 0 ])

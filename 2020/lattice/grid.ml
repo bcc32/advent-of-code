@@ -23,10 +23,7 @@ end = struct
       let width = Array.length t.(0) in
       [%test_pred: int] Int.is_positive width;
       Array.iteri t ~f:(fun i row ->
-        [%test_result: int]
-          (Array.length row)
-          ~expect:width
-          ~message:(sprintf "row %d" i));
+        [%test_result: int] (Array.length row) ~expect:width ~message:(sprintf "row %d" i));
       Array.iter t ~f:(Array.iter ~f:invariant_a))
   ;;
 

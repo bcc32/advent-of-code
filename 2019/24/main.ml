@@ -18,7 +18,7 @@ module Bitmap = struct
         35 | 36 37 38 39 40 | 41
            +----------------+
         42   43 44 45 46 47   48
-       v}
+      v}
 
       Bits outside the border are always treated as zero, enforced by
       {!border_mask}.
@@ -224,7 +224,7 @@ module Position = struct
           KLMNO
           PQRST
           UVWXY
-         v} *)
+        v} *)
     module T = struct
       type t =
         | A

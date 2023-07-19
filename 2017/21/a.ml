@@ -95,18 +95,18 @@ let () =
     if Array.length !grid % 2 = 0
     then
       grid
-      := apply_rules
-           !grid
-           (List.filter rules ~f:(function
-              | Two _ -> true
-              | Three _ -> false))
+        := apply_rules
+             !grid
+             (List.filter rules ~f:(function
+               | Two _ -> true
+               | Three _ -> false))
     else
       grid
-      := apply_rules
-           !grid
-           (List.filter rules ~f:(function
-              | Two _ -> false
-              | Three _ -> true))
+        := apply_rules
+             !grid
+             (List.filter rules ~f:(function
+               | Two _ -> false
+               | Three _ -> true))
   done;
   (* Debug.eprint_s [%sexp (!grid : char array array)]; *)
   Array.sum

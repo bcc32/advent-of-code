@@ -43,8 +43,7 @@ let create ?(elf_attack_power = 3) lines =
       |> Array.mapi ~f:(fun y -> function
         | '.' -> Square.Open
         | '#' -> Wall
-        | 'E' ->
-          Unit (create_unit ~loc:{ x; y } ~team:Elf ~attack_power:elf_attack_power)
+        | 'E' -> Unit (create_unit ~loc:{ x; y } ~team:Elf ~attack_power:elf_attack_power)
         | 'G' -> Unit (create_unit ~loc:{ x; y } ~team:Goblin ~attack_power:3)
         | char -> raise_s [%message "Unrecognized grid char" ~_:(char : char)]))
   in

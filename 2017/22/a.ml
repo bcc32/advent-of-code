@@ -9,9 +9,7 @@ let () =
     In_channel.with_file (Sys.get_argv ()).(1) ~f:In_channel.input_lines |> List.to_array
   in
   Array.iteri input ~f:(fun i x ->
-    x
-    |> String.to_list
-    |> List.iteri ~f:(fun j y -> Hashtbl.set map ~key:(i, j) ~data:y));
+    x |> String.to_list |> List.iteri ~f:(fun j y -> Hashtbl.set map ~key:(i, j) ~data:y));
   let n = Array.length input / 2 in
   let x = ref n in
   let y = ref n in

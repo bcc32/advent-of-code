@@ -42,36 +42,36 @@ module Instruction = struct
     let hlf =
       string "hlf "
       *> let+ register = register in
-      Half { register }
+         Half { register }
     in
     let tpl =
       string "tpl "
       *> let+ register = register in
-      Triple { register }
+         Triple { register }
     in
     let inc =
       string "inc "
       *> let+ register = register in
-      Increment { register }
+         Increment { register }
     in
     let jmp =
       string "jmp "
       *> let+ offset = offset in
-      Jump { offset }
+         Jump { offset }
     in
     let jie =
       string "jie "
       *> let* register = register in
-      string ", "
-      *> let+ offset = offset in
-      Jump_if_even { register; offset }
+         string ", "
+         *> let+ offset = offset in
+            Jump_if_even { register; offset }
     in
     let jio =
       string "jio "
       *> let* register = register in
-      string ", "
-      *> let+ offset = offset in
-      Jump_if_one { register; offset }
+         string ", "
+         *> let+ offset = offset in
+            Jump_if_one { register; offset }
     in
     choice [ hlf; tpl; inc; jmp; jie; jio ]
   ;;

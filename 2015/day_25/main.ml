@@ -3,13 +3,14 @@ open! Async
 open! Import
 
 let codes =
-  Sequence.unfold_step ~init:20151125 ~f:(fun n -> Yield (n, n * 252533 % 33554393))
+  Sequence.unfold_step ~init:20151125 ~f:(fun n ->
+    Yield { value = n; state = n * 252533 % 33554393 })
 ;;
 
 let places =
   Sequence.unfold_step ~init:(1, 1) ~f:(fun ((row, col) as cur) ->
     let next = if row = 1 then col + 1, 1 else row - 1, col + 1 in
-    Yield (cur, next))
+    Yield { value = cur; state = next })
 ;;
 
 let grid = Sequence.zip codes places

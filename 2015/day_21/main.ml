@@ -80,14 +80,15 @@ let iter_equipment ~f =
     List.iter armors ~f:(fun (armor_cost, armor_armor) ->
       iter_combo2
         rings
-        ~f:(fun
-             (ring1_cost, ring1_damage, ring1_armor)
-             (ring2_cost, ring2_damage, ring2_armor)
-             ->
-               let cost = weapon_cost + armor_cost + ring1_cost + ring2_cost in
-               let dmg = weapon_damage + ring1_damage + ring2_damage in
-               let armor = armor_armor + ring1_armor + ring2_armor in
-               f ~cost ~stats:(Stats.create ~hp:100 ~dmg ~armor))))
+        ~f:
+          (fun
+            (ring1_cost, ring1_damage, ring1_armor)
+            (ring2_cost, ring2_damage, ring2_armor)
+          ->
+          let cost = weapon_cost + armor_cost + ring1_cost + ring2_cost in
+          let dmg = weapon_damage + ring1_damage + ring2_damage in
+          let armor = armor_armor + ring1_armor + ring2_armor in
+          f ~cost ~stats:(Stats.create ~hp:100 ~dmg ~armor))))
 ;;
 
 let a () =

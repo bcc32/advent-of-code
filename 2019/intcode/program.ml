@@ -224,8 +224,7 @@ module Async = struct
         | Done -> return (`Finished ())
         | Need_input ->
           (match%map Pipe.read' input_r with
-           | `Eof ->
-             raise_s [%message "Program.Async.run: Program received EOF on input"]
+           | `Eof -> raise_s [%message "Program.Async.run: Program received EOF on input"]
            | `Ok queue ->
              Sync.provide_input' t ~from:queue;
              `Repeat ())

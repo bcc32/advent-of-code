@@ -117,8 +117,8 @@ let b () =
   let scan =
     Memo.general
       (fun (x, y) ->
-         Program.restore program ~from:snapshot;
-         scan x y ~program <> 0)
+        Program.restore program ~from:snapshot;
+        scan x y ~program <> 0)
       ~hashable:
         (Hashtbl.Hashable.of_key
            (module struct

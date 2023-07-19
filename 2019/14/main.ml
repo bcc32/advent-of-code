@@ -61,8 +61,8 @@ let ore_cost ~how_much_fuel ~(how_to_make : Reaction.t String.Table.t) =
   let want_to_make = String.Table.of_alist_exn [ "FUEL", how_much_fuel ] in
   List.iter
     (List.filter nodes ~f:(function
-       | "ORE" -> false
-       | _ -> true))
+      | "ORE" -> false
+      | _ -> true))
     ~f:(fun need ->
       if debug then Debug.eprint_s [%message (want_to_make : (string, int) Hashtbl.t)];
       let need_amt = Hashtbl.find_and_remove want_to_make need |> Option.value_exn in

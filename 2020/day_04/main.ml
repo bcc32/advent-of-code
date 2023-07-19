@@ -27,11 +27,11 @@ let required_fields =
   ; ( "hgt"
     , seq [ group (rep digit); group (alt [ str "cm"; str "in" ]) ]
     , fun x ->
-      let y = Int.of_string x.(1) in
-      match x.(2) with
-      | "cm" -> Int.between y ~low:150 ~high:193
-      | "in" -> Int.between y ~low:59 ~high:76
-      | _ -> assert false )
+        let y = Int.of_string x.(1) in
+        match x.(2) with
+        | "cm" -> Int.between y ~low:150 ~high:193
+        | "in" -> Int.between y ~low:59 ~high:76
+        | _ -> assert false )
   ; ( "hcl"
     , seq [ char '#'; repn (alt [ rg '0' '9'; rg 'a' 'f' ]) 6 (Some 6) ]
     , fun _ -> true )

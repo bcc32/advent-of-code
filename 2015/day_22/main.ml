@@ -86,8 +86,7 @@ module Stats = struct
           effects =
             Map.change t.effects effect ~f:(function
               | None -> assert false
-              | Some ticks_left ->
-                if ticks_left = 1 then None else Some (ticks_left - 1))
+              | Some ticks_left -> if ticks_left = 1 then None else Some (ticks_left - 1))
         }
       in
       match effect with

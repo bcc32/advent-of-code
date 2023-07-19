@@ -46,10 +46,10 @@ module type Dir = sig
 
   module Eight :
     S0
-    with type t =
-           [ nesw
-           | diag
-           ]
+      with type t =
+        [ nesw
+        | diag
+        ]
 
   type 'dir_type t =
     | Four : Four.t -> Four.t t

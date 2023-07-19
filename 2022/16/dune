@@ -1,3 +1,5 @@
-(executables (names sol)
-(libraries core re)
-(preprocess (pps ppx_jane)))
+(executables
+ (names sol)
+ (libraries core re)
+ (preprocess
+  (pps ppx_jane)))

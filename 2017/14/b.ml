@@ -5,11 +5,11 @@ let visited = T.Hash_set.create ()
 
 let rec dfs array i j =
   if i >= 0
-  && i < 128
-  && j >= 0
-  && j < 128
-  && array.(i).(j)
-  && not (Hash_set.mem visited (i, j))
+     && i < 128
+     && j >= 0
+     && j < 128
+     && array.(i).(j)
+     && not (Hash_set.mem visited (i, j))
   then (
     Hash_set.add visited (i, j);
     dfs array i (j - 1);

@@ -124,8 +124,7 @@ module Input = struct
       | hd :: tl ->
         let tile_number = Scanf.sscanf hd "Tile %d:" (fun n -> n) in
         let grid =
-          Grid.of_matrix_exn
-            (Array.of_list_map ~f:(fun line -> String.to_array line) tl)
+          Grid.of_matrix_exn (Array.of_list_map ~f:(fun line -> String.to_array line) tl)
         in
         tile_number, Tile.all_rotations grid
       | [] -> failwith "parse")
@@ -234,7 +233,7 @@ let sea_monster =
 let is_subgrid_at grid ~subgrid ~row ~col =
   let open Grid.O in
   if row + Grid.height subgrid > Grid.height grid
-  || col + Grid.width subgrid > Grid.width grid
+     || col + Grid.width subgrid > Grid.width grid
   then false
   else
     Grid.Lines.rows subgrid `Top_to_bottom `Left_to_right

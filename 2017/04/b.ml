@@ -9,9 +9,7 @@ let () =
   List.count passphrases ~f:(fun phrase ->
     phrase
     |> List.map ~f:(fun string ->
-      String.to_list string
-      |> List.sort ~compare:Char.compare
-      |> String.of_char_list)
+      String.to_list string |> List.sort ~compare:Char.compare |> String.of_char_list)
     |> List.find_a_dup ~compare:String.compare
     |> Option.is_none)
   |> printf "%d\n"

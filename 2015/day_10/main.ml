@@ -21,7 +21,7 @@ let rle seq ~equal =
 let look_and_say s =
   let buf = Buffer.create 16 in
   Sequence.iter
-    (rle (Sequence.of_seq (Caml.String.to_seq s)) ~equal:Char.equal)
+    (rle (Sequence.of_seq (Stdlib.String.to_seq s)) ~equal:Char.equal)
     ~f:(fun (char, count) -> bprintf buf "%d%c" count char);
   Buffer.contents buf
 ;;

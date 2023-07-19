@@ -65,11 +65,11 @@ let node_list t =
 ;;
 
 let dijkstra
-      (type node)
-      (module Key : Hashtbl.Key_plain with type t = node)
-      ~outgoing_edges
-      ~start
-      ~is_end
+  (type node)
+  (module Key : Hashtbl.Key_plain with type t = node)
+  ~outgoing_edges
+  ~start
+  ~is_end
   =
   let module HH = Hash_heap.Make (Key) in
   let distance = Hashtbl.create (module Key) in
