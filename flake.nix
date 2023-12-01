@@ -23,6 +23,8 @@
             ocamlformat
             ocamlPackages.ocp-indent
             ocamlPackages.utop
+
+            ruby
           ];
         };
 
