@@ -49,8 +49,7 @@ The Advent of Code team requests[0] that the User-Agent string
 include your contact information.  This value will also be sent
 as the HTTP From header.
 
-[0]: https://www.reddit.com/r/adventofcode/comments/z9dhtd/please_include_your_contact_info_in_the_useragent/
-"
+[0]: https://www.reddit.com/r/adventofcode/comments/z9dhtd/please_include_your_contact_info_in_the_useragent/"
   :type 'string)
 
 (defun advent-of-code--request (day endpoint &rest rest)
@@ -58,7 +57,7 @@ as the HTTP From header.
 
 Pass REST to `request'."
   (unless advent-of-code-email
-    (user-error "`advent-of-code-email' is unset; refusing to send automated requests."))
+    (user-error "`advent-of-code-email' is unset; refusing to send automated requests"))
   (let ((url (format "https://adventofcode.com/%d/day/%d/%s"
                      advent-of-code-year day endpoint))
         (request--curl-cookie-jar advent-of-code-cookie-jar))
@@ -78,9 +77,8 @@ Pass REST to `request'."
 
 (define-key advent-of-code-input-mode-map (kbd "C-c C-c") 'advent-of-code-input-revert-to-real)
 
-(defvar advent-of-code--problem-number nil
+(defvar-local advent-of-code--problem-number nil
   "The problem number associated with this buffer.")
-(make-variable-buffer-local 'advent-of-code--problem-number)
 
 ;; FIXME: call this first
 (defun advent-of-code--problem-number ()
@@ -92,7 +90,7 @@ Pass REST to `request'."
                               (number-to-string (nth 3 (decode-time))))))))
 
 (defun advent-of-code--check-cookie-jar-set-and-exists-p ()
-  "Check that `advent-of-code-cookie-jar' is non-nil and points to an existing file."
+  "Check that `advent-of-code-cookie-jar' is set and points to an existing file."
   (unless (and advent-of-code-cookie-jar (file-exists-p advent-of-code-cookie-jar))
     (user-error "You must set `advent-of-code-cookie-jar' before calling this function")))
 
@@ -139,7 +137,7 @@ Pass REST to `request'."
   (pcase tree
     ((pred stringp) (princ tree))
     (`(,(or 'comment 'script) . ,_))
-    (`(,tag ,_ . ,children)
+    (`(,_tag ,_ . ,children)
      (seq-doseq (child children)
        (advent-of-code--html-print-inner-text child)))))
 
