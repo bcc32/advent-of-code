@@ -1,4 +1,4 @@
-;;; advent-of-code.el --- Useful shortcuts for Advent of Code
+;;; advent-of-code.el --- Useful shortcuts for Advent of Code  -*- lexical-binding: t; -*-
 ;;
 ;; Version: 0.1.0
 ;; Homepage: https://github.com/bcc32/advent-of-code.el
