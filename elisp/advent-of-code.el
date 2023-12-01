@@ -79,6 +79,7 @@ Pass REST to `request'."
 
 (defvar-local advent-of-code--problem-number nil
   "The problem number associated with this buffer.")
+(put 'advent-of-code--problem-number 'permanent-local t)
 
 ;; FIXME: call this first
 (defun advent-of-code--problem-number ()
