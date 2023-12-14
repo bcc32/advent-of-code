@@ -73,7 +73,8 @@ Pass REST to `request'."
   "AoC Input"
   "Mode for problem input buffers."
   :group 'advent-of-code
-  (auto-revert-mode))
+  (auto-revert-mode)
+  (advent-of-code--problem-number))
 
 (define-key advent-of-code-input-mode-map (kbd "C-c C-c") 'advent-of-code-input-revert-to-real)
 
@@ -81,7 +82,6 @@ Pass REST to `request'."
   "The problem number associated with this buffer.")
 (put 'advent-of-code--problem-number 'permanent-local t)
 
-;; FIXME: call this first
 (defun advent-of-code--problem-number ()
   "Return the value of `advent-of-code--problem-number', prompting if nil."
   (or advent-of-code--problem-number
@@ -125,6 +125,7 @@ Pass REST to `request'."
   "Mode for solution output buffers."
   :group 'advent-of-code
   (auto-revert-mode)
+  (advent-of-code--problem-number)
   (add-hook 'after-revert-hook 'advent-of-code-copy-buffer-contents-to-clipboard))
 
 ;;;###autoload
