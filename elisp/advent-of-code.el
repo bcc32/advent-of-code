@@ -99,19 +99,21 @@ Pass REST to `request'."
   "Revert the current input buffer to the real input for this problem."
   (interactive)
   (advent-of-code--check-cookie-jar-set-and-exists-p)
-  (advent-of-code--request
-   (advent-of-code--problem-number) "input"
-   :type "GET"
-   :parser #'buffer-string
-   :success (cl-function
+  (let ((input-buffer (current-buffer)))
+    (advent-of-code--request
+     (advent-of-code--problem-number) "input"
+     :type "GET"
+     :parser #'buffer-string
+     :success (cl-function
+               (lambda (&key data &allow-other-keys)
+                 (with-current-buffer input-buffer
+                   (delete-region (point-min) (point-max))
+                   (insert data)
+                   (save-buffer))))
+     :error (cl-function
              (lambda (&key data &allow-other-keys)
-               (delete-region (point-min) (point-max))
-               (insert data)
-               (save-buffer)))
-   :error (cl-function
-           (lambda (&key data &allow-other-keys)
-             (display-message-or-buffer
-              (format-message "Failed to fetch input: %s" data))))))
+               (display-message-or-buffer
+                (format-message "Failed to fetch input: %s" data)))))))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist
