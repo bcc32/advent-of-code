@@ -83,12 +83,15 @@ Pass REST to `request'."
 (put 'advent-of-code--problem-number 'permanent-local t)
 
 (defun advent-of-code--problem-number ()
-  "Return the value of `advent-of-code--problem-number', prompting if nil."
+  "Return the value of `advent-of-code--problem-number', prompting if nil.
+
+Defaults to the day after today, assuming the file is opened
+shortly before midnight."
   (or advent-of-code--problem-number
       (setq advent-of-code--problem-number
             (string-to-number
              (completing-read "Problem number: " nil nil nil nil nil
-                              (number-to-string (nth 3 (decode-time))))))))
+                              (number-to-string (1+ (nth 3 (decode-time)))))))))
 
 (defun advent-of-code--check-cookie-jar-set-and-exists-p ()
   "Check that `advent-of-code-cookie-jar' is set and points to an existing file."
