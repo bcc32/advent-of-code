@@ -91,7 +91,11 @@ shortly before midnight."
       (setq advent-of-code--problem-number
             (string-to-number
              (completing-read "Problem number: " nil nil nil nil nil
-                              (number-to-string (1+ (nth 3 (decode-time)))))))))
+                              (number-to-string
+                               (string-to-number
+                                (file-name-base
+                                 (directory-file-name
+                                  (file-name-directory buffer-file-name))))))))))
 
 (defun advent-of-code--check-cookie-jar-set-and-exists-p ()
   "Check that `advent-of-code-cookie-jar' is set and points to an existing file."
