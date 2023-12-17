@@ -11,11 +11,14 @@ def dijkstra(grid)
   heat_lost = {}
   q = [[0, 0, 'X']]
   heat_lost[q[0]] = 0
+  visited = Set.new
   until q.empty?
     i = q.min_by { |x| heat_lost[x] }
     orig_x, orig_y, dir = q.delete(i)
-    if heat_lost.size % 1024 == 0
-      # p heat_lost.size
+    next if visited.include?([orig_x, orig_y, dir])
+    visited << [orig_x, orig_y, dir]
+    if visited.size % 1024 == 0
+      # p visited.size
     end
     hl = heat_lost[[orig_x, orig_y, dir]]
 
