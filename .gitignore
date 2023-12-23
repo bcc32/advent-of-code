@@ -30,3 +30,12 @@ _opam/
 
 # Cookie Jar
 cookies.txt
+
+# Inputs and outputs
+# TODO: Standardize naming
+aoc.in
+aoc.out
+input
+input1
+input2
+input.txt
