@@ -1,8 +1,0 @@
-(library
- (name year2020_day_10_solution)
- (libraries async bignum core expect_test_helpers_async
-   expect_test_helpers_core re topological_sort)
- (inline_tests
-  (deps input.txt))
- (preprocess
-  (pps ppx_jane)))

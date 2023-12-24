@@ -1,0 +1,7 @@
+(library
+ (name year2020_day_4_solution)
+ (libraries async bignum core expect_test_helpers_core re topological_sort)
+ (inline_tests
+  (deps aoc.in))
+ (preprocess
+  (pps ppx_jane)))
