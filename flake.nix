@@ -16,15 +16,16 @@
           overlays = [ ocaml-overlays.overlays.default ];
         };
       in with pkgs; rec {
-        devShells.default = mkShell {
+        devShells.default =
+          mkShell { inputsFrom = [ devShells.ocaml devShells.ruby ]; };
+
+        devShells.ocaml = mkShell {
           inputsFrom = [ packages.default ];
           buildInputs = lib.optional stdenv.isLinux inotify-tools ++ [
             ocamlPackages.merlin
             ocamlformat
             ocamlPackages.ocp-indent
             ocamlPackages.utop
-
-            ruby
           ];
         };
 
