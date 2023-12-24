@@ -1,0 +1,8 @@
+(library
+ (name year2015_day_12_solution)
+ (libraries angstrom async bignum core expect_test_helpers_async re
+   topological_sort yojson)
+ (inline_tests
+  (deps aoc.in))
+ (preprocess
+  (pps ppx_jane)))
