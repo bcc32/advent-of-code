@@ -3,7 +3,7 @@ open! Async
 open! Import
 
 let main () =
-  let%bind input = Reader.file_contents "input" >>| Int.of_string in
+  let%bind input = Reader.file_contents "aoc.in" >>| String.strip >>| Int.of_string in
   let length = String.length (Int.to_string input) in
   let ds = Cocoa.make_sequence () in
   let prefix, ds = Sequence.split_n ds length in

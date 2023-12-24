@@ -4,7 +4,7 @@ open! Import
 
 let main () =
   let%bind claims =
-    Reader.with_file "input" ~f:(fun r ->
+    Reader.with_file "aoc.in" ~f:(fun r ->
       r |> Reader.lines |> Pipe.map ~f:Claim.of_string |> Pipe.to_list)
   in
   let claims_by_square = Hashtbl.create (module Tuple.Hashable_t (Int) (Int)) in

@@ -9,7 +9,7 @@ end
 type t = Track.t option array array
 
 let read () =
-  Reader.file_lines "input"
+  Reader.file_lines "aoc.in"
   >>| Array.of_list_map ~f:(fun row ->
     String.to_array row
     |> Array.map ~f:(function

@@ -6,8 +6,8 @@ type t = int * int
 
 let grid_serial_number =
   Lazy_deferred.create (fun () ->
-    let%map contents = Reader.file_contents "input" in
-    Int.of_string contents)
+    let%map contents = Reader.file_contents "aoc.in" in
+    contents |> String.strip |> Int.of_string)
 ;;
 
 let power (x, y) =

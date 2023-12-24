@@ -4,7 +4,7 @@ open! Import
 
 let main () =
   let%bind points =
-    Reader.with_file "input" ~f:(fun r ->
+    Reader.with_file "aoc.in" ~f:(fun r ->
       r |> Reader.lines |> Pipe.map ~f:Point.of_string |> Pipe.to_list)
   in
   let points =

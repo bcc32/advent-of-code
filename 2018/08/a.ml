@@ -4,7 +4,7 @@ open! Import
 
 let main () =
   let%bind nums =
-    Reader.file_contents "input"
+    Reader.file_contents "aoc.in"
     >>| String.strip
     >>| String.split ~on:' '
     >>| List.map ~f:Int.of_string

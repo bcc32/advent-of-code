@@ -19,7 +19,7 @@ let common a b =
 
 let main () =
   let%bind lines =
-    Reader.with_file "input" ~f:(fun r -> Reader.lines r |> Pipe.to_list)
+    Reader.with_file "aoc.in" ~f:(fun r -> Reader.lines r |> Pipe.to_list)
   in
   (try
      List.iter lines ~f:(fun x ->

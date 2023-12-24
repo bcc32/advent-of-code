@@ -10,7 +10,7 @@ let count_letters s =
 
 let main () =
   let%bind two, three =
-    Reader.with_file "input" ~f:(fun r ->
+    Reader.with_file "aoc.in" ~f:(fun r ->
       Reader.lines r
       |> Pipe.fold_without_pushback ~init:(0, 0) ~f:(fun (two, three) line ->
         let counts = count_letters line in

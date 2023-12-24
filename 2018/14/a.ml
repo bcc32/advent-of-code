@@ -3,7 +3,7 @@ open! Async
 open! Import
 
 let main () =
-  let%bind input = Reader.file_contents "input" >>| Int.of_string in
+  let%bind input = Reader.file_contents "aoc.in" >>| String.strip >>| Int.of_string in
   let cocoa = Cocoa.create () in
   while Cocoa.length cocoa < input + 10 do
     Cocoa.make_more cocoa

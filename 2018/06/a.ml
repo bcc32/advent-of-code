@@ -7,7 +7,7 @@ let dist (x, y) (x', y') = Int.abs (x - x') + Int.abs (y - y')
 
 let main () =
   let%bind points =
-    Reader.with_file "input" ~f:(fun r ->
+    Reader.with_file "aoc.in" ~f:(fun r ->
       r
       |> Reader.lines
       |> Pipe.map ~f:(fun line ->

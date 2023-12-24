@@ -8,7 +8,7 @@ let max_dist = 10_000
 
 let main () =
   let%bind points =
-    Reader.with_file "input" ~f:(fun r ->
+    Reader.with_file "aoc.in" ~f:(fun r ->
       r
       |> Reader.lines
       |> Pipe.map ~f:(fun line ->

@@ -4,7 +4,7 @@ open! Import
 
 let main () =
   let%bind deltas =
-    Reader.with_file "input" ~f:(fun r ->
+    Reader.with_file "aoc.in" ~f:(fun r ->
       Reader.lines r |> Pipe.map ~f:Int.of_string |> Pipe.to_list)
   in
   Sequence.cycle_list_exn deltas

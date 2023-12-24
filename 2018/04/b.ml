@@ -4,7 +4,7 @@ open! Import
 
 let main () =
   let%bind events =
-    Reader.with_file "input" ~f:(fun r -> r |> Reader.lines |> Pipe.to_list)
+    Reader.with_file "aoc.in" ~f:(fun r -> r |> Reader.lines |> Pipe.to_list)
     (* times can be compared lexicographically *)
     >>| List.sort ~compare:String.compare
     >>| List.map ~f:Event.of_string

@@ -3,7 +3,7 @@ open! Async
 open! Import
 
 let main () =
-  Reader.with_file "input" ~f:(fun r ->
+  Reader.with_file "aoc.in" ~f:(fun r ->
     Reader.lines r
     |> Pipe.fold_without_pushback ~init:0 ~f:(fun acc line -> acc + Int.of_string line))
   >>| printf "%d\n"

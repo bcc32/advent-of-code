@@ -139,7 +139,7 @@ let lone_ranger t =
 let read () =
   let%bind tracks = Tracks.read () in
   let%bind grid =
-    Reader.file_lines "input" >>| Array.of_list_map ~f:(fun row -> String.to_array row)
+    Reader.file_lines "aoc.in" >>| Array.of_list_map ~f:(fun row -> String.to_array row)
   in
   let carts = Cart_heap.create Cart.compare in
   let occupied =

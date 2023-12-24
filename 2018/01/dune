@@ -4,5 +4,5 @@
  (preprocess
   (pps ppx_jane))
  (inline_tests
-  (deps input))
+  (deps aoc.in))
  (modules a b import))

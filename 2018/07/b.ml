@@ -4,7 +4,7 @@ open! Import
 
 let main () =
   let%bind steps =
-    Reader.with_file "input" ~f:(fun r ->
+    Reader.with_file "aoc.in" ~f:(fun r ->
       r |> Reader.lines |> Pipe.map ~f:Dep.of_string |> Pipe.to_list)
   in
   let time =

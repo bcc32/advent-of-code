@@ -24,7 +24,7 @@ let main input =
 ;;
 
 let%expect_test "a" =
-  let%bind lines = Reader.file_contents "input" in
+  let%bind lines = Reader.file_contents "aoc.in" in
   let%bind () = main lines in
   [%expect
     {|

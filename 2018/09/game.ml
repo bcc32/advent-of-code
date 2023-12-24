@@ -19,7 +19,7 @@ type t =
   }
 
 let get () =
-  let%bind str = Reader.file_contents "input" in
+  let%bind str = Reader.file_contents "aoc.in" in
   let g = Re.exec re str in
   let players = Re.Group.get g 1 |> Int.of_string in
   let last_marble = Re.Group.get g 2 |> Int.of_string in

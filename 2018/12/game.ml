@@ -9,7 +9,7 @@ type t =
 [@@deriving sexp_of]
 
 let read () =
-  let%bind contents = Reader.file_contents "input" in
+  let%bind contents = Reader.file_contents "aoc.in" in
   let lines = String.split_lines contents in
   let initial_state, lines =
     match lines with

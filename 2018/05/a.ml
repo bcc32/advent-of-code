@@ -3,7 +3,9 @@ open! Async
 open! Import
 
 let main () =
-  match%bind Reader.with_file "input" ~f:(fun r -> r |> Reader.lines |> Pipe.to_list) with
+  match%bind
+    Reader.with_file "aoc.in" ~f:(fun r -> r |> Reader.lines |> Pipe.to_list)
+  with
   | [ polymer ] ->
     let polymer = Polymer.react polymer in
     printf "%d\n" (String.length polymer);

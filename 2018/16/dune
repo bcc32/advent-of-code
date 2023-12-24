@@ -5,4 +5,4 @@
  (preprocess
   (pps ppx_jane))
  (inline_tests
-  (deps input1 input2)))
+  (deps aoc.in)))
