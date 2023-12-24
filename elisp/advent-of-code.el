@@ -118,7 +118,8 @@ shortly before midnight."
                  (with-current-buffer input-buffer
                    (delete-region (point-min) (point-max))
                    (insert data)
-                   (save-buffer))))
+                   (let ((before-save-hook))
+                     (basic-save-buffer)))))
      :error (cl-function
              (lambda (&key data &allow-other-keys)
                (display-message-or-buffer
