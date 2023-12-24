@@ -36,6 +36,8 @@
   "The year of the Advent of Code event.  Defaults to the current year."
   :type 'integer)
 
+(put 'advent-of-code-year 'safe-local-variable #'integerp)
+
 (defcustom advent-of-code-cookie-jar nil
   "File containing cookies for adventofcode.com.
 
