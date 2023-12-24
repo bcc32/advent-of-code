@@ -4,7 +4,7 @@ open! Import
 
 let limits () =
   let%map x, y =
-    Reader.file_contents "input" >>| String.strip >>| String.lsplit2_exn ~on:'-'
+    Reader.file_contents "aoc.in" >>| String.strip >>| String.lsplit2_exn ~on:'-'
   in
   Int.of_string x, Int.of_string y
 ;;

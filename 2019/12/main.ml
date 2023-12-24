@@ -43,7 +43,7 @@ module Moon = struct
 end
 
 let input () =
-  let%map lines = Reader.file_lines "input" in
+  let%map lines = Reader.file_lines "aoc.in" in
   List.map lines ~f:Moon.of_string
 ;;
 

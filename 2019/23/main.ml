@@ -3,7 +3,7 @@ open! Async
 open! Import
 open Intcode
 
-let input () = Reader.file_contents "input" >>| Program.of_string
+let input () = Reader.file_contents "aoc.in" >>| Program.of_string
 
 let step_output_exn program =
   match Program.Sync.step program with

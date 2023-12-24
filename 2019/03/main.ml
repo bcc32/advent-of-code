@@ -26,7 +26,7 @@ let parse_path path = path |> String.split ~on:',' |> List.map ~f:parse_path_par
 
 let points =
   Lazy_deferred.create (fun () ->
-    let%bind lines = Reader.file_lines "input" in
+    let%bind lines = Reader.file_lines "aoc.in" in
     let first = List.nth_exn lines 0 |> parse_path in
     let second = List.nth_exn lines 1 |> parse_path in
     return (follow first, follow second))

@@ -115,7 +115,7 @@ module Bitmap = struct
 end
 
 let input () =
-  let%map lines = Reader.file_lines "input" in
+  let%map lines = Reader.file_lines "aoc.in" in
   lines
   |> Array.of_list_map ~f:(fun line ->
     line

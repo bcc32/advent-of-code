@@ -38,7 +38,7 @@ let parse_line =
 ;;
 
 let input () =
-  let%map lines = Reader.file_lines "input" in
+  let%map lines = Reader.file_lines "aoc.in" in
   lines
   |> List.map ~f:parse_line
   |> String.Table.create_with_key_exn ~get_key:(fun (reaction : Reaction.t) ->

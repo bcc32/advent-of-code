@@ -4,7 +4,7 @@ open! Import
 open Intcode
 
 let debug = false
-let input () = Reader.file_contents "input" >>| Program.of_string
+let input () = Reader.file_contents "aoc.in" >>| Program.of_string
 
 let scan x y ~program =
   Program.Sync.provide_input program x;

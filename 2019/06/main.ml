@@ -2,7 +2,7 @@ open! Core
 open! Async
 open! Import
 
-let input () = Reader.file_lines "input" >>| List.map ~f:(String.lsplit2_exn ~on:')')
+let input () = Reader.file_lines "aoc.in" >>| List.map ~f:(String.lsplit2_exn ~on:')')
 
 let orbits pairs =
   let graph = Graph.of_edges (module String) pairs ~edge_kind:`Directed in

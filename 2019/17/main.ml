@@ -5,7 +5,7 @@ open Intcode
 open Program.Infix
 
 let debug = false
-let input () = Reader.file_contents "input" >>| Program.of_string
+let input () = Reader.file_contents "aoc.in" >>| Program.of_string
 
 let output program =
   (* FIXME: Replace match statements like these with the equivalent let-binding when

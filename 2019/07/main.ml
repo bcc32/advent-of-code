@@ -36,7 +36,7 @@ let try_setting snapshot a_setting b_setting c_setting d_setting e_setting =
 ;;
 
 let a () =
-  let%bind program = Reader.file_contents "input" >>| Program.of_string in
+  let%bind program = Reader.file_contents "aoc.in" >>| Program.of_string in
   let snapshot = Program.snapshot program in
   let%bind best =
     Sequence.range 0 99_999 ~stop:`inclusive
@@ -83,7 +83,7 @@ let try_setting snapshot a_setting b_setting c_setting d_setting e_setting =
 ;;
 
 let b () =
-  let%bind program = Reader.file_contents "input" >>| Program.of_string in
+  let%bind program = Reader.file_contents "aoc.in" >>| Program.of_string in
   let snapshot = Program.snapshot program in
   let%bind best =
     Sequence.range 0 99_999 ~stop:`inclusive

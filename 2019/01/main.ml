@@ -5,7 +5,7 @@ open! Import
 let fuel ~mass = (mass / 3) - 2
 
 let main () =
-  let%bind lines = Reader.file_lines "input" in
+  let%bind lines = Reader.file_lines "aoc.in" in
   lines
   |> List.map ~f:Int.of_string
   |> List.sum (module Int) ~f:(fun mass -> fuel ~mass)
@@ -25,7 +25,7 @@ let rec fuel ~mass =
 ;;
 
 let main () =
-  let%bind lines = Reader.file_lines "input" in
+  let%bind lines = Reader.file_lines "aoc.in" in
   lines
   |> List.map ~f:Int.of_string
   |> List.sum (module Int) ~f:(fun mass -> fuel ~mass)

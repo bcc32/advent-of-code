@@ -40,7 +40,7 @@ module Technique = struct
 end
 
 let input ~int_of_string =
-  let%map lines = Reader.file_lines "input" in
+  let%map lines = Reader.file_lines "aoc.in" in
   lines |> List.map ~f:(Technique.of_string ~int_of_string)
 ;;
 

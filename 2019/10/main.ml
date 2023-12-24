@@ -5,7 +5,7 @@ open! Import
 let debug = false
 
 let input () =
-  let%map lines = Reader.file_lines "input" in
+  let%map lines = Reader.file_lines "aoc.in" in
   lines |> Array.of_list_map ~f:String.to_array
 ;;
 

@@ -3,7 +3,7 @@ open! Async
 open! Import
 open Intcode
 
-let input () = Reader.file_contents "input" >>| Program.of_string
+let input () = Reader.file_contents "aoc.in" >>| Program.of_string
 
 let paint program ~starting_color =
   let robot = Robot.create_with_dir ~initial_loc:(0, 0) ~initial_dir:N in

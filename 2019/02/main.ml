@@ -5,7 +5,7 @@ open Intcode
 open Program.Infix
 
 let a () =
-  let%bind program = Reader.file_contents "input" >>| Program.of_string in
+  let%bind program = Reader.file_contents "aoc.in" >>| Program.of_string in
   program.$(1) <- 12;
   program.$(2) <- 2;
   Program.Sync.run_without_input_exn program ~f:ignore;
@@ -27,7 +27,7 @@ let try_ (program : Program.t) ~noun ~verb =
 ;;
 
 let b () =
-  let%bind program = Reader.file_contents "input" >>| Program.of_string in
+  let%bind program = Reader.file_contents "aoc.in" >>| Program.of_string in
   let snapshot = Program.snapshot program in
   for noun = 0 to 99 do
     for verb = 0 to 99 do

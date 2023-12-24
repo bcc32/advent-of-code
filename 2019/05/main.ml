@@ -4,7 +4,7 @@ open! Import
 open Intcode
 
 let a () =
-  let%bind program = Reader.file_contents "input" >>| Program.of_string in
+  let%bind program = Reader.file_contents "aoc.in" >>| Program.of_string in
   match Program.Async.run program with
   | { input; output; done_ } ->
     Pipe.write_without_pushback input 1;
@@ -29,7 +29,7 @@ let%expect_test "a" =
 ;;
 
 let b () =
-  let%bind program = Reader.file_contents "input" >>| Program.of_string in
+  let%bind program = Reader.file_contents "aoc.in" >>| Program.of_string in
   match Program.Async.run program with
   | { input; output; done_ } ->
     Pipe.write_without_pushback input 5;

@@ -6,7 +6,7 @@ let width = 25
 let height = 6
 
 let input () =
-  let%map pixels = Reader.file_contents "input" >>| String.strip in
+  let%map pixels = Reader.file_contents "aoc.in" >>| String.strip in
   String.to_list pixels |> List.groupi ~break:(fun i _ _ -> i % (width * height) = 0)
 ;;
 

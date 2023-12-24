@@ -3,7 +3,7 @@ open! Async
 open! Import
 
 let input () =
-  let%map contents = Reader.file_contents "input" >>| String.strip in
+  let%map contents = Reader.file_contents "aoc.in" >>| String.strip in
   String.to_array contents |> Array.map ~f:Char.get_digit_exn
 ;;
 

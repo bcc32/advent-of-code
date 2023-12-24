@@ -3,7 +3,7 @@ open! Async
 open! Import
 open Intcode
 
-let input () = Reader.file_contents "input" >>| Program.of_string
+let input () = Reader.file_contents "aoc.in" >>| Program.of_string
 
 let int_of_dir : Robot.Dir.t -> int = function
   | N -> 1

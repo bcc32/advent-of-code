@@ -26,7 +26,7 @@ end
 let parse_line line = line |> String.to_array |> Array.map ~f:Square.of_char_exn
 
 let input () =
-  let%map lines = Reader.file_lines "input" in
+  let%map lines = Reader.file_lines "aoc.in" in
   lines |> Array.of_list_map ~f:parse_line
 ;;
 
@@ -149,8 +149,24 @@ let%expect_test "a" =
 ;;
 
 let input () =
-  let%map lines = Reader.file_lines "input2" in
-  lines |> Array.of_list_map ~f:parse_line
+  let%map lines = Reader.file_lines "aoc.in" >>| List.to_array in
+  let middle_row_to_change =
+    Array.findi_exn lines ~f:(fun _ line -> String.mem line '@') |> fst
+  in
+  let index_of_segment =
+    String.substr_index_exn lines.(middle_row_to_change) ~pattern:".@."
+  in
+  lines.(middle_row_to_change)
+  <- String.substr_replace_all lines.(middle_row_to_change) ~pattern:".@." ~with_:"###";
+  lines.(middle_row_to_change - 1)
+  <- String.sub lines.(middle_row_to_change - 1) ~pos:0 ~len:index_of_segment
+     ^ "@#@"
+     ^ String.subo lines.(middle_row_to_change - 1) ~pos:(index_of_segment + 3);
+  lines.(middle_row_to_change + 1)
+  <- String.sub lines.(middle_row_to_change + 1) ~pos:0 ~len:index_of_segment
+     ^ "@#@"
+     ^ String.subo lines.(middle_row_to_change + 1) ~pos:(index_of_segment + 3);
+  lines |> Array.map ~f:parse_line
 ;;
 
 module State' = struct
