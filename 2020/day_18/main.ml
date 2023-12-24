@@ -33,9 +33,10 @@ module Expr = struct
     | Literal n -> n
     | Combination (hd, ops) ->
       (match
-         List.findi ops ~f:(fun _ -> function
-           | Plus, _ -> true
-           | Times, _ -> false)
+         List.findi ops ~f:(fun _ ->
+             function
+             | Plus, _ -> true
+             | Times, _ -> false)
        with
        | None ->
          List.fold ops ~init:(evaluate' hd) ~f:(fun x (op, y) ->

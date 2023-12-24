@@ -34,9 +34,10 @@ let points =
 
 let a () =
   let%bind first, second = Lazy_deferred.force_exn points in
-  Hashtbl.merge first second ~f:(fun ~key:point -> function
-    | `Both _ -> Some point
-    | `Left _ | `Right _ -> None)
+  Hashtbl.merge first second ~f:(fun ~key:point ->
+      function
+      | `Both _ -> Some point
+      | `Left _ | `Right _ -> None)
   |> Hashtbl.keys
   |> List.map ~f:(fun p -> Robot.Point.dist_manhattan p (0, 0))
   |> List.min_elt ~compare:[%compare: int]
@@ -54,9 +55,10 @@ let%expect_test "a" =
 let b () =
   let%bind first, second = Lazy_deferred.force_exn points in
   let n =
-    Hashtbl.merge first second ~f:(fun ~key:_ -> function
-      | `Both (c1, c2) -> Some (c1 + c2)
-      | `Left _ | `Right _ -> None)
+    Hashtbl.merge first second ~f:(fun ~key:_ ->
+        function
+        | `Both (c1, c2) -> Some (c1 + c2)
+        | `Left _ | `Right _ -> None)
     |> Hashtbl.data
     |> List.min_elt ~compare:[%compare: int]
     |> Option.value_exn

@@ -93,14 +93,14 @@ let maybe_turn tracks (cart : Cart.t) =
     cart.turn <- Turn.succ cart.turn
   | '\\' ->
     cart.dir
-      <- (match cart.dir with
-          | Up | Down -> Dir.anticlockwise cart.dir
-          | Left | Right -> Dir.clockwise cart.dir)
+    <- (match cart.dir with
+        | Up | Down -> Dir.anticlockwise cart.dir
+        | Left | Right -> Dir.clockwise cart.dir)
   | '/' ->
     cart.dir
-      <- (match cart.dir with
-          | Up | Down -> Dir.clockwise cart.dir
-          | Left | Right -> Dir.anticlockwise cart.dir)
+    <- (match cart.dir with
+        | Up | Down -> Dir.clockwise cart.dir
+        | Left | Right -> Dir.anticlockwise cart.dir)
   | _ -> assert false
 ;;
 
@@ -146,10 +146,11 @@ let read () =
     Array.make_matrix false ~dimx:(Array.length grid) ~dimy:(Array.length grid.(0))
   in
   Array.iteri grid ~f:(fun i row ->
-    Array.iteri row ~f:(fun j -> function
-      | ('^' | 'v' | '<' | '>') as c ->
-        Cart_heap.push_exn carts ~key:(i, j) ~data:(Cart.create i j c);
-        occupied.(i).(j) <- true
-      | _ -> ()));
+    Array.iteri row ~f:(fun j ->
+        function
+        | ('^' | 'v' | '<' | '>') as c ->
+          Cart_heap.push_exn carts ~key:(i, j) ~data:(Cart.create i j c);
+          occupied.(i).(j) <- true
+        | _ -> ()));
   return { carts; tracks }
 ;;

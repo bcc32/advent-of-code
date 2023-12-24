@@ -40,12 +40,14 @@ let create ?(elf_attack_power = 3) lines =
   let grid =
     Array.of_list_mapi lines ~f:(fun x row ->
       String.to_array row
-      |> Array.mapi ~f:(fun y -> function
-        | '.' -> Square.Open
-        | '#' -> Wall
-        | 'E' -> Unit (create_unit ~loc:{ x; y } ~team:Elf ~attack_power:elf_attack_power)
-        | 'G' -> Unit (create_unit ~loc:{ x; y } ~team:Goblin ~attack_power:3)
-        | char -> raise_s [%message "Unrecognized grid char" ~_:(char : char)]))
+      |> Array.mapi ~f:(fun y ->
+          function
+          | '.' -> Square.Open
+          | '#' -> Wall
+          | 'E' ->
+            Unit (create_unit ~loc:{ x; y } ~team:Elf ~attack_power:elf_attack_power)
+          | 'G' -> Unit (create_unit ~loc:{ x; y } ~team:Goblin ~attack_power:3)
+          | char -> raise_s [%message "Unrecognized grid char" ~_:(char : char)]))
   in
   { grid; kill_count = Team.Total_map.create_const 0 }
 ;;

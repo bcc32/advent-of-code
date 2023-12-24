@@ -50,7 +50,7 @@ let play numbers : int Sequence.t =
          let%bind () = accum in
          let%bind () = Sequence.Generator.yield number in
          most_recent_index_of_last_number
-           := Hashtbl_with_small_array.find most_recent_index number;
+         := Hashtbl_with_small_array.find most_recent_index number;
          Hashtbl_with_small_array.set most_recent_index ~key:number ~data:i;
          return ())
      in
@@ -59,7 +59,7 @@ let play numbers : int Sequence.t =
        let yield n =
          let%bind () = Sequence.Generator.yield n in
          most_recent_index_of_last_number
-           := Hashtbl_with_small_array.find most_recent_index n;
+         := Hashtbl_with_small_array.find most_recent_index n;
          Hashtbl_with_small_array.set most_recent_index ~key:n ~data:!i;
          incr i;
          return ()

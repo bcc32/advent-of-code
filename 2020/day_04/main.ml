@@ -6,9 +6,10 @@ let input =
   Lazy_deferred.create (fun () ->
     Reader.file_contents "input.txt"
     >>| String.split_lines
-    >>| List.group ~break:(fun _ -> function
-      | "" -> true
-      | _ -> false)
+    >>| List.group ~break:(fun _ ->
+        function
+        | "" -> true
+        | _ -> false)
     >>| List.map ~f:(List.filter ~f:(Fn.non String.is_empty))
     >>| List.map ~f:(List.concat_map ~f:(String.split ~on:' ')))
 ;;
