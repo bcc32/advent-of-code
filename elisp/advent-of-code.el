@@ -71,7 +71,7 @@ Pass REST to `request'."
            rest)))
 
 ;;;###autoload
-(define-derived-mode advent-of-code-input-mode text-mode
+(define-derived-mode advent-of-code-input-mode fundamental-mode
   "AoC Input"
   "Mode for problem input buffers."
   :group 'advent-of-code
@@ -129,7 +129,7 @@ shortly before midnight."
              (cons (rx "aoc.in" eos) 'advent-of-code-input-mode))
 
 ;;;###autoload
-(define-derived-mode advent-of-code-output-mode text-mode
+(define-derived-mode advent-of-code-output-mode fundamental-mode
   "AoC Output"
   "Mode for solution output buffers."
   :group 'advent-of-code
