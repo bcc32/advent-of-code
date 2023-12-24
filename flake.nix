@@ -28,6 +28,13 @@
           ];
         };
 
+        devShells.ruby = let
+          gems = bundlerEnv {
+            name = "env";
+            gemdir = ./.;
+          };
+        in mkShell { buildInputs = [ gems gems.wrappedRuby bundix ]; };
+
         packages.default = ocamlPackages.buildDunePackage rec {
           pname = "aoc";
           version = "0.1.0";
