@@ -6,8 +6,8 @@
 
 (rule
  (alias runtest)
- (deps input)
+ (deps aoc.in)
  (action
   (progn
-   (run %{exe:a.exe} input)
-   (run %{exe:b.exe} input))))
+   (run %{exe:a.exe} aoc.in)
+   (run %{exe:b.exe} aoc.in))))
