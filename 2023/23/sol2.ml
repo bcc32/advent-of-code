@@ -110,5 +110,8 @@ let rec dfs start stop visited accum =
 ;;
 
 (* runs in about 10 seconds *)
-let ans = dfs 0 1 (Array.create false ~len:(Array.length interesting_points)) 0
-let () = printf "%d\n" ans
+let%expect_test "answer" =
+  let ans = dfs 0 1 (Array.create false ~len:(Array.length interesting_points)) 0 in
+  print_s [%sexp (ans : int)];
+  [%expect {| 6590 |}]
+;;
