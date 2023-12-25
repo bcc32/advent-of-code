@@ -90,6 +90,7 @@ module Edge_rich = struct
     ; steps : int
     ; can_be_blocked_by : int list
     ; must_be_empty_or_same_letter : int option
+    ; i_must_be_letter : char option
     }
   [@@deriving sexp_of]
 
@@ -133,7 +134,24 @@ module Edge_rich = struct
                  same purpose *)
            | _ -> None
          in
-         { from; to_; steps; can_be_blocked_by; must_be_empty_or_same_letter }))
+         let i_must_be_letter =
+           match Node.all.(to_).row with
+           | 2 | 3 ->
+             (match Node.all.(to_).col with
+              | 3 -> Some 'A'
+              | 5 -> Some 'B'
+              | 7 -> Some 'C'
+              | 9 -> Some 'D'
+              | _ -> None)
+           | _ -> None
+         in
+         { from
+         ; to_
+         ; steps
+         ; can_be_blocked_by
+         ; must_be_empty_or_same_letter
+         ; i_must_be_letter
+         }))
   ;;
 end
 
@@ -160,14 +178,21 @@ let possible_transitions state =
     (force Edge_rich.all)
     ~f:
       (fun
-        ({ from; to_; steps; can_be_blocked_by; must_be_empty_or_same_letter } as edge) ->
+        { from
+        ; to_
+        ; steps
+        ; can_be_blocked_by
+        ; must_be_empty_or_same_letter
+        ; i_must_be_letter
+        }
+      ->
       match state.[from] with
       | 'A' .. 'D' as char ->
-        print_s [%message (edge : Edge_rich.t)];
         let energy = steps * energy_per_step char in
         if List.for_all can_be_blocked_by ~f:(fun i -> Char.equal state.[i] '.')
            && Option.for_all must_be_empty_or_same_letter ~f:(fun i ->
              Char.equal state.[i] '.' || Char.equal state.[i] char)
+           && Option.for_all i_must_be_letter ~f:(Char.equal char)
         then (
           let new_state = Bytes.of_string state in
           Bytes.set new_state from '.';
