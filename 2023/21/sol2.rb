@@ -25,30 +25,40 @@ N = 26501365
 # the starting map, then move around in the sidewalks, then move from the corner
 # to the ending position
 
-def bfs(grid, start)
-  this = Set.new
-  this << start
-  last = Set.new                # to keep track of parity
-  frontier = Set.new
-  frontier << start
+def bfs(grid, start, n, extra_grids)
+  q = [start]
+  d = { start => 0 }
 
-  5000.times do
-    new_reachable = Set.new
-    reachable.each do |x, y|
-      [[-1, 0], [1, 0], [0, -1], [0, 1]].each do |dx, dy|
-        next if grid[(x + dx) % grid.size][(y + dy) % grid[0].size] == '#'
-        next if reached_last_time.include?([x + dx, y + dy])
-        new_reachable << [x + dx, y + dy]
-      end
+  until q.empty?
+    x, y = q.shift
+
+    if d[[x, y]] > n
+      break
     end
 
-    # p new_reachable.size - reachable.size
-    reached_last_time = reachable
-    reachable = new_reachable
-    # p reachable.size
+    [[-1, 0], [1, 0], [0, -1], [0, 1]].each do |dx, dy|
+      # if x + dx < -(extra_grids*grid.size) || x + dx >= (extra_grids + 1) * grid.size ||
+      #    y + dy < -(extra_grids*grid[0].size) || y + dy >= (extra_grids + 1) * grid[0].size
+      #   next
+      # end
+
+      next if grid[(x + dx) % grid.size][(y + dy) % grid[0].size] == '#'
+      next if d[[x + dx, y + dy]]
+
+      d[[x + dx, y + dy]] = d[[x, y]] + 1
+      q << [x + dx, y + dy]
+    end
   end
 
-  reachable.size
+  d.each_value.count { |v| v % 2 == n % 2 }
 end
 
-p bfs(grid, start)
+# apparently this pattern is quadratic:
+
+5.times do |i|
+  # p bfs(grid, start, 65 + 131 * i, Float::INFINITY)
+end
+
+# for my input, this is 14_773 x^2 - 14_683 x + 3640
+x = (N - 65) / 131 + 1
+p (14_773 * x * x - 14_683 * x + 3640)
