@@ -1,7 +1,7 @@
 ;;; advent-of-code.el --- Useful shortcuts for Advent of Code  -*- lexical-binding: t; -*-
 ;;
 ;; Version: 0.1.0
-;; Homepage: https://github.com/bcc32/advent-of-code.el
+;; Homepage: https://github.com/bcc32/advent-of-code
 ;; Package-Requires: ((emacs "25.1") (request "0.3.0"))
 ;;
 ;;; Commentary:
@@ -22,6 +22,21 @@
 ;;
 ;; Before using this package, you must customize `advent-of-code-cookie-jar' and
 ;; `advent-of-code-email'.
+;;
+;; This script/repo/tool does follow the automation guidelines on the
+;; /r/adventofcode community wiki
+;; (https://www.reddit.com/r/adventofcode/wiki/faqs/automation).  Specifically:
+;;
+;; - The User-Agent header in `advent-of-code--request' includes both the
+;; maintainer of this Emacs package and the invoking user's (self-reported)
+;; email.
+;;
+;; - User inputs can only be requested manually by pressing C-c C-c in an input
+;; file's buffer.
+;;
+;; - Currently, outbound requests are not throttled because they can only be
+;; initiated manually by the user, and only one at a time (no commands to, e.g.,
+;; bulk-download inputs).
 ;;
 ;;; Code:
 
