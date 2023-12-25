@@ -16,8 +16,10 @@
           overlays = [ ocaml-overlays.overlays.default ];
         };
       in with pkgs; rec {
-        devShells.default =
-          mkShell { inputsFrom = [ devShells.ocaml devShells.ruby ]; };
+        devShells.default = mkShell {
+          inputsFrom = [ devShells.ocaml devShells.ruby ];
+          buildInputs = [ graphviz ];
+        };
 
         devShells.ocaml = mkShell {
           inputsFrom = [ packages.default ];
