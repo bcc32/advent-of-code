@@ -2,6 +2,7 @@
 
 open! Core
 
+let debug = false
 let pat = Re.(compile (seq [ opt (char '-'); rep1 digit ]))
 
 let input =
@@ -26,7 +27,7 @@ let make_rules i (px, py, pz, vx, vy, vz) ~context ~x0 ~y0 ~z0 ~vx0 ~vy0 ~vz0 =
 
 let main () =
   let context = Z3.mk_context [] in
-  let solver = Z3.Solver.mk_simple_solver context in
+  let solver = Z3.Solver.mk_solver context None in
   let x0, y0, z0, vx0, vy0, vz0 =
     ( Z3.Arithmetic.Integer.mk_const_s context "x0"
     , Z3.Arithmetic.Integer.mk_const_s context "y0"
@@ -41,12 +42,12 @@ let main () =
       ~f:(make_rules ~context ~x0 ~y0 ~z0 ~vx0 ~vy0 ~vz0)
   in
   Z3.Solver.add solver rules;
-  print_endline (Z3.Solver.to_string solver);
+  if debug then print_endline (Z3.Solver.to_string solver);
   match Z3.Solver.check solver [] with
   | UNSATISFIABLE | UNKNOWN -> raise_s [%message "no solution"]
   | SATISFIABLE ->
     let model = Z3.Solver.get_model solver |> Option.value_exn in
-    print_endline (Z3.Model.to_string model);
+    if debug then print_endline (Z3.Model.to_string model);
     let ans =
       let get var =
         Z3.Model.get_const_interp_e model var
@@ -59,6 +60,4 @@ let main () =
     print_s [%sexp (ans : int)]
 ;;
 
-(* TODO: Why is this so much slower than printing the SMT and then plugging it
-   into z3 at the command line? *)
 let () = main ()
