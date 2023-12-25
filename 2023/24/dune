@@ -1,5 +1,5 @@
 (executables
  (names sol2)
- (libraries core re)
+ (libraries core re z3)
  (preprocess
   (pps ppx_jane)))

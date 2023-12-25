@@ -53,7 +53,9 @@
             re
             topological_sort
             yojson
+            z3
           ];
+          nativeBuildInputs = [ z3 ];
           meta = { homepage = "https://github.com/bcc32/advent-of-code"; };
         };
       });
