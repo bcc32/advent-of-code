@@ -9,11 +9,14 @@ def dijk(grid, start, end_)
   until queue.empty?
     x, y = queue.min_by(&dist)
     d = dist[[x, y]]
-    return d if [x, y] == end_
+    return d if end_ == [x, y]
+
     queue.delete([x, y])
     [[-1, 0], [1, 0], [0, -1], [0, 1]].each do |dx, dy|
-      next unless (0...grid.size) === x + dx && (0...grid[0].size) === y + dy
-      next if dist.has_key?([x + dx, y + dy])
+      next unless (0...grid.size).include?(x + dx) && (0...grid[0].size).include?(y + dy)
+
+      next if dist.key?([x + dx, y + dy])
+
       cost = grid[x + dx] && grid[x + dx][y + dy]
       dist[[x + dx, y + dy]] = d + cost
       queue << [x + dx, y + dy]

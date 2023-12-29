@@ -12,7 +12,7 @@ def cost(grid, x, y)
   ym = y % grid[0].size
   ans = grid[xm][ym] + xx + yy
   ans = ans % 9
-  ans = 9 if ans == 0
+  ans = 9 if ans.zero?
   ans
 end
 
@@ -29,10 +29,13 @@ def dijk(grid, xmax, ymax, start, end_)
   until pqueue.empty?
     x, y = pqueue.pop
     d = dist[[x, y]]
-    return d if [x, y] == end_
+    return d if end_ == [x, y]
+
     [[-1, 0], [1, 0], [0, -1], [0, 1]].each do |dx, dy|
-      next unless (0..xmax) === x + dx && (0..ymax) === y + dy
-      next if dist.has_key?([x + dx, y + dy])
+      next unless (0..xmax).include?(x + dx) && (0..ymax).include?(y + dy)
+
+      next if dist.key?([x + dx, y + dy])
+
       cost = cost(grid, x + dx, y + dy)
       dist[[x + dx, y + dy]] = d + cost
       pqueue.push(d + cost, [x + dx, y + dy])
