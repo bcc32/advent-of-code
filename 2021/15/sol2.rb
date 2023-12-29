@@ -1,4 +1,5 @@
-require '../util/min_heap'
+require 'algorithms'
+include Containers
 
 grid = File.open('aoc.in') do |f|
   f.readlines.map(&:chomp).map(&:chars).map { |line| line.map(&:to_i) }
@@ -18,9 +19,15 @@ end
 def dijk(grid, xmax, ymax, start, end_)
   dist = {}
   dist[start] = 0
-  pqueue = MinHeap.new([start]) { |x, y| dist[x] <=> dist[y] }
+
+  pqueue = Heap.new
+
+  # Explicitly push with key.  This works around a bug in algorithms:
+  # https://github.com/kanwei/algorithms/issues/23
+  pqueue.push(dist[start], start)
+
   until pqueue.empty?
-    x, y = pqueue.shift
+    x, y = pqueue.pop
     d = dist[[x, y]]
     return d if [x, y] == end_
     [[-1, 0], [1, 0], [0, -1], [0, 1]].each do |dx, dy|
@@ -28,7 +35,7 @@ def dijk(grid, xmax, ymax, start, end_)
       next if dist.has_key?([x + dx, y + dy])
       cost = cost(grid, x + dx, y + dy)
       dist[[x + dx, y + dy]] = d + cost
-      pqueue << [x + dx, y + dy]
+      pqueue.push(d + cost, [x + dx, y + dy])
     end
   end
 end
