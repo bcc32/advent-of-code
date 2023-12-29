@@ -1,6 +1,6 @@
 (library
  (name year2015_day_13_solution)
- (libraries angstrom async bignum core core_kernel.composition_infix
+ (libraries angstrom async bignum core core_kernel.composition_infix euler
    expect_test_helpers_async re topological_sort yojson)
  (inline_tests
   (deps aoc.in))
