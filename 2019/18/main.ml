@@ -125,7 +125,7 @@ let a () =
         List.init (Array.length key_points) ~f:(fun i ->
           match distances.(key_point_index).(i) with
           | Some (distance, keys_needed)
-            when Bitset.is_subset collected_keys ~subset:keys_needed ->
+            when Bitset.is_subset keys_needed ~of_:collected_keys ->
             let collected_keys =
               let i, j = key_points.(i) in
               match grid.(i).(j) with

@@ -1,7 +1,8 @@
 (library
  (name year2019_p18)
- (libraries core async expect_test_helpers_async expect_test_helpers_core re
-   bignum graph intcode robot topological_sort core_kernel.hash_heap)
+ (libraries core async euler expect_test_helpers_async
+   expect_test_helpers_core re bignum graph intcode robot topological_sort
+   core_kernel.hash_heap)
  (preprocess
   (pps ppx_jane))
  (inline_tests
