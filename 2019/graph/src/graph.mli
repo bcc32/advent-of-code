@@ -19,8 +19,11 @@ val node_list : 'node t -> 'node list Or_error.t
 val outgoing_edges : 'node t -> 'node -> 'node list
 val incoming_edges : 'node t -> 'node -> 'node list
 
-(* TODO: Add early termination condition. *)
-val bfs : 'node t -> start:'node -> ('node, int) Hashtbl.t
+val bfs
+  :  ?finish_early_if_dequeued:('node -> bool)
+  -> 'node t
+  -> start:'node
+  -> ('node, int) Hashtbl.t
 
 val dijkstra
   :  (module Hashtbl.Key_plain with type t = 'node)

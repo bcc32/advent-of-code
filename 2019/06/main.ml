@@ -36,7 +36,7 @@ let orbits pairs =
   let graph = Graph.of_edges (module String) pairs ~edge_kind:`Undirected in
   let start = Graph.incoming_edges graph "YOU" |> List.hd_exn in
   let end_ = Graph.incoming_edges graph "SAN" |> List.hd_exn in
-  let distance = Graph.bfs graph ~start in
+  let distance = Graph.bfs graph ~start ~finish_early_if_dequeued:(String.equal end_) in
   Hashtbl.find_exn distance end_
 ;;
 

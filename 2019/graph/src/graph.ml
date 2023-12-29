@@ -41,21 +41,27 @@ let of_edges key edges ~edge_kind =
     }
 ;;
 
-let bfs { key; outgoing_edges; incoming_edges = _; nodes = _ } ~start =
+let bfs
+  ?(finish_early_if_dequeued = Fn.const false)
+  { key; outgoing_edges; incoming_edges = _; nodes = _ }
+  ~start
+  =
   let q = Queue.of_list [ start ] in
   let distance = Hashtbl.of_alist_exn key [ start, 0 ] in
-  while not (Queue.is_empty q) do
-    let x = Queue.dequeue_exn q in
-    let d = Hashtbl.find_exn distance x in
-    outgoing_edges x
-    |> List.iter ~f:(fun y ->
-      match Hashtbl.mem distance y with
-      | true -> ()
-      | false ->
-        Hashtbl.add_exn distance ~key:y ~data:(d + 1);
-        Queue.enqueue q y)
-  done;
-  distance
+  with_return (fun { return } ->
+    while not (Queue.is_empty q) do
+      let x = Queue.dequeue_exn q in
+      if finish_early_if_dequeued x then return distance;
+      let d = Hashtbl.find_exn distance x in
+      outgoing_edges x
+      |> List.iter ~f:(fun y ->
+        match Hashtbl.mem distance y with
+        | true -> ()
+        | false ->
+          Hashtbl.add_exn distance ~key:y ~data:(d + 1);
+          Queue.enqueue q y)
+    done;
+    distance)
 ;;
 
 let error_no_node_set = Error.of_string "Graph does not know its node set"
