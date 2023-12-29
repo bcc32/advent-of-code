@@ -57,10 +57,11 @@ let restore dst ~from:(src : Snapshot.t) =
        ~len:(Int.min (Array.length src.memory) (Array.length dst.memory));
      if gap > 0
      then
-       (* TODO: This might be able to use a C stub with memset to go *even faster*. *)
-       for pos = Array.length src.memory to Array.length dst.memory - 1 do
-         dst.memory.(pos) <- 0
-       done);
+       Array.fill
+         dst.memory
+         0
+         ~pos:(Array.length src.memory)
+         ~len:(Array.length dst.memory - Array.length src.memory));
   dst.pc <- src.pc;
   dst.relative_base <- src.relative_base
 ;;
