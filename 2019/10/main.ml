@@ -62,8 +62,6 @@ end = struct
 
     include T
 
-    let rec gcd a b = if b = 0 then a else gcd b (a % b)
-
     let theta_from_north (dx, dy) =
       let open Float.O in
       let theta = Float.atan2 (float dy) (float dx) in
@@ -77,7 +75,7 @@ end = struct
       (* y axis is inverted. *)
       let dx = x' - x in
       let dy = y - y' in
-      let g = gcd (Int.abs dx) (Int.abs dy) in
+      let g = Euler.Number_theory.Int.gcd (Int.abs dx) (Int.abs dy) in
       let vec = dx / g, dy / g in
       { vec; theta_from_north = theta_from_north vec }
     ;;

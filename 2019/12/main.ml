@@ -118,9 +118,6 @@ let step (moon_ones : Moon_one.t list) =
   |> List.map ~f:(fun moon_one -> { moon_one with x = moon_one.x + moon_one.vx })
 ;;
 
-let rec gcd a b = if b = 0 then a else gcd b (a % b)
-let lcm a b = a / gcd a b * b
-
 let b () =
   let%bind moons = input () in
   let xs = List.map moons ~f:(Moon_one.of_moon ~which:`x) in
@@ -137,7 +134,9 @@ let b () =
   assert (x_cycle.offset = 0);
   assert (y_cycle.offset = 0);
   assert (z_cycle.offset = 0);
-  List.reduce_exn [ x_cycle.length; y_cycle.length; z_cycle.length ] ~f:lcm
+  List.reduce_exn
+    [ x_cycle.length; y_cycle.length; z_cycle.length ]
+    ~f:Euler.Number_theory.Int.lcm
   |> printf "%d\n";
   return ()
 ;;

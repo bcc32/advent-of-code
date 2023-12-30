@@ -1,7 +1,7 @@
 (library
  (name year2019_p10)
- (libraries core async expect_test_helpers_async expect_test_helpers_core re
-   bignum graph intcode)
+ (libraries core async euler expect_test_helpers_async
+   expect_test_helpers_core re bignum graph intcode)
  (preprocess
   (pps ppx_jane))
  (inline_tests
