@@ -73,7 +73,6 @@ let simulate program ~user_input ~on_game_changed ~tiles ~score =
   loop ()
 ;;
 
-(* TODO: Use [Pipe.empty] upon upgrading Async. *)
 let a () =
   let%bind program = input () in
   let tiles = Hashtbl.create (module Point) in
