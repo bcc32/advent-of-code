@@ -76,11 +76,18 @@ let%expect_test "a" =
   return ()
 ;;
 
-type cycle =
-  { offset : int
-  ; length : int
-  }
-[@@deriving sexp_of]
+module Cycle = struct
+  type t =
+    { offset : int
+    ; length : int
+    }
+  [@@deriving sexp_of]
+
+  let find ~start ~f ~equal =
+    let length, offset = Euler.Sequences.find_cycle ~start ~f ~equal in
+    { offset; length }
+  ;;
+end
 
 (* Simulate each vector component of the moons separately, then combine using
    least common multiple. *)
@@ -111,25 +118,6 @@ let step (moon_ones : Moon_one.t list) =
   |> List.map ~f:(fun moon_one -> { moon_one with x = moon_one.x + moon_one.vx })
 ;;
 
-(* TODO: Extract this into ProjectEuler solutions. *)
-let find_cycle_length moon_ones =
-  let rec loop power cycle_length slow fast =
-    if [%equal: Moon_one.t list] slow fast
-    then cycle_length
-    else if power = cycle_length
-    then loop (power * 2) 1 fast (step fast)
-    else loop power (cycle_length + 1) slow (step fast)
-  in
-  let cycle_length = loop 1 1 moon_ones (step moon_ones) in
-  let rec loop offset slow fast =
-    if [%equal: Moon_one.t list] slow fast
-    then offset
-    else loop (offset + 1) (step slow) (step fast)
-  in
-  let offset = loop 0 moon_ones (Fn.apply_n_times step moon_ones ~n:cycle_length) in
-  { offset; length = cycle_length }
-;;
-
 let rec gcd a b = if b = 0 then a else gcd b (a % b)
 let lcm a b = a / gcd a b * b
 
@@ -138,10 +126,11 @@ let b () =
   let xs = List.map moons ~f:(Moon_one.of_moon ~which:`x) in
   let ys = List.map moons ~f:(Moon_one.of_moon ~which:`y) in
   let zs = List.map moons ~f:(Moon_one.of_moon ~which:`z) in
-  let x_cycle = find_cycle_length xs in
-  let y_cycle = find_cycle_length ys in
-  let z_cycle = find_cycle_length zs in
-  if debug then print_s [%message (x_cycle : cycle) (y_cycle : cycle) (z_cycle : cycle)];
+  let x_cycle = Cycle.find ~start:xs ~f:step ~equal:[%equal: Moon_one.t list] in
+  let y_cycle = Cycle.find ~start:ys ~f:step ~equal:[%equal: Moon_one.t list] in
+  let z_cycle = Cycle.find ~start:zs ~f:step ~equal:[%equal: Moon_one.t list] in
+  if debug
+  then print_s [%message (x_cycle : Cycle.t) (y_cycle : Cycle.t) (z_cycle : Cycle.t)];
   (* Simplifying assumptions.  If the offsets were not zero, we could use, e.g.,
      the Chinese Remainder Theorem to calculate the required modulus and
      residue. *)

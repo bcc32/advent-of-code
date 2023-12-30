@@ -126,23 +126,6 @@ let input () =
       | c -> failwithf "unrecognized char: %c" c ()))
 ;;
 
-(* FIXME: Deduplicate from problem 12. *)
-let find_cycle_length init ~equal ~step =
-  let rec loop power cycle_length slow fast =
-    if equal slow fast
-    then cycle_length
-    else if power = cycle_length
-    then loop (power * 2) 1 fast (step fast)
-    else loop power (cycle_length + 1) slow (step fast)
-  in
-  let cycle_length = loop 1 1 init (step init) in
-  let rec loop offset slow fast =
-    if equal slow fast then offset else loop (offset + 1) (step slow) (step fast)
-  in
-  let offset = loop 0 init (Fn.apply_n_times step init ~n:cycle_length) in
-  offset, cycle_length
-;;
-
 let%expect_test "step" =
   let%bind bitmap = input () >>| Bitmap.of_grid in
   printf !"%{Bitmap#hum}\n" bitmap;
@@ -189,8 +172,8 @@ let%expect_test "step" =
 
 let a () =
   let%bind bitmap = input () >>| Bitmap.of_grid in
-  let offset, cycle_length =
-    find_cycle_length bitmap ~equal:[%equal: Bitmap.t] ~step:Bitmap.step
+  let cycle_length, offset =
+    Euler.Sequences.find_cycle ~start:bitmap ~f:Bitmap.step ~equal:[%equal: Bitmap.t]
   in
   print_s [%message (offset : int) (cycle_length : int)];
   let first_repeated = Fn.apply_n_times ~n:offset Bitmap.step bitmap in
