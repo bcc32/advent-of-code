@@ -8,19 +8,16 @@ let debug = false
 let input () = Reader.file_contents "aoc.in" >>| Program.of_string
 
 let output program =
-  (* FIXME: Replace match statements like these with the equivalent let-binding when
-     type-directed disambiguation works therefor. *)
-  match Program.Async.run program with
-  | { input; output; done_ } ->
-    let buffer = Buffer.create 0 in
-    Pipe.close input;
-    let%bind () =
-      Pipe.iter_without_pushback output ~f:(fun c ->
-        Buffer.add_char buffer (Char.of_int_exn c))
-    and () = done_ in
-    (* Need the String.strip because there is an empty line at the end of the
-       output. *)
-    return (Buffer.contents buffer |> String.strip |> String.split_lines |> Array.of_list)
+  let%tydi { input; output; done_ } = Program.Async.run program in
+  let buffer = Buffer.create 0 in
+  Pipe.close input;
+  let%bind () =
+    Pipe.iter_without_pushback output ~f:(fun c ->
+      Buffer.add_char buffer (Char.of_int_exn c))
+  and () = done_ in
+  (* Need the String.strip because there is an empty line at the end of the
+     output. *)
+  return (Buffer.contents buffer |> String.strip |> String.split_lines |> Array.of_list)
 ;;
 
 let map =
@@ -344,24 +341,23 @@ let b () =
   let programs, programs_called = compress ~route:(find_route map) in
   let%bind program = input () in
   program.$(0) <- 2;
-  match Program.Async.run program with
-  | { input; output; done_ = _ } ->
-    let write_strings strings =
-      String.iter
-        (String.concat strings ~sep:"," ^ "\n")
-        ~f:(fun c -> Pipe.write_without_pushback input (Char.to_int c))
-    in
-    write_strings (programs_called |> List.map ~f:Which_program.to_string);
-    Map.iter programs ~f:(fun program_defn ->
-      write_strings (program_defn |> List.map ~f:Route_component.to_string));
-    if debug
-    then (
-      write_strings [ "y" ];
-      Pipe.iter_without_pushback output ~f:(fun c -> print_char (Char.of_int_exn c)))
-    else (
-      write_strings [ "n" ];
-      Pipe.iter_without_pushback output ~f:(fun c ->
-        if c > Char.to_int Char.max_value then printf "%d\n" c))
+  let%tydi { input; output; done_ = _ } = Program.Async.run program in
+  let write_strings strings =
+    String.iter
+      (String.concat strings ~sep:"," ^ "\n")
+      ~f:(fun c -> Pipe.write_without_pushback input (Char.to_int c))
+  in
+  write_strings (programs_called |> List.map ~f:Which_program.to_string);
+  Map.iter programs ~f:(fun program_defn ->
+    write_strings (program_defn |> List.map ~f:Route_component.to_string));
+  if debug
+  then (
+    write_strings [ "y" ];
+    Pipe.iter_without_pushback output ~f:(fun c -> print_char (Char.of_int_exn c)))
+  else (
+    write_strings [ "n" ];
+    Pipe.iter_without_pushback output ~f:(fun c ->
+      if c > Char.to_int Char.max_value then printf "%d\n" c))
 ;;
 
 let%expect_test "b" =

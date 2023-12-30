@@ -7,21 +7,19 @@ let input () = Reader.file_contents "aoc.in" >>| Program.of_string
 
 let main ~init ~extra_input =
   let%bind program = input () in
-  match Program.Async.run program with
-  | { input; output; done_ } ->
+  let%tydi { input; output; done_ } = Program.Async.run program in
+  let%bind () =
     let%bind () =
-      let%bind () =
-        Pipe.transfer_in
-          input
-          ~from:(Queue.of_list (String.to_list init |> List.map ~f:Char.to_int))
-      in
-      Pipe.transfer' extra_input input ~f:(fun sq ->
-        return
-          (Queue.concat_map sq ~f:(fun s -> String.to_list s |> List.map ~f:Char.to_int)))
-    and () =
-      Pipe.iter_without_pushback output ~f:(fun c -> print_char (Char.of_int_exn c))
-    and () = done_ in
-    return ()
+      Pipe.transfer_in
+        input
+        ~from:(Queue.of_list (String.to_list init |> List.map ~f:Char.to_int))
+    in
+    Pipe.transfer' extra_input input ~f:(fun sq ->
+      return
+        (Queue.concat_map sq ~f:(fun s -> String.to_list s |> List.map ~f:Char.to_int)))
+  and () = Pipe.iter_without_pushback output ~f:(fun c -> print_char (Char.of_int_exn c))
+  and () = done_ in
+  return ()
 ;;
 
 let command =

@@ -7,24 +7,23 @@ let input () = Reader.file_contents "aoc.in" >>| Program.of_string
 
 let a () =
   let%bind program = input () in
-  match Program.Async.run program with
-  | { input; output; done_ } ->
-    let print_line line =
-      String.iter (line ^ "\n") ~f:(fun c ->
-        Pipe.write_without_pushback input (Char.to_int c))
-    in
-    print_line "NOT A J";
-    print_line "NOT B T";
-    print_line "OR T J";
-    print_line "NOT C T";
-    print_line "OR T J";
-    print_line "AND D J";
-    print_line "WALK";
-    let%bind () =
-      Pipe.iter_without_pushback output ~f:(fun c ->
-        if c > 255 then printf "%d\n" c else print_char (Char.of_int_exn c))
-    in
-    done_
+  let%tydi { input; output; done_ } = Program.Async.run program in
+  let print_line line =
+    String.iter (line ^ "\n") ~f:(fun c ->
+      Pipe.write_without_pushback input (Char.to_int c))
+  in
+  print_line "NOT A J";
+  print_line "NOT B T";
+  print_line "OR T J";
+  print_line "NOT C T";
+  print_line "OR T J";
+  print_line "AND D J";
+  print_line "WALK";
+  let%bind () =
+    Pipe.iter_without_pushback output ~f:(fun c ->
+      if c > 255 then printf "%d\n" c else print_char (Char.of_int_exn c))
+  in
+  done_
 ;;
 
 let%expect_test "a" =
@@ -75,30 +74,29 @@ let%expect_test "a" =
 
 let b () =
   let%bind program = input () in
-  match Program.Async.run program with
-  | { input; output; done_ } ->
-    let print_line line =
-      String.iter (line ^ "\n") ~f:(fun c ->
-        Pipe.write_without_pushback input (Char.to_int c))
-    in
-    print_line "NOT J J";
-    print_line "AND D J";
-    print_line "OR A T";
-    print_line "AND B T";
-    print_line "AND C T";
-    print_line "AND D T";
-    print_line "NOT T T";
-    print_line "AND T J";
-    print_line "AND E T";
-    print_line "OR E T";
-    print_line "OR H T";
-    print_line "AND T J";
-    print_line "RUN";
-    let%bind () =
-      Pipe.iter_without_pushback output ~f:(fun c ->
-        if c > 255 then printf "%d\n" c else print_char (Char.of_int_exn c))
-    in
-    done_
+  let%tydi { input; output; done_ } = Program.Async.run program in
+  let print_line line =
+    String.iter (line ^ "\n") ~f:(fun c ->
+      Pipe.write_without_pushback input (Char.to_int c))
+  in
+  print_line "NOT J J";
+  print_line "AND D J";
+  print_line "OR A T";
+  print_line "AND B T";
+  print_line "AND C T";
+  print_line "AND D T";
+  print_line "NOT T T";
+  print_line "AND T J";
+  print_line "AND E T";
+  print_line "OR E T";
+  print_line "OR H T";
+  print_line "AND T J";
+  print_line "RUN";
+  let%bind () =
+    Pipe.iter_without_pushback output ~f:(fun c ->
+      if c > 255 then printf "%d\n" c else print_char (Char.of_int_exn c))
+  in
+  done_
 ;;
 
 let%expect_test "b" =
