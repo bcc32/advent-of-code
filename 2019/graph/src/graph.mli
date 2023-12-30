@@ -14,7 +14,6 @@ val of_edges
   -> edge_kind:[ `Directed | `Undirected ]
   -> 'node t
 
-(* TODO: Use capability phantom type for this. *)
 val node_list : 'node t -> 'node list Or_error.t
 val outgoing_edges : 'node t -> 'node -> 'node list
 val incoming_edges : 'node t -> 'node -> 'node list
