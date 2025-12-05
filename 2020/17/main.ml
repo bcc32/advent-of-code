@@ -56,7 +56,7 @@ let simulate (module Point : Point) initial_grid ~n =
     in
     let points_to_check =
       (!active_points |> Hash_set.to_list) @ (neighbors_of_active_points |> Set.to_list)
-      |> Set.stable_dedup_list (module Point)
+      |> List.stable_dedup ~compare:Point.compare
     in
     List.iter points_to_check ~f:(fun point ->
       let neighbor_count =

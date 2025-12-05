@@ -100,7 +100,7 @@ let do_flip black =
   let tiles_to_consider =
     Hash_set.to_list black
     |> List.concat_map ~f:(fun t -> t :: Coord.neighbors t)
-    |> Set.stable_dedup_list (module Coord)
+    |> List.stable_dedup ~compare:Coord.compare
   in
   List.map tiles_to_consider ~f:(fun t ->
     let count_black_neighbors = List.count (Coord.neighbors t) ~f:(Hash_set.mem black) in

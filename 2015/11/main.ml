@@ -3,16 +3,17 @@ open! Async
 open! Import
 
 let increment b =
-  let module String = Bytes in
+  let ( .%[] ) = Bytes.get in
+  let ( .%[]<- ) = Bytes.set in
   let rec loop pos =
-    if Char.equal b.[pos] 'z'
+    if Char.equal b.%[pos] 'z'
     then (
-      b.[pos] <- 'a';
+      b.%[pos] <- 'a';
       loop (pos - 1))
     else (
-      b.[pos] <- Char.of_int_exn (Char.to_int b.[pos] + 1);
-      while Core.String.mem "iol" b.[pos] do
-        b.[pos] <- Char.of_int_exn (Char.to_int b.[pos] + 1)
+      b.%[pos] <- Char.of_int_exn (Char.to_int b.%[pos] + 1);
+      while Core.String.mem "iol" b.%[pos] do
+        b.%[pos] <- Char.of_int_exn (Char.to_int b.%[pos] + 1)
       done)
   in
   loop (Bytes.length b - 1)
