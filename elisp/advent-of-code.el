@@ -106,13 +106,14 @@ Defaults to the day after today, assuming the file is opened
 shortly before midnight."
   (or advent-of-code--problem-number
       (setq advent-of-code--problem-number
-            (string-to-number
-             (completing-read "Problem number: " nil nil nil nil nil
-                              (number-to-string
-                               (string-to-number
-                                (file-name-base
-                                 (directory-file-name
-                                  (file-name-directory buffer-file-name))))))))))
+            (let ((def (number-to-string
+                        (string-to-number
+                         (file-name-base
+                          (directory-file-name
+                           (file-name-directory buffer-file-name)))))))
+              (string-to-number
+               (completing-read (format-prompt "Problem number" def)
+                                nil nil nil nil nil def))))))
 
 (defun advent-of-code--check-cookie-jar-set-and-exists-p ()
   "Check that `advent-of-code-cookie-jar' is set and points to an existing file."
