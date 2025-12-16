@@ -8,16 +8,28 @@
     ocaml-overlays.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, flake-utils, nixpkgs, ocaml-overlays }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      flake-utils,
+      nixpkgs,
+      ocaml-overlays,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs {
           inherit system;
           overlays = [ ocaml-overlays.overlays.default ];
         };
-      in with pkgs; rec {
+      in
+      with pkgs;
+      rec {
         devShells.default = mkShell {
-          inputsFrom = [ devShells.ocaml devShells.ruby ];
+          inputsFrom = [
+            devShells.ocaml
+            devShells.ruby
+          ];
           buildInputs = [ graphviz ];
         };
 
@@ -31,35 +43,46 @@
           ];
         };
 
-        devShells.ruby = let
-          gems = bundlerEnv {
-            name = "env";
-            gemdir = ./.;
+        devShells.ruby =
+          let
+            gems = bundlerEnv {
+              name = "env";
+              gemdir = ./.;
+            };
+          in
+          mkShell {
+            buildInputs = [
+              gems
+              gems.wrappedRuby
+              bundix
+            ];
           };
-        in mkShell { buildInputs = [ gems gems.wrappedRuby bundix ]; };
 
         packages.default = ocamlPackages.buildDunePackage rec {
           pname = "aoc";
           version = "0.1.0";
           useDune2 = true;
           src = ./.;
-          buildInputs = with ocamlPackages;
-            [
-              angstrom
-              async
-              bignum
-              cmdliner
-              core
-              core_bench
-              delimited_parsing
-              expect_test_helpers_async
-              re
-              topological_sort
-              yojson
-            ] ++ lib.optionals (!stdenv.isDarwin) [ z3 ];
+          buildInputs = with ocamlPackages; [
+            angstrom
+            async
+            bignum
+            cmdliner
+            core
+            core_bench
+            delimited_parsing
+            expect_test_helpers_async
+            re
+            topological_sort
+            yojson
+            z3
+          ];
           nativeBuildInputs = lib.optionals (!stdenv.isDarwin) [ z3 ];
           # TODO: ocamlPackages.z3 build is currently broken on Darwin
-          meta = { homepage = "https://github.com/bcc32/advent-of-code"; };
+          meta = {
+            homepage = "https://github.com/bcc32/advent-of-code";
+          };
         };
-      });
+      }
+    );
 }
