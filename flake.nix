@@ -76,7 +76,7 @@
             yojson
             z3
           ];
-          nativeBuildInputs = lib.optionals (!stdenv.isDarwin) [ z3 ];
+          nativeBuildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ z3 ];
           # TODO: ocamlPackages.z3 build is currently broken on Darwin
           meta = {
             homepage = "https://github.com/bcc32/advent-of-code";
